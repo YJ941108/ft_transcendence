@@ -1,11 +1,17 @@
 import React from 'react';
-import Test from './Test';
+import { ThemeProvider } from 'styled-components';
+import { ReactQueryDevtools } from 'react-query/devtools';
+import GlobalStyle from './ GlobalStyle';
+import mainTheme from './modules/theme';
+import Router from './routes/Router';
 
 function App() {
 	return (
-		<>
-			<header>Hello world</header>
-		</>
+		<ThemeProvider theme={mainTheme}>
+			<GlobalStyle />
+			<Router />
+			<ReactQueryDevtools initialIsOpen={true} />
+		</ThemeProvider>
 	);
 }
 
