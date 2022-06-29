@@ -1,12 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Test from './Test';
+import Home from './Home/Home';
+import Login from './Login/Login';
 
 function Router() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path="/" element={<Test />} />
+				<Route path="/" element={<Home />} />
+				<Route path="/login" element={<Login />} />
 			</Routes>
 		</BrowserRouter>
 	);
