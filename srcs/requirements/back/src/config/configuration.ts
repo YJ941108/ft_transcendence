@@ -7,4 +7,7 @@ export default () => ({
       callback: process.env.FORTYTWO_APP_CALLBACK_URL,
     },
   },
+  front: {
+    origin: process.env.ORIGIN,
+  },
 });
