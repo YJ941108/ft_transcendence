@@ -10,7 +10,7 @@ function App() {
 		<ThemeProvider theme={mainTheme}>
 			<GlobalStyle />
 			<Router />
-			<ReactQueryDevtools initialIsOpen={true} />
+			<ReactQueryDevtools initialIsOpen />
 		</ThemeProvider>
 	);
 }
