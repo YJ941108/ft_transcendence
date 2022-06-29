@@ -1,47 +1,39 @@
 ---
 version: "3.0"
-
 services:
 
-# 
-# postgresql
-#
-
-#
-# nest
-# 
-
-#
-# react
-# 
-
-# nginx
-#
-  nginx:
-    build:
-      context: ./srcs/nginx
-    container_name: nginx
-    image: nginx 
-    restart: always
-    volumes:
-      - react:/var/www/react
+  postgres:
+    image: postgres:14-alpine3.15
     networks:
-      - react
+      - postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    env_file:
+      - ./srcs/postgres/.env
+
+  adminer:
+    image: adminer
+    networks:
+      - postgres
+    restart: always
     ports:
-      - '443:443'
+      - 8080:8080
 
 volumes:
-  postgresql:
+  postgres:
     driver_opts:
       type: none
       o: bind
-      device: ${VOLUMES_DEVICE}/postgresql
-  react:
+      device: ${DATA_PATH}/postgres
+  front:
     driver_opts:
       type: none
       o: bind
-      device: ${VOLUMES_DEVICE}/dist
+      device: ${DATA_PATH}/dist
+
+volumes:
+  postgres:
 
 networks:
-  react:
+  postgres:
 ...
