@@ -51,15 +51,15 @@ const GlobalStyle = createGlobalStyle`
 	}
 	body {
     font-family: 'Roboto', sans-serif;
-    background-color: ${(props) => props.theme.backgroundColor};
-    color: ${(props) => props.theme.textColor}
+    background-color: ${(props: any) => props.theme.backgroundColor};
+    color: ${(props: any) => props.theme.textColor}
 	}
-	a {
-		text-decoration: none;
-    color: inherit;
-	}
+a {
+  text - decoration: none;
+  color: inherit;
+}
 	* {
-		box-sizing: border-box;
+  box- sizing: border - box;
 	}
 `;
 
