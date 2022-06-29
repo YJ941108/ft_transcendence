@@ -51,11 +51,12 @@ const GlobalStyle = createGlobalStyle`
 	}
 	body {
     font-family: 'Roboto', sans-serif;
+    height: 100vh;
     background-color: ${(props: any) => props.theme.backgroundColor};
     color: ${(props: any) => props.theme.textColor}
 	}
 a {
-  text - decoration: none;
+  text-decoration: none;
   color: inherit;
 }
 	* {
