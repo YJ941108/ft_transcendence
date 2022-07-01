@@ -19,8 +19,6 @@ clean:
 .PHONY: fclean
 fclean: clean
 	rm -rf $(DATA_PATH)
-# docker rm -f $(docker ps -aq)
-# docker rmi -f $(docker images -aq)
 
 .PHONY: re
 re: fclean all
