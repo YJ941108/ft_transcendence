@@ -5,7 +5,7 @@ import { AuthGuard } from '@nestjs/passport';
 export class AuthFortyTwoController {
   @UseGuards(AuthGuard('42'))
   @Get('42/callback')
-  @Redirect('http://localhost:3001/success')
+  @Redirect('http://localhost:3031')
   async fortyTwoCallback(
     @Req()
     req,
