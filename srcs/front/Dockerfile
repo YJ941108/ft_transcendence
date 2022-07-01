@@ -4,10 +4,10 @@ WORKDIR /usr/app
 
 COPY	. .
 
-RUN		yarn install
+RUN		npm install
 
-RUN		yarn build
+RUN		npm run build
 
 # TODO: Add API keys to the environment at BUILD time
 
-CMD		[ "yarn", "serve" ]
+CMD		[ "npm", "run", "serve" ]
