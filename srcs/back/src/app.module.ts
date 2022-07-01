@@ -10,16 +10,16 @@ import { UsersModule } from './modules/users/users.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
+      host: process.env.HOST,
       port: 5432,
       username: 'transcendence',
       password: 'transcendence',
       database: 'transcendence',
-      entities: [__dirname + '../**/*.entity.{js,ts}'],
+      entities: [__dirname + '/**/*.entity.{js,ts}'],
       synchronize: true,
     }),
     ConfigModule.forRoot({
-      envFilePath: `${process.cwd()}/.env.${process.env.NODE_ENV}`,
+      envFilePath: `${process.cwd()}/.env`,
       load: [configuration],
       isGlobal: true,
     }),

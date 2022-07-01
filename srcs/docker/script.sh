@@ -1,0 +1,5 @@
+docker stop $(docker ps -qa)
+docker rm -f $(docker ps -qa)
+docker rmi -f $(docker images -qa)
+docker network rm $(docker network ls)
+docker volume rm $(docker volume ls)

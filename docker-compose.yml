@@ -2,24 +2,50 @@
 version: "3.0"
 services:
 
-  backend:
+  react:
     build:
-      context: ./srcs//back
+      context: ./srcs/front
+      dockerfile: Dockerfile
+    container_name: react 
+    image: react
+    ports:
+      - 3031:3031
+
+  nest:
+    build:
+      context: ./srcs/back
       dockerfile: Dockerfile
     networks:
       - postgres
+    ports:
+      - 3032:3032
+    depends_on:
+      - db
 
   db:
     image: postgres:14-alpine3.15
-    networks:
-      - postgres
-    volumes:
-      - postgres:/var/lib/postgresql/data
     env_file:
       - ./srcs/postgres/.env
+    networks:
+      - postgres
     ports:
       - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
 
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   container_name: pgadmin4
+  #   restart: always
+  #   env_file:
+  #     - ./srcs/postgres/.env
+  #   ports:
+  #     - "5050:80"    
+  #   networks:
+  #     - postgres
+  #   depends_on:
+  #     - db
+    
   adminer:
     image: adminer
     networks:
