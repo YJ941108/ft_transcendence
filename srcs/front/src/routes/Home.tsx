@@ -22,13 +22,13 @@ const LoginC = styled.div`
 	justify-content: center;
 	align-items: center;
 	border-radius: 0.5rem;
-	background-color: ${(props) => props.theme.backgroundColor};
-	color: ${(props) => props.theme.textColor};
+	background-color: ${(props: any) => props.theme.backgroundColor};
+	color: ${(props: any) => props.theme.textColor};
 	font-size: 2em;
 	padding: 0.5re;
 	cursor: pointer;
 	&:hover {
-		background-color: ${(props) => props.theme.accentColor};
+		background-color: ${(props: any) => props.theme.accentColor};
 	}
 `;
 
