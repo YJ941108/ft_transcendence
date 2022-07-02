@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile, VerifyCallback } from 'passport-42';
 
 @Injectable()
-export class AuthFortyTwoStrategy extends PassportStrategy(Strategy, '42') {
+export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
   constructor(private readonly configService: ConfigService) {
     super({
       clientID: configService.get<string>('auth.fortytwo.id'),
@@ -14,11 +14,13 @@ export class AuthFortyTwoStrategy extends PassportStrategy(Strategy, '42') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile, cb: VerifyCallback): Promise<VerifyCallback> {
-    const { username, profileUrl } = profile;
+    const username = profile.username;
+    const email = profile.emails[0].value;
+    const photo = profile.photos[0].value;
     const user = {
-      profile,
       username,
-      profileUrl,
+      photo,
+      email,
       accessToken,
       refreshToken,
     };
