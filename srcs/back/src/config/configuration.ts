@@ -10,4 +10,7 @@ export default () => ({
   front: {
     origin: process.env.ORIGIN,
   },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+  },
 });
