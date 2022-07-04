@@ -48,6 +48,6 @@ export class AuthController {
     const accessToken = this.jwtService.sign(payload);
     this.logger.log(accessToken);
     response.cookie('access_token', accessToken);
-    response.redirect(302, 'http://localhost:3000');
+    response.redirect(302, 'http://localhost:3000/auth');
   }
 }
