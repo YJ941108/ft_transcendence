@@ -2,7 +2,7 @@ import { Controller, Get, Logger, Redirect, Req, UseGuards } from '@nestjs/commo
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
-export class AuthFortyTwoController {
+export class AuthController {
   @UseGuards(AuthGuard('42'))
   @Get('42/callback')
   @Redirect('http://localhost:3031')
@@ -11,6 +11,7 @@ export class AuthFortyTwoController {
     req,
   ) {
     Logger.log(req.user);
+
     return req.user;
   }
 }
