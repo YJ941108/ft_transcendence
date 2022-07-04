@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import configuration from './config/configuration';
+import defaultConfig from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
@@ -20,7 +20,7 @@ import { UsersModule } from './modules/users/users.module';
     }),
     ConfigModule.forRoot({
       envFilePath: `${process.cwd()}/.env`,
-      load: [configuration],
+      load: [defaultConfig],
       isGlobal: true,
     }),
     AuthModule,

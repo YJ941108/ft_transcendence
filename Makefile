@@ -11,10 +11,12 @@ $(NAME):
 	mkdir -p $(DATA_PATH)/postgres
 	$(DOCKER-COMPOSE) up --build
 
+dev:
+	$(DOCKER-COMPOSE) up --build -d
+
 .PHONY: clean
 clean:
 	$(DOCKER-COMPOSE) down
-	docker rm -f $(docker ps -aq)
 
 .PHONY: fclean
 fclean: clean
