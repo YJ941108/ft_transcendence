@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Redirect, Req, Res, UseGuards } from '@nestjs/common';
+import { ConflictException, Controller, Get, Logger, Param, Redirect, Req, Res, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
@@ -14,6 +14,19 @@ export class AuthController {
     private userRepository: UsersRepository,
     private jwtService: JwtService,
   ) {}
+
+  @Get('/login/:id')
+  async login(@Param('id') id: number): Promise<string> {
+    try {
+      const user = await this.userRepository.findOne({ id });
+      this.logger.log(user);
+      const payload = { email: user.email };
+      const accessToken = this.jwtService.sign(payload);
+      return accessToken;
+    } catch (e) {
+      throw new ConflictException(e);
+    }
+  }
 
   @UseGuards(AuthGuard('42'))
   @Get('42/callback')
@@ -35,6 +48,6 @@ export class AuthController {
     const accessToken = this.jwtService.sign(payload);
     this.logger.log(accessToken);
     response.cookie('access_token', accessToken);
-    response.redirect(302, 'http://127.0.0.1:3000');
+    response.redirect(302, 'http://localhost:3000');
   }
 }
