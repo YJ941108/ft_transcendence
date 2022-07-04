@@ -1,13 +1,27 @@
 {
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
+  "plugins": [
+		"@typescript-eslint",
+		"react-hooks"
+	],
+	"rules": {
+    // ...
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "useRecoilCallback"
+      }
+    ]
+  },
   "extends": [
 		"prettier",
 		"plugin:@typescript-eslint/recommended",
 		"airbnb",
 		"airbnb/hooks",
 		"airbnb-typescript",
-		"plugin:prettier/recommended"
+		"plugin:prettier/recommended",
+		"plugin:react-hooks/recommended"
 	],
 	"parserOptions": {
 		"project": "./tsconfig.json"
