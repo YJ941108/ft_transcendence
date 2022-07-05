@@ -4,21 +4,16 @@ import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersRepository } from '../users/users.repository';
-import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
   private logger = new Logger('AuthController');
-  constructor(
-    private usersService: UsersService,
-    private userRepository: UsersRepository,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private userRepository: UsersRepository, private jwtService: JwtService) {}
 
-  @Get('/login/:id')
-  async login(@Param('id') id: number): Promise<string> {
+  @Get('/login/:username')
+  async login(@Param('username') username: string): Promise<string> {
     try {
-      const user = await this.userRepository.findOne({ id });
+      const user = await this.userRepository.findOne({ username });
       this.logger.log(user);
       const payload = { email: user.email };
       const accessToken = this.jwtService.sign(payload);
@@ -41,7 +36,7 @@ export class AuthController {
     const user = await this.userRepository.findOne({ email });
     if (!user) {
       const createUserDto: CreateUserDto = { username, email, photo };
-      await this.usersService.createUser(createUserDto);
+      await this.userRepository.createUser(createUserDto);
     }
     this.logger.log(user);
     const payload = { email };

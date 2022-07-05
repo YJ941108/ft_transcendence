@@ -4,9 +4,9 @@ import { FortyTwoStrategy } from './fortytwo.strategy';
 import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { UsersModule } from '../users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersRepository } from '../users/users.repository';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -19,10 +19,10 @@ import { UsersRepository } from '../users/users.repository';
         expiresIn: 3600,
       },
     }),
-    UsersModule,
     TypeOrmModule.forFeature([UsersRepository]),
   ],
   controllers: [AuthController],
-  providers: [FortyTwoStrategy, AuthService],
+  providers: [FortyTwoStrategy, JwtStrategy, AuthService],
+  exports: [JwtModule, PassportModule],
 })
 export class AuthModule {}
