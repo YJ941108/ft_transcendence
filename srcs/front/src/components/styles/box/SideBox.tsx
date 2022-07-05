@@ -6,9 +6,15 @@ interface ISideBoxProps {
 }
 
 const SideBoxC = styled.div`
-	width: 20%;
+	width: 20rem;
+	height: 100vh;
 `;
+
+const defaultProps = {
+	children: null,
+};
 
 export default function SideBox({ children }: ISideBoxProps) {
 	return <SideBoxC>{children}</SideBoxC>;
 }
+SideBox.defaultProps = defaultProps;
