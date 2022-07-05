@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Logger, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Users } from './users.entity';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -13,5 +14,12 @@ export class UsersController {
   createUser(@Body() createUserDto: CreateUserDto): Promise<void> {
     this.logger.log(createUserDto);
     return this.usersService.createUser(createUserDto);
+  }
+
+  @Get('/me')
+  getUser(@Req() req: any): Promise<Users> {
+    const email = req?.user?.email;
+    const user = this.usersService.getUser(email);
+    return user;
   }
 }
