@@ -1,6 +1,14 @@
 // https://github.com/typeorm/typeorm/blob/master/test/functional/database-schema/column-types/postgres/entity/Post.ts
 
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 @Unique(['email'])
@@ -28,11 +36,26 @@ export class Users extends BaseEntity {
   })
   photo: string;
 
+  @Column({
+    nullable: true,
+  })
+  access_token: string;
+
+  @Column({
+    nullable: true,
+  })
+  refresh_token: string;
+
+  @Column({
+    nullable: true,
+  })
+  jwt: string;
+
   @Column('int', {
     nullable: true,
     array: true,
   })
-  friendsRequest: number[];
+  friends_request: number[];
 
   @Column('int', {
     nullable: true,
@@ -44,7 +67,7 @@ export class Users extends BaseEntity {
     nullable: true,
     array: true,
   })
-  friendsBlocked: number[];
+  friends_blocked: number[];
 
   @CreateDateColumn({
     type: 'timestamp',
