@@ -35,7 +35,7 @@ export class AuthController {
     const { username, email, photo } = request.user;
     const user = await this.userRepository.findOne({ email });
     if (!user) {
-      const createUserDto: CreateUserDto = { username, email, photo };
+      const createUserDto: CreateUserDto = { username, email, photo, nickname: username };
       await this.userRepository.createUser(createUserDto);
     }
     this.logger.log(user);
