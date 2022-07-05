@@ -15,6 +15,7 @@ services:
     build:
       context: ./srcs/back
       dockerfile: Dockerfile
+    container_name: nest
     networks:
       - postgres
     ports:
@@ -24,6 +25,7 @@ services:
 
   db:
     image: postgres:14-alpine3.15
+    container_name: db
     env_file:
       - ./srcs/postgres/.env
     networks:
@@ -32,6 +34,17 @@ services:
       - 5432:5432
     volumes:
       - postgres:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    networks:
+      - postgres
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
 
   # pgadmin:
   #   image: dpage/pgadmin4
@@ -46,16 +59,6 @@ services:
   #   depends_on:
   #     - db
     
-  adminer:
-    image: adminer
-    networks:
-      - postgres
-    restart: always
-    ports:
-      - 8080:8080
-    depends_on:
-      - db
-
 volumes:
   postgres:
 
