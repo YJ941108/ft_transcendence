@@ -1,16 +1,19 @@
 import React, { useEffect } from 'react';
-import { useSetRecoilState } from 'recoil';
-import userData from '../modules/userData';
-import { getCookieAll } from '../modules/cookie';
+import { useLocation, Navigate } from 'react-router-dom';
+import { onLogin } from '../modules/login';
 
 function AuthPage() {
-	const setUser = useSetRecoilState(userData);
-
+	const location = useLocation();
 	useEffect(() => {
-		setUser(getCookieAll());
-	});
+		const token: string = location.search.split('=')[1];
+		onLogin(token);
+	}, [location.search]);
 
-	return <div>Hello</div>;
+	return (
+		<div>
+			<Navigate to="/" />
+		</div>
+	);
 }
 
 export default AuthPage;

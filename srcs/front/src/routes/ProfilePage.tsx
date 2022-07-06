@@ -3,13 +3,14 @@ import MainBox from '../components/styles/box/MainBox';
 import Navbar from '../components/ navbar/Navbar';
 import ContentBox from '../components/styles/box/ContentBox';
 import SideBox from '../components/styles/box/SideBox';
+import Profile from '../components/profile/Profile';
 
 function ProfilePage() {
 	return (
 		<MainBox>
 			<Navbar />
 			<ContentBox>
-				<h1>Profile</h1>
+				<Profile />
 			</ContentBox>
 			<SideBox />
 		</MainBox>

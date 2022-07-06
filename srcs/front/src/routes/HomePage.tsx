@@ -1,8 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-// import { useRecoilValue } from 'recoil';
-// import userData from '../modules/userData';
 
 const HomeC = styled.div`
 	display: flex;
@@ -35,13 +33,13 @@ const LoginC = styled.div`
 `;
 
 function HomePage() {
-	// const user = useRecoilValue(userData);
+	const token = localStorage.getItem('token');
 
 	return (
 		<HomeC>
 			<HeaderC>PONG</HeaderC>
 			<LoginC>
-				<Link to="/login">Play</Link>
+				<Link to={token ? '/profile' : '/login'}>Play</Link>
 			</LoginC>
 		</HomeC>
 	);
