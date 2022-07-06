@@ -1,4 +1,5 @@
 import { ConflictException, Controller, Get, Logger, Param, Redirect, Req, Res, UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
@@ -8,7 +9,11 @@ import { UsersRepository } from '../users/users.repository';
 @Controller('auth')
 export class AuthController {
   private logger = new Logger('AuthController');
-  constructor(private userRepository: UsersRepository, private jwtService: JwtService) {}
+  constructor(
+    private userRepository: UsersRepository,
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
 
   @Get('/login/:username')
   async login(@Param('username') username: string): Promise<string> {
@@ -38,11 +43,13 @@ export class AuthController {
       const createUserDto: CreateUserDto = { username, email, photo, nickname: username };
       await this.userRepository.createUser(createUserDto);
     }
-    this.logger.log(user);
+    this.logger.log(JSON.stringify(user));
     const payload = { email };
     const accessToken = this.jwtService.sign(payload);
     this.logger.log(accessToken);
-    response.cookie('access_token', accessToken);
-    response.redirect(302, 'http://localhost:3000/auth');
+    const origin = this.configService.get<string>('front.origin');
+    this.logger.log('Front Origin' + origin);
+    // response.cookie('access_token', accessToken);
+    response.redirect(302, origin + `/auth?access_token=${accessToken}`);
   }
 }
