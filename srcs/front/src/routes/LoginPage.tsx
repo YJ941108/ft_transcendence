@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import LOGIN_API_URL from '../modules/constant';
 
 const LoginC = styled.div`
 	display: flex;
@@ -18,11 +17,11 @@ const LoginButton = styled.div`
 	margin-bottom: 1rem;
 `;
 
-function Login() {
+function LoginPage() {
 	return (
 		<LoginC>
 			<LoginButton>
-				<a href={LOGIN_API_URL}>42Login</a>
+				<a href={process.env.REACT_APP_FORTYTWO_LOGIN_API}>42Login</a>
 			</LoginButton>
 			<LoginButton>KakaoLogin</LoginButton>
 			<LoginButton>GoogleLogin</LoginButton>
@@ -30,4 +29,4 @@ function Login() {
 	);
 }
 
-export default Login;
+export default LoginPage;

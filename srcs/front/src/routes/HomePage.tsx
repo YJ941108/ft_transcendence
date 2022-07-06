@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+// import { useRecoilValue } from 'recoil';
+// import userData from '../modules/userData';
 
 const HomeC = styled.div`
 	display: flex;
@@ -22,25 +24,27 @@ const LoginC = styled.div`
 	justify-content: center;
 	align-items: center;
 	border-radius: 0.5rem;
-	background-color: ${(props: any) => props.theme.backgroundColor};
-	color: ${(props: any) => props.theme.textColor};
+	background-color: ${(props) => props.theme.backgroundColor};
+	color: ${(props) => props.theme.textColor};
 	font-size: 2em;
 	padding: 0.5re;
 	cursor: pointer;
 	&:hover {
-		background-color: ${(props: any) => props.theme.accentColor};
+		background-color: ${(props) => props.theme.accentColor};
 	}
 `;
 
-function Home() {
+function HomePage() {
+	// const user = useRecoilValue(userData);
+
 	return (
 		<HomeC>
 			<HeaderC>PONG</HeaderC>
 			<LoginC>
-				<Link to="/login">Login</Link>
+				<Link to="/login">Play</Link>
 			</LoginC>
 		</HomeC>
 	);
 }
 
-export default Home;
+export default HomePage;
