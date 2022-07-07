@@ -3,7 +3,7 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { RecoilRoot } from 'recoil';
 import GlobalStyle from './ GlobalStyle';
 import Router from './routes/Router';
-import { refreshToken } from './modules/login';
+import { refreshToken } from './modules/login/login';
 
 function App() {
 	useEffect(() => {

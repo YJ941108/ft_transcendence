@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
-import { onLogin } from '../modules/login';
+import { onLogin } from '../../modules/login/login';
 
 function AuthPage() {
 	const location = useLocation();
