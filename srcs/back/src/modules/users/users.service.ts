@@ -16,4 +16,9 @@ export class UsersService {
     const user = this.usersRepository.findOne({ email });
     return user;
   }
+
+  async getUserByNickname(nickname: string): Promise<Users> {
+    const user = this.usersRepository.findOne({ nickname });
+    return user;
+  }
 }
