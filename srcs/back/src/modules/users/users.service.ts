@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from './users.entity';
@@ -13,12 +13,17 @@ export class UsersService {
   }
 
   async getUser(email: string): Promise<Users> {
-    const user = this.usersRepository.findOne({ email });
+    const user = await this.usersRepository.findOne({ email });
     return user;
   }
 
   async getUserByNickname(nickname: string): Promise<Users> {
-    const user = this.usersRepository.findOne({ nickname });
+    const user = await this.usersRepository.findOne({ nickname });
+
+    if (!user) {
+      throw new NotFoundException(`Can't find ${nickname}`);
+    }
+
     return user;
   }
 }
