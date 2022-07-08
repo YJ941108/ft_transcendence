@@ -8,7 +8,7 @@ function AuthPage() {
 		const token: string = location.search.split('=')[1];
 		onLogin(token);
 	}, [location.search]);
-
+	console.log(localStorage.getItem('token'));
 	return (
 		<div>
 			<Navigate to="/" />
