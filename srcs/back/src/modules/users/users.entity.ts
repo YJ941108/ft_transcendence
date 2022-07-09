@@ -5,10 +5,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { Games } from '../games/games.entity';
 
 @Entity()
 @Unique(['email'])
@@ -68,6 +70,9 @@ export class Users extends BaseEntity {
     array: true,
   })
   friends_blocked: number[];
+
+  @ManyToMany(() => Games, (game) => game.players)
+  games: Games[];
 
   @CreateDateColumn({
     type: 'timestamp',
