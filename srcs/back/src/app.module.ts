@@ -5,6 +5,7 @@ import defaultConfig from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
+import { GameModule } from './modules/game/game.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     HealthModule,
     UsersModule,
+    GameModule,
   ],
 })
 export class AppModule {}
