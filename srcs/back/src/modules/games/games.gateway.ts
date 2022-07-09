@@ -6,9 +6,9 @@ import { Server } from 'socket.io';
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],
   },
-  namespace: 'game',
+  namespace: 'games',
 })
-export class GameGateway {
+export class GamesGateway {
   @WebSocketServer()
   server: Server;
 
