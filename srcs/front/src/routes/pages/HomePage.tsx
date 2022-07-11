@@ -38,7 +38,7 @@ function HomePage() {
 		<HomeC>
 			<HeaderC>PONG</HeaderC>
 			<LoginC>
-				<Link to={token ? '/profile' : '/login'}>Play</Link>
+				<Link to={token ? '/game' : '/login'}>Play</Link>
 			</LoginC>
 		</HomeC>
 	);
