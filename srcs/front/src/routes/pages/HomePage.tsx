@@ -34,7 +34,6 @@ const LoginC = styled.div`
 
 function HomePage() {
 	const token = localStorage.getItem('token');
-
 	return (
 		<HomeC>
 			<HeaderC>PONG</HeaderC>

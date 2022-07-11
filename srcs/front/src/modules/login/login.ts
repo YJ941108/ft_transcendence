@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const onLogin = async (token: string) => {
+export const onLogin = (token: string) => {
 	localStorage.setItem('token', token);
 	axios.defaults.headers.common.Authorization = `Bearer ${token}`;
 };
