@@ -24,12 +24,12 @@ interface IUser {
 	photo: string;
 	updated_at: string;
 	username: string;
-	friends: [];
-	friends_blocked: [];
-	friends_request: [];
+	friends: number[];
+	friends_blocked: number[];
+	friends_request: number[];
 	id: number;
-	jwt: null;
-	refresh_token: null;
+	jwt: string;
+	refresh_token: string;
 }
 
 function Profile() {

@@ -8,10 +8,9 @@ function AuthPage() {
 		const token: string = location.search.split('=')[1];
 		onLogin(token);
 	}, [location.search]);
-
 	return (
 		<div>
-			<Navigate to="/" />
+			<Navigate to="/profile" />
 		</div>
 	);
 }
