@@ -1,6 +1,6 @@
 import { Ball } from './game-ball.class';
 import { User } from './user.class';
-import { canvasWidth } from '../../../constants/games.constant';
+import { CANVAS_WIDTH } from '../../../constants/games.constant';
 import { GameMode, GameState } from '../../../enums/games.enum';
 import { Player } from './game-player.class';
 
@@ -99,7 +99,7 @@ export default class Room implements IRoom {
     this.gameState = GameState.STARTING;
     this.players = [];
     this.playerOne = new Player(users[0], 10);
-    this.playerTwo = new Player(users[1], canvasWidth - 40);
+    this.playerTwo = new Player(users[1], CANVAS_WIDTH - 40);
     this.ball = new Ball();
 
     this.timestampStart = Date.now();
@@ -179,12 +179,12 @@ export default class Room implements IRoom {
         this.mode === GameMode.DEFAULT &&
         (this.playerOne.goal === this.maxGoal || this.playerTwo.goal === this.maxGoal)
       ) {
-        if (this.playerOne.goal === this.maxGoal) this.changeGameState(GameState.PLAYERONEWIN);
-        else if (this.playerTwo.goal === this.maxGoal) this.changeGameState(GameState.PLAYERTWOWIN);
+        if (this.playerOne.goal === this.maxGoal) this.changeGameState(GameState.PLAYER_ONE_WIN);
+        else if (this.playerTwo.goal === this.maxGoal) this.changeGameState(GameState.PLAYER_TWO_WIN);
         this.isGameEnd = true;
       } else {
-        if (this.ball.x < canvasWidth / 2) this.changeGameState(GameState.PLAYERTWOSCORED);
-        else this.changeGameState(GameState.PLAYERONESCORED);
+        if (this.ball.x < CANVAS_WIDTH / 2) this.changeGameState(GameState.PLAYER_TWO_SCORED);
+        else this.changeGameState(GameState.PLAYER_ONE_SCORED);
       }
       this.ball.goal = false;
     }
@@ -194,8 +194,8 @@ export default class Room implements IRoom {
       this.playerOne.goal !== this.playerTwo.goal &&
       this.timer >= this.gameDuration
     ) {
-      if (this.playerOne.goal > this.playerTwo.goal) this.changeGameState(GameState.PLAYERONEWIN);
-      else this.changeGameState(GameState.PLAYERTWOWIN);
+      if (this.playerOne.goal > this.playerTwo.goal) this.changeGameState(GameState.PLAYER_ONE_WIN);
+      else this.changeGameState(GameState.PLAYER_TWO_WIN);
       this.isGameEnd = true;
     }
   }
@@ -211,8 +211,8 @@ export default class Room implements IRoom {
   }
 
   pauseForfait() {
-    if (this.players[0].id === this.playerOne.user.id) this.changeGameState(GameState.PLAYERONEWIN);
-    else this.changeGameState(GameState.PLAYERTWOWIN);
+    if (this.players[0].id === this.playerOne.user.id) this.changeGameState(GameState.PLAYER_ONE_WIN);
+    else this.changeGameState(GameState.PLAYER_TWO_WIN);
   }
 
   serialize(): SerializeRoom {
