@@ -23,7 +23,9 @@ async function bootstrap() {
   app.useWebSocketAdapter(new SocketIoAdapter(app));
 
   const port = configService.get('port');
-  Logger.log(`.env PORT=${port}`);
+
+  const logger: Logger = new Logger('Main');
+  logger.log(`.env PORT=${port}`);
 
   await app.listen(port);
 }
