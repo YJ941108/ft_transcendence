@@ -1,5 +1,5 @@
 import { User } from './user.class';
-import { canvasHeight, playerHeight, playerSpeed, playerWidth, timing } from '../../../constants/games.constant';
+import { CANVAS_HEIGHT, PLAYER_HEIGHT, PLAYER_SPEED, PLAYER_WIDTH, TIMING } from '../../../constants/games.constant';
 
 export interface IPlayer {
   user: User;
@@ -34,11 +34,11 @@ export class Player implements IPlayer {
   constructor(user: User, x: number) {
     this.user = user;
 
-    this.width = playerWidth;
-    this.height = playerHeight;
+    this.width = PLAYER_WIDTH;
+    this.height = PLAYER_HEIGHT;
     this.x = x;
-    this.y = canvasHeight / 2 - this.height / 2;
-    this.speed = playerSpeed;
+    this.y = CANVAS_HEIGHT / 2 - this.height / 2;
+    this.speed = PLAYER_SPEED;
     this.goal = 0;
 
     this.up = false;
@@ -47,18 +47,18 @@ export class Player implements IPlayer {
   }
 
   reset(): void {
-    this.y = canvasHeight / 2 - this.height / 2;
+    this.y = CANVAS_HEIGHT / 2 - this.height / 2;
   }
 
   update(secondPassed: number): void {
-    if (this.color !== 'rgba(255, 255, 255, 0.8)' && this.step <= timing) {
+    if (this.color !== 'rgba(255, 255, 255, 0.8)' && this.step <= TIMING) {
       this.color =
         'rgb(' +
-        (127 + (this.step / timing) * 128) +
+        (127 + (this.step / TIMING) * 128) +
         ', ' +
-        (this.step / timing) * 255 +
+        (this.step / TIMING) * 255 +
         ', ' +
-        (this.step / timing) * 255 +
+        (this.step / TIMING) * 255 +
         ', 0.8)';
       this.step++;
     } else {
@@ -72,8 +72,8 @@ export class Player implements IPlayer {
     }
 
     if (this.down && !this.up) {
-      if (this.y + this.height < canvasHeight) this.y += this.speed * secondPassed;
-      else this.y = canvasHeight - this.height;
+      if (this.y + this.height < CANVAS_HEIGHT) this.y += this.speed * secondPassed;
+      else this.y = CANVAS_HEIGHT - this.height;
     }
   }
 }
