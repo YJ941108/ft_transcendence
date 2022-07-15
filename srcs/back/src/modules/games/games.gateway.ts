@@ -95,7 +95,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     } else {
       newUser = new User(user.id, user.nickname, client.id, user.ratio);
     }
-    newUser.setUserStatus(UserStatus.INHUB);
+    newUser.setUserStatus(UserStatus.IN_HUB);
     this.logger.log(`handleUserConnect: newUser: ${JSON.stringify(newUser)}`);
     this.connectedUsers.addUser(newUser);
     this.logger.log(`handleUserConnect: connectedUsers: ${JSON.stringify(this.connectedUsers)}`);
@@ -132,7 +132,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.logger.log(`handleJoinQueue: user: ${JSON.stringify(user)}`);
 
     if (user && !this.queue.isInQueue(user)) {
-      this.connectedUsers.changeUserStatus(client.id, UserStatus.INQUEUE);
+      this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_QUEUE);
       this.queue.enqueue(user);
       this.server.to(client.id).emit('joinedQueue');
       return { code: 200, message: 'joinQueue successed' };

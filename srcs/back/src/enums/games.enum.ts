@@ -4,10 +4,10 @@ export enum GameState {
   PLAYING,
   PAUSED,
   RESUMED,
-  PLAYERONESCORED,
-  PLAYERTWOSCORED,
-  PLAYERONEWIN,
-  PLAYERTWOWIN,
+  PLAYER_ONE_SCORED,
+  PLAYER_TWO_SCORED,
+  PLAYER_ONE_WIN,
+  PLAYER_TWO_WIN,
 }
 
 export enum GameMode {
@@ -17,8 +17,8 @@ export enum GameMode {
 }
 
 export enum UserStatus {
-  INHUB,
-  INQUEUE,
+  IN_HUB,
+  IN_QUEUE,
   OFFLINE,
   ONLINE,
   PLAYING,

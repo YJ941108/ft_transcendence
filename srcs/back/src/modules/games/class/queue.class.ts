@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { defaultMaxUser } from 'src/constants/games.constant';
+import { BALL_DEFAULT_SPEED } from 'src/constants/games.constant';
 import { User } from './user.class';
 
 export default class Queue {
@@ -12,7 +12,7 @@ export default class Queue {
    * @constructor
    * @param capacity
    */
-  constructor(private capacity: number = defaultMaxUser) {}
+  constructor(private capacity: number = BALL_DEFAULT_SPEED) {}
 
   /**
    * User를 Array에 push

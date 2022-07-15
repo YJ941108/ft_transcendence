@@ -1,6 +1,6 @@
 import { User } from './user.class';
 import { UserStatus } from '../../../enums/games.enum';
-import { defaultMaxUser } from 'src/constants/games.constant';
+import { DEFAULT_MAX_USER } from 'src/constants/games.constant';
 import { Logger } from '@nestjs/common';
 
 /** 소켓에 접속한 유저 전체이며 Array로 메모리에 저장 */
@@ -12,7 +12,7 @@ export class ConnectedUsers {
    * @constructor
    * @param maxUser Array 크기
    */
-  constructor(private maxUser: number = defaultMaxUser) {}
+  constructor(private maxUser: number = DEFAULT_MAX_USER) {}
 
   /**
    * connectedUsers에 유저 추가
