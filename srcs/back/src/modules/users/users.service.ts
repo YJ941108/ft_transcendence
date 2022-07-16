@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from './users.entity';
 import { UsersRepository } from './users.repository';
+import { hashFunction } from 'src/utils/hashGenerator';
+import { randomString } from 'src/utils/randomString';
 
 /**
  *  @class UsersService
@@ -30,6 +32,16 @@ export class UsersService {
 
   /**
    * 유저 조회
+   * @param id
+   * @returns
+   */
+  async getUser(id: number): Promise<Users> {
+    const user = await this.usersRepository.findOne({ id });
+    return user;
+  }
+
+  /**
+   * 유저 조회
    * @param email
    * @returns
    */
@@ -39,7 +51,7 @@ export class UsersService {
   }
 
   /**
-   * 닉네임 수정
+   * 유저 조회
    * @param nickname
    * @returns
    */
@@ -54,13 +66,26 @@ export class UsersService {
    * @param tfa
    * @returns user object
    */
-  async setTwoFactorAuthByNickname(nickname: string, tfa: boolean): Promise<Users> {
-    const user = await this.getUserByNickname(nickname);
+  async setTwoFactorAuthValid(id: number, tfa: boolean): Promise<Users> {
+    const user = await this.getUser(id);
+    this.logger.log(`setTwoFactorAuthValid: user = ${user}`);
 
-    this.logger.log(`setTwoFactorAuthByNickname: user.tfa Before = ${user.tfa}`);
+    this.logger.log(`setTwoFactorAuthValid: user.tfa Before = ${user.tfa}`);
     user.tfa = tfa;
-    this.logger.log(`setTwoFactorAuthByNickname: user.tfa After = ${user.tfa}`);
+    this.logger.log(`setTwoFactorAuthValid: user.tfa After = ${user.tfa}`);
     await this.usersRepository.save(user);
     return user;
+  }
+
+  async getTwoFactorAuthCode(id: number): Promise<string> {
+    const user = await this.getUser(id);
+    this.logger.log(`setTwoFactorAuthValid: user = ${user}`);
+
+    const randomNumber: string = randomString(4, '#');
+    this.logger.log(`getTwoFactorAuthCode: randomNumber: ${randomNumber}`);
+    user.tfa_secret = randomNumber;
+
+    await this.usersRepository.save(user);
+    return randomNumber;
   }
 }

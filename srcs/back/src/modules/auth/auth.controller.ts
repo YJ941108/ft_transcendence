@@ -1,4 +1,4 @@
-import { ConflictException, Controller, Get, Logger, Param, Redirect, Req, Res, UseGuards } from '@nestjs/common';
+import { ConflictException, Controller, Get, Logger, Param, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
@@ -15,7 +15,7 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
-  @Get('/login/:username')
+  @Get('login/:username')
   async login(@Param('username') username: string): Promise<string> {
     try {
       const user = await this.userRepository.findOne({ username });
