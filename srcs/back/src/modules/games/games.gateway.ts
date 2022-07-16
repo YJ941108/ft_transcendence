@@ -137,6 +137,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('getCurrentGames')
   handleGetCurrentGames(@ConnectedSocket() client: Socket): Array<Room> {
     this.logger.log(`handleGetCurrentGames: client.id: ${client.id}`);
+    this.logger.log(`handleGetCurrentGames: user: ${this.connectedUsers.getUserBySocketId(client.id)}`);
     this.logger.log(
       `handleGetCurrentGames: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`,
     );
@@ -152,6 +153,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinQueue')
   handleJoinQueue(@ConnectedSocket() client: Socket): Object {
     this.logger.log(`handleJoinQueue: client.id: ${client.id}`);
+    this.logger.log(`handleJoinQueue: user: ${this.connectedUsers.getUserBySocketId(client.id)}`);
     this.logger.log(`handleJoinQueue: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`);
 
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
