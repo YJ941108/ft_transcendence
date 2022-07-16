@@ -248,6 +248,39 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.server.to(client.id).emit('leavedRoom');
   }
 
+  /* Controls */
+  @SubscribeMessage('keyDown')
+  async handleKeyUp(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { roomId: string; key: string; nickname: string },
+  ) {
+    const room: Room = this.rooms.get(data.roomId);
+
+    if (room && room.paddleOne.user.nickname === data.nickname) {
+      if (data.key === 'ArrowUp') room.paddleOne.up = true;
+      if (data.key === 'ArrowDown') room.paddleOne.down = true;
+    } else if (room && room.paddleTwo.user.nickname === data.nickname) {
+      if (data.key === 'ArrowUp') room.paddleTwo.up = true;
+      if (data.key === 'ArrowDown') room.paddleTwo.down = true;
+    }
+  }
+
+  @SubscribeMessage('keyUp')
+  async handleKeyDown(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { roomId: string; key: string; nickname: string },
+  ) {
+    const room: Room = this.rooms.get(data.roomId);
+
+    if (room && room.paddleOne.user.nickname === data.nickname) {
+      if (data.key === 'ArrowUp') room.paddleOne.up = false;
+      if (data.key === 'ArrowDown') room.paddleOne.down = false;
+    } else if (room && room.paddleTwo.user.nickname === data.nickname) {
+      if (data.key === 'ArrowUp') room.paddleTwo.up = false;
+      if (data.key === 'ArrowDown') room.paddleTwo.down = false;
+    }
+  }
+
   /**
    * 테스트 용도
    * @function
