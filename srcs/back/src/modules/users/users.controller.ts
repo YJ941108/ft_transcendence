@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from './users.entity';
@@ -11,21 +11,27 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Post()
-  createUser(@Body() createUserDto: CreateUserDto): Promise<void> {
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<void> {
     this.logger.log(createUserDto);
     return this.usersService.createUser(createUserDto);
   }
 
   @Get('/me')
-  getUser(@Req() req: any): Promise<Users> {
+  async getUser(@Req() req: any): Promise<Users> {
     const email = req?.user?.email;
-    const user = this.usersService.getUser(email);
+    const user = await this.usersService.getUserByEmail(email);
     return user;
   }
 
   @Get(':nickname')
-  getUserByNickname(@Req() req: any, @Param('nickname') nickname: string): Promise<Users> {
-    const user = this.usersService.getUserByNickname(nickname);
+  async getUserByNickname(@Param('nickname') nickname: string): Promise<Users> {
+    const user = await this.usersService.getUserByNickname(nickname);
     return user;
+  }
+
+  @Patch('/me/tfa')
+  async setTwoFactorAuthByNickname(@Req() req: any): Promise<Users> {
+    const user = await this.getUser(req);
+    return this.usersService.setTwoFactorAuthByNickname(user.nickname, req.body.tfa);
   }
 }
