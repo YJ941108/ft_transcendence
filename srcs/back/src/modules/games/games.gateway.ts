@@ -14,7 +14,8 @@ import { ConnectedUsers } from './class/connected-user.class';
 import Room from './class/game-room.class';
 import Queue from './class/queue.class';
 import { User } from './class/user.class';
-import { UserStatus } from '../../enums/games.enum';
+import { GameState, UserStatus } from '../../enums/games.enum';
+import { SET_INTERVAL_MILISECONDS } from 'src/constants/games.constant';
 
 /**
  * @decorator WebSocketGateway
@@ -33,6 +34,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   /** Logger */
   private logger: Logger = new Logger('gameGateway');
 
+  constructor() {}
+
   /** @type server */
   @WebSocketServer()
   server: Server;
@@ -40,6 +43,19 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private connectedUsers: ConnectedUsers = new ConnectedUsers();
   private currentGames: Array<Room> = new Array();
   private queue: Queue = new Queue();
+  private rooms: Map<string, Room> = new Map();
+
+  createNewRoom(paddles: Array<User>): void {
+    const roomId: string = `${paddles[0].nickname}&${paddles[1].nickname}`;
+    const room: Room = new Room(roomId, paddles, { mode: paddles[0].mode });
+
+    this.server.to(paddles[0].socketId).emit('newRoom', room);
+    this.server.to(paddles[1].socketId).emit('newRoom', room);
+    this.rooms.set(roomId, room);
+    this.currentGames.push(room);
+
+    this.server.emit('updateCurrentGames', this.currentGames);
+  }
 
   /**
    * 소켓이 만들어질 때 실행
@@ -48,6 +64,16 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    */
   afterInit(server: any) {
     this.logger.log(`afterInit: ${server.name} 초기화`);
+    setInterval(() => {
+      if (this.queue.size() > 1) {
+        const paddles: Array<User> = this.queue.matchPlayers();
+
+        if (paddles.length === 0) {
+          return;
+        }
+        this.createNewRoom(paddles);
+      }
+    }, SET_INTERVAL_MILISECONDS);
   }
 
   /**
@@ -111,6 +137,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('getCurrentGames')
   handleGetCurrentGames(@ConnectedSocket() client: Socket): Array<Room> {
     this.logger.log(`handleGetCurrentGames: client.id: ${client.id}`);
+    this.logger.log(`handleGetCurrentGames: user: ${this.connectedUsers.getUserBySocketId(client.id)}`);
     this.logger.log(
       `handleGetCurrentGames: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`,
     );
@@ -126,6 +153,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinQueue')
   handleJoinQueue(@ConnectedSocket() client: Socket): Object {
     this.logger.log(`handleJoinQueue: client.id: ${client.id}`);
+    this.logger.log(`handleJoinQueue: user: ${this.connectedUsers.getUserBySocketId(client.id)}`);
     this.logger.log(`handleJoinQueue: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`);
 
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
@@ -154,6 +182,102 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (user && this.queue.isInQueue(user)) {
       this.queue.removeUser(user);
       this.server.to(client.id).emit('leavedQueue');
+    }
+  }
+
+  /**
+   * @function handleJoinRoom
+   * @param client 소켓에 접속한 클라이언트
+   */
+  @SubscribeMessage('joinRoom')
+  handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
+    this.logger.log(`handleJoinRoom: client.id: ${client.id}`);
+
+    const room: Room = this.rooms.get(roomId);
+
+    if (room) {
+      const user = this.connectedUsers.getUserBySocketId(client.id);
+
+      client.join(roomId);
+      if (user.status === UserStatus.IN_HUB) {
+        this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
+      } else if (room.isAPlayer(user)) {
+        room.addUser(user);
+      }
+
+      this.server.to(client.id).emit('joinedRoom');
+      this.server.to(client.id).emit('updateRoom', JSON.stringify(room.serialize()));
+    }
+  }
+
+  /**
+   * @function handleLeaveRoom
+   * @param client 소켓에 접속한 클라이언트
+   */
+  @SubscribeMessage('leaveRoom')
+  handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
+    this.logger.log(`handleLeaveRoom: client.id: ${client.id}`);
+
+    const room: Room = this.rooms.get(roomId);
+    const user: User = this.connectedUsers.getUserBySocketId(client.id);
+
+    if (user && room) {
+      room.removeUser(user);
+
+      if (room.paddles.length === 0) {
+        this.logger.log('No user left in the room deleting it...');
+        this.rooms.delete(room.roomId);
+
+        const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
+        if (roomIndex !== -1) {
+          this.currentGames.splice(roomIndex, 1);
+        }
+        this.server.emit('updateCurrentGames', this.currentGames);
+      }
+      if (
+        room.isAPlayer(user) &&
+        room.gameState !== GameState.PLAYER_ONE_WIN &&
+        room.gameState !== GameState.PLAYER_TWO_WIN
+      ) {
+        room.pause();
+      }
+
+      client.leave(room.roomId);
+      this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_HUB);
+    }
+    this.server.to(client.id).emit('leavedRoom');
+  }
+
+  /* Controls */
+  @SubscribeMessage('keyDown')
+  async handleKeyUp(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { roomId: string; key: string; nickname: string },
+  ) {
+    const room: Room = this.rooms.get(data.roomId);
+
+    if (room && room.paddleOne.user.nickname === data.nickname) {
+      if (data.key === 'ArrowUp') room.paddleOne.up = true;
+      if (data.key === 'ArrowDown') room.paddleOne.down = true;
+    } else if (room && room.paddleTwo.user.nickname === data.nickname) {
+      if (data.key === 'ArrowUp') room.paddleTwo.up = true;
+      if (data.key === 'ArrowDown') room.paddleTwo.down = true;
+    }
+  }
+
+  @SubscribeMessage('keyUp')
+  async handleKeyDown(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { roomId: string; key: string; nickname: string },
+  ) {
+    const room: Room = this.rooms.get(data.roomId);
+
+    if (room && room.paddleOne.user.nickname === data.nickname) {
+      if (data.key === 'ArrowUp') room.paddleOne.up = false;
+      if (data.key === 'ArrowDown') room.paddleOne.down = false;
+    } else if (room && room.paddleTwo.user.nickname === data.nickname) {
+      if (data.key === 'ArrowUp') room.paddleTwo.up = false;
+      if (data.key === 'ArrowDown') room.paddleTwo.down = false;
     }
   }
 

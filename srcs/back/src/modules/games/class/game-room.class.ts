@@ -1,15 +1,15 @@
-import { Ball } from './game-ball.class';
 import { User } from './user.class';
+import { Paddle } from './game-paddle.class';
+import { Ball } from './game-ball.class';
 import { CANVAS_WIDTH } from '../../../constants/games.constant';
 import { GameMode, GameState } from '../../../enums/games.enum';
-import { Player } from './game-player.class';
 
 export interface IRoom {
   roomId: string;
   gameState: GameState;
-  players: User[];
-  playerOne: Player;
-  playerTwo: Player;
+  paddles: User[];
+  paddleOne: Paddle;
+  paddleTwo: Paddle;
   ball: Ball;
 
   // Game timestamps
@@ -29,7 +29,7 @@ export type SerializeRoom = {
   roomId: string;
   gameState: GameState;
 
-  playerOne: {
+  paddleOne: {
     user: {
       id: number;
       nickname: string;
@@ -42,7 +42,7 @@ export type SerializeRoom = {
     goal: number;
   };
 
-  playerTwo: {
+  paddleTwo: {
     user: {
       id: number;
       nickname: string;
@@ -76,9 +76,9 @@ export type SerializeRoom = {
 export default class Room implements IRoom {
   roomId: string;
   gameState: GameState;
-  players: User[];
-  playerOne: Player;
-  playerTwo: Player;
+  paddles: User[];
+  paddleOne: Paddle;
+  paddleTwo: Paddle;
   ball: Ball;
 
   timestampStart: number;
@@ -97,9 +97,9 @@ export default class Room implements IRoom {
   constructor(roomId: string, users: User[], customisation: { mode?: GameMode } = { mode: GameMode.DEFAULT }) {
     this.roomId = roomId;
     this.gameState = GameState.STARTING;
-    this.players = [];
-    this.playerOne = new Player(users[0], 10);
-    this.playerTwo = new Player(users[1], CANVAS_WIDTH - 40);
+    this.paddles = [];
+    this.paddleOne = new Paddle(users[0], 10);
+    this.paddleTwo = new Paddle(users[1], CANVAS_WIDTH - 40);
     this.ball = new Ball();
 
     this.timestampStart = Date.now();
@@ -117,16 +117,16 @@ export default class Room implements IRoom {
   }
 
   isAPlayer(user: User): boolean {
-    return this.playerOne.user.nickname === user.nickname || this.playerTwo.user.nickname === user.nickname;
+    return this.paddleOne.user.nickname === user.nickname || this.paddleTwo.user.nickname === user.nickname;
   }
 
   addUser(user: User) {
-    this.players.push(user);
+    this.paddles.push(user);
   }
 
   removeUser(userRm: User) {
-    const userIndex: number = this.players.findIndex((user) => user.nickname === userRm.nickname);
-    if (userIndex !== -1) this.players.splice(userIndex, 1);
+    const userIndex: number = this.paddles.findIndex((user) => user.nickname === userRm.nickname);
+    if (userIndex !== -1) this.paddles.splice(userIndex, 1);
   }
 
   getDuration(): number {
@@ -159,8 +159,8 @@ export default class Room implements IRoom {
   }
 
   resetPosition(): void {
-    this.playerOne.reset();
-    this.playerTwo.reset();
+    this.paddleOne.reset();
+    this.paddleTwo.reset();
     this.ball.reset();
   }
 
@@ -177,10 +177,10 @@ export default class Room implements IRoom {
       this.goalTimestamp = this.lastUpdate;
       if (
         this.mode === GameMode.DEFAULT &&
-        (this.playerOne.goal === this.maxGoal || this.playerTwo.goal === this.maxGoal)
+        (this.paddleOne.goal === this.maxGoal || this.paddleTwo.goal === this.maxGoal)
       ) {
-        if (this.playerOne.goal === this.maxGoal) this.changeGameState(GameState.PLAYER_ONE_WIN);
-        else if (this.playerTwo.goal === this.maxGoal) this.changeGameState(GameState.PLAYER_TWO_WIN);
+        if (this.paddleOne.goal === this.maxGoal) this.changeGameState(GameState.PLAYER_ONE_WIN);
+        else if (this.paddleTwo.goal === this.maxGoal) this.changeGameState(GameState.PLAYER_TWO_WIN);
         this.isGameEnd = true;
       } else {
         if (this.ball.x < CANVAS_WIDTH / 2) this.changeGameState(GameState.PLAYER_TWO_SCORED);
@@ -191,10 +191,10 @@ export default class Room implements IRoom {
 
     if (
       this.mode === GameMode.TIMER &&
-      this.playerOne.goal !== this.playerTwo.goal &&
+      this.paddleOne.goal !== this.paddleTwo.goal &&
       this.timer >= this.gameDuration
     ) {
-      if (this.playerOne.goal > this.playerTwo.goal) this.changeGameState(GameState.PLAYER_ONE_WIN);
+      if (this.paddleOne.goal > this.paddleTwo.goal) this.changeGameState(GameState.PLAYER_ONE_WIN);
       else this.changeGameState(GameState.PLAYER_TWO_WIN);
       this.isGameEnd = true;
     }
@@ -204,14 +204,14 @@ export default class Room implements IRoom {
     let secondPassed: number = (currentTimestamp - this.lastUpdate) / 1000;
     this.lastUpdate = currentTimestamp;
 
-    this.playerOne.update(secondPassed);
-    this.playerTwo.update(secondPassed);
-    this.ball.update(secondPassed, this.playerOne, this.playerTwo);
+    this.paddleOne.update(secondPassed);
+    this.paddleTwo.update(secondPassed);
+    this.ball.update(secondPassed, this.paddleOne, this.paddleTwo);
     this.checkGoal();
   }
 
   pauseForfait() {
-    if (this.players[0].id === this.playerOne.user.id) this.changeGameState(GameState.PLAYER_ONE_WIN);
+    if (this.paddles[0].id === this.paddleOne.user.id) this.changeGameState(GameState.PLAYER_ONE_WIN);
     else this.changeGameState(GameState.PLAYER_TWO_WIN);
   }
 
@@ -220,29 +220,29 @@ export default class Room implements IRoom {
     const newSerializeRoom: SerializeRoom = {
       roomId: this.roomId,
       gameState: this.gameState,
-      playerOne: {
+      paddleOne: {
         user: {
-          id: this.playerOne.user.id,
-          nickname: this.playerOne.user.nickname,
+          id: this.paddleOne.user.id,
+          nickname: this.paddleOne.user.nickname,
         },
-        width: this.playerOne.width,
-        height: this.playerOne.height,
-        x: this.playerOne.x,
-        y: this.playerOne.y,
-        color: this.playerOne.color,
-        goal: this.playerOne.goal,
+        width: this.paddleOne.width,
+        height: this.paddleOne.height,
+        x: this.paddleOne.x,
+        y: this.paddleOne.y,
+        color: this.paddleOne.color,
+        goal: this.paddleOne.goal,
       },
-      playerTwo: {
+      paddleTwo: {
         user: {
-          id: this.playerTwo.user.id,
-          nickname: this.playerTwo.user.nickname,
+          id: this.paddleTwo.user.id,
+          nickname: this.paddleTwo.user.nickname,
         },
-        width: this.playerTwo.width,
-        height: this.playerTwo.height,
-        x: this.playerTwo.x,
-        y: this.playerTwo.y,
-        color: this.playerTwo.color,
-        goal: this.playerTwo.goal,
+        width: this.paddleTwo.width,
+        height: this.paddleTwo.height,
+        x: this.paddleTwo.x,
+        y: this.paddleTwo.y,
+        color: this.paddleTwo.color,
+        goal: this.paddleTwo.goal,
       },
       ball: {
         x: this.ball.x,

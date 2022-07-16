@@ -1,7 +1,7 @@
 import { User } from './user.class';
-import { CANVAS_HEIGHT, PLAYER_HEIGHT, PLAYER_SPEED, PLAYER_WIDTH, TIMING } from '../../../constants/games.constant';
+import { CANVAS_HEIGHT, PADDLE_HEIGHT, PADDLE_SPEED, PADDLE_WIDTH, TIMING } from '../../../constants/games.constant';
 
-export interface IPlayer {
+export interface IPaddle {
   user: User;
 
   x: number;
@@ -13,7 +13,7 @@ export interface IPlayer {
   color: string;
 }
 
-export class Player implements IPlayer {
+export class Paddle implements IPaddle {
   user: User;
 
   x: number;
@@ -34,11 +34,11 @@ export class Player implements IPlayer {
   constructor(user: User, x: number) {
     this.user = user;
 
-    this.width = PLAYER_WIDTH;
-    this.height = PLAYER_HEIGHT;
+    this.width = PADDLE_WIDTH;
+    this.height = PADDLE_HEIGHT;
     this.x = x;
     this.y = CANVAS_HEIGHT / 2 - this.height / 2;
-    this.speed = PLAYER_SPEED;
+    this.speed = PADDLE_SPEED;
     this.goal = 0;
 
     this.up = false;
@@ -67,13 +67,19 @@ export class Player implements IPlayer {
     }
 
     if (this.up && !this.down) {
-      if (this.y > 0) this.y -= this.speed * secondPassed;
-      else this.y = 0;
+      if (this.y > 0) {
+        this.y -= this.speed * secondPassed;
+      } else {
+        this.y = 0;
+      }
     }
 
     if (this.down && !this.up) {
-      if (this.y + this.height < CANVAS_HEIGHT) this.y += this.speed * secondPassed;
-      else this.y = CANVAS_HEIGHT - this.height;
+      if (this.y + this.height < CANVAS_HEIGHT) {
+        this.y += this.speed * secondPassed;
+      } else {
+        this.y = CANVAS_HEIGHT - this.height;
+      }
     }
   }
 }

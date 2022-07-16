@@ -77,8 +77,8 @@ export default class Queue {
    * 가장 차이가 적은 ratio의 유저와 매칭
    * @returns
    */
-  matchPlayers(): User[] {
-    let players: User[] = Array();
+  matchPlayers(): Array<User> {
+    let players: Array<User> = Array();
     let firstPlayer: User = this.dequeue();
 
     let secondPlayerId: number = 0;
