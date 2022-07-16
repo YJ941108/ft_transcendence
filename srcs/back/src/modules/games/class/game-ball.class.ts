@@ -6,7 +6,7 @@ import {
   CANVAS_WIDTH,
   BALL_DEFAULT_SPEED,
 } from '../../../constants/games.constant';
-import { Player } from './game-player.class';
+import { Paddle } from './game-paddle.class';
 
 export interface IBall {
   x: number;
@@ -51,7 +51,7 @@ export class Ball implements IBall {
     this.velocity = { dx: dir * this.speed, dy: 0 };
   }
 
-  update(secondPassed: number, p1: Player, p2: Player) {
+  update(secondPassed: number, p1: Paddle, p2: Paddle) {
     if (this.r < BALL_DEFAULT_RADIUS) this.r += 1;
 
     if (!this.handleCollision(secondPassed, p1, p2)) {
@@ -59,7 +59,7 @@ export class Ball implements IBall {
       this.y += this.velocity.dy * secondPassed;
     }
 
-    // Goal Player one
+    // Goal Paddle one
     if (this.x + this.r >= CANVAS_WIDTH && this.goal === false) {
       p1.goal++;
       this.goal = true;
@@ -72,7 +72,7 @@ export class Ball implements IBall {
     }
   }
 
-  handleCollision(secondPassed: number, p1: Player, p2: Player) {
+  handleCollision(secondPassed: number, p1: Paddle, p2: Paddle) {
     // Collision on the borders of the board game
     let nextPosY: number = this.y + this.velocity.dy * secondPassed;
 
@@ -97,7 +97,7 @@ export class Ball implements IBall {
   }
 
   // Collision between ball and Paddle
-  collision(secondPassed: number, p1: Player, p2: Player): boolean {
+  collision(secondPassed: number, p1: Paddle, p2: Paddle): boolean {
     let nextPosX: number = this.x + this.velocity.dx * secondPassed;
     if (this.x < CANVAS_WIDTH / 2) {
       if (nextPosX - this.r < p1.x + p1.width) {
