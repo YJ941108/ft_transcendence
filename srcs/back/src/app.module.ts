@@ -6,6 +6,12 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
 import { GamesModule } from './modules/games/games.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
+
+const id = 'owen.ki.dev@gmail.com';
+const pw = 'b8b8x3x3Q%';
+const email = 'smtp.gmail.com';
 
 @Module({
   imports: [
@@ -23,6 +29,26 @@ import { GamesModule } from './modules/games/games.module';
       envFilePath: `${process.cwd()}/.env`,
       load: [defaultConfig],
       isGlobal: true,
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: email,
+        secure: false,
+        auth: {
+          user: id,
+          pass: pw,
+        },
+      },
+      // defaults: {
+      //   from: '"nest-modules" <owen.ki.dev@gmail.com>',
+      // },
+      // template: {
+      //   dir: __dirname + '/templates',
+      //   adapter: new PugAdapter(),
+      //   options: {
+      //     strict: true,
+      //   },
+      // },
     }),
     AuthModule,
     HealthModule,

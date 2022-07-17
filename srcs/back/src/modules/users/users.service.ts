@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from './users.entity';
 import { UsersRepository } from './users.repository';
-import { hashFunction } from 'src/utils/hashGenerator';
 import { randomString } from 'src/utils/randomString';
+import { MailerService } from '@nestjs-modules/mailer';
 
 /**
  *  @class UsersService
@@ -17,9 +17,9 @@ export class UsersService {
    * @param usersRepository
    */
   constructor(
-    @InjectRepository(UsersRepository)
-    private usersRepository: UsersRepository,
-  ) {}
+    @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
+  ) // private readonly mailerService: MailerService,
+  {}
 
   /**
    * 유저 생성
@@ -84,6 +84,17 @@ export class UsersService {
     const randomNumber: string = randomString(4, '#');
     this.logger.log(`getTwoFactorAuthCode: randomNumber: ${randomNumber}`);
     user.tfa_secret = randomNumber;
+
+    // this.mailerService
+    //   .sendMail({
+    //     to: user.email, // list of receivers
+    //     from: 'noreply@nestjs.com', // sender address
+    //     subject: 'Testing Nest MailerModule ✔', // Subject line
+    //     text: 'welcome', // plaintext body
+    //     html: '<b>welcome</b>', // HTML body content
+    //   })
+    //   .then(() => {})
+    //   .catch(() => {});
 
     await this.usersRepository.save(user);
     return randomNumber;
