@@ -141,6 +141,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.logger.log(
       `handleGetCurrentGames: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`,
     );
+    this.logger.log(`handleGetCurrentGames: currentGames: ${this.currentGames}`);
     this.server.to(client.id).emit('updateCurrentGames', this.currentGames);
     return this.currentGames;
   }
@@ -192,6 +193,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinRoom')
   handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     this.logger.log(`handleJoinRoom: client.id: ${client.id}`);
+    this.logger.log(`handleJoinRoom: client.id: ${client.id}`);
 
     const room: Room = this.rooms.get(roomId);
     const user = this.connectedUsers.getUserBySocketId(client.id);
@@ -216,6 +218,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('leaveRoom')
   handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     this.logger.log(`handleLeaveRoom: client.id: ${client.id}`);
+    this.logger.log(`handleGetCurrentGames: currentGames: before: ${this.currentGames}`);
 
     const room: Room = this.rooms.get(roomId);
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
@@ -245,6 +248,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_HUB);
     }
     this.server.to(client.id).emit('leavedRoom');
+    this.logger.log(`handleGetCurrentGames: currentGames: after: ${this.currentGames}`);
   }
 
   /* Controls */
