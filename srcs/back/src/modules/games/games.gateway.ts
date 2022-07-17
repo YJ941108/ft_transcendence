@@ -194,10 +194,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.logger.log(`handleJoinRoom: client.id: ${client.id}`);
 
     const room: Room = this.rooms.get(roomId);
+    const user = this.connectedUsers.getUserBySocketId(client.id);
 
-    if (room) {
-      const user = this.connectedUsers.getUserBySocketId(client.id);
-
+    if (room && !room.isAPlayer(user)) {
       client.join(roomId);
       if (user.status === UserStatus.IN_HUB) {
         this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
