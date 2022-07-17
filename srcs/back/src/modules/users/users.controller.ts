@@ -40,4 +40,10 @@ export class UsersController {
     const user = await this.getUser(req);
     return this.usersService.getTwoFactorAuthCode(user.id);
   }
+
+  @Get('me/tfa/:code')
+  async checkTwoFactorAuthCode(@Req() req: any, @Param('code') code: string): Promise<Object> {
+    const user = await this.getUser(req);
+    return this.usersService.checkTwoFactorAuthCode(user.id, code);
+  }
 }

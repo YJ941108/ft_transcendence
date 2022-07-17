@@ -75,9 +75,9 @@ export class Users extends BaseEntity {
 
   @Column({
     nullable: true,
-    select: false,
+    default: false,
   })
-  tfa_secret: string;
+  tfa_code: string;
 
   @Column({
     select: false,

@@ -1,4 +1,10 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from './users.entity';
@@ -88,7 +94,7 @@ export class UsersService {
 
     const randomNumber: string = randomString(4, '#');
     this.logger.log(`getTwoFactorAuthCode: randomNumber: ${randomNumber}`);
-    user.tfa_secret = randomNumber;
+    user.tfa_code = randomNumber;
     this.logger.log(`getTwoFactorAuthCode: user: ${user.email}`);
 
     this.mailerService
@@ -99,19 +105,41 @@ export class UsersService {
         text: 'welcome', // plaintext body
         html: `<b>${randomNumber}</b>`, // HTML body content
       })
-      .then((e) => {
+      .then(async (e) => {
         this.logger.log(`mailerService: sendMail successed: ${JSON.stringify(e)}`);
+        this.logger.log(`setTwoFactorAuthValid: user = ${JSON.stringify(user)}`);
+        await this.usersRepository.save(user);
       })
       .catch((e) => {
         this.logger.log(`mailerService: sendMail error: ${JSON.stringify(e)}`);
         throw new InternalServerErrorException(`Internal Server Error in getTwoFactorAuthCode`);
       });
-
-    await this.usersRepository.save(user);
-
     return {
       statusCode: 200,
       message: 'Successed',
+    };
+  }
+
+  /**
+   * two-factor authentication 코드 확인
+   * @param id
+   * @param code
+   * @returns randomNumber
+   */
+  async checkTwoFactorAuthCode(id: number, code: string): Promise<Object> {
+    const user = await this.getUser(id);
+
+    this.logger.log(`checkTwoFactorAuthCode: user = ${JSON.stringify(user)}`);
+
+    if (!user.tfa_code) {
+      throw new NotFoundException(`코드가 없습니다.`);
+    }
+    if (user.tfa_code !== code) {
+      throw new NotAcceptableException(`코드가 올바르지 않습니다`);
+    }
+    return {
+      statusCode: 200,
+      message: '성공',
     };
   }
 }
