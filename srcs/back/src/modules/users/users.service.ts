@@ -46,6 +46,16 @@ export class UsersService {
     return user;
   }
 
+  async setUser(id: number, file: Express.Multer.File): Promise<Users> {
+    const user = await this.getUser(id);
+    this.logger.log(`setUser: user = ${user}`);
+    this.logger.log(`setUser: file: ${JSON.stringify(file)}`);
+
+    user.photo = ``;
+    await this.usersRepository.save(user);
+    return;
+  }
+
   /**
    * 유저 조회
    * @param email

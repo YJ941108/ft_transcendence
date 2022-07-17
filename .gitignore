@@ -182,3 +182,6 @@ lerna-debug.log*
 
 # VIM
 *.swp
+
+# Backend
+uploads

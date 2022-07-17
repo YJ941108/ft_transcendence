@@ -1,5 +1,19 @@
-import { Body, Controller, Get, Logger, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerOptions } from 'src/middleware/multer.middleware';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from './users.entity';
 import { UsersService } from './users.service';
@@ -21,6 +35,13 @@ export class UsersController {
     const email = req?.user?.email;
     const user = await this.usersService.getUserByEmail(email);
     return user;
+  }
+
+  @Post('me')
+  @UseInterceptors(FileInterceptor('file', multerOptions))
+  async setUser(@Req() req: any, @UploadedFile() file: Express.Multer.File): Promise<Users> {
+    const user = await this.getUser(req);
+    return this.usersService.setUser(user.id, file);
   }
 
   @Get(':nickname')
