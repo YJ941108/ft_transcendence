@@ -9,10 +9,6 @@ import { GamesModule } from './modules/games/games.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 
-const id = 'owen.ki.dev@gmail.com';
-const pw = 'b8b8x3x3Q%';
-const email = 'smtp.gmail.com';
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -31,24 +27,17 @@ const email = 'smtp.gmail.com';
       isGlobal: true,
     }),
     MailerModule.forRoot({
-      transport: {
-        host: email,
-        secure: false,
-        auth: {
-          user: id,
-          pass: pw,
+      transport: 'smtps://taws0206@gmail.com:rjtnyxlcxdostjzj@smtp.gmail.com',
+      defaults: {
+        from: '"nest-modules" <noreply@nestjs.com>',
+      },
+      template: {
+        dir: __dirname + '/templates',
+        adapter: new PugAdapter(),
+        options: {
+          strict: true,
         },
       },
-      // defaults: {
-      //   from: '"nest-modules" <owen.ki.dev@gmail.com>',
-      // },
-      // template: {
-      //   dir: __dirname + '/templates',
-      //   adapter: new PugAdapter(),
-      //   options: {
-      //     strict: true,
-      //   },
-      // },
     }),
     AuthModule,
     HealthModule,

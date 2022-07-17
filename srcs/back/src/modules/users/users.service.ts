@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from './users.entity';
@@ -18,8 +18,8 @@ export class UsersService {
    */
   constructor(
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
-  ) // private readonly mailerService: MailerService,
-  {}
+    private readonly mailerService: MailerService,
+  ) {}
 
   /**
    * 유저 생성
@@ -62,7 +62,7 @@ export class UsersService {
 
   /**
    * two-factor authentication 설정
-   * @param nickname
+   * @param id
    * @param tfa
    * @returns user object
    */
@@ -77,26 +77,41 @@ export class UsersService {
     return user;
   }
 
-  async getTwoFactorAuthCode(id: number): Promise<string> {
+  /**
+   * two-factor authentication 설정
+   * @param id
+   * @returns randomNumber
+   */
+  async getTwoFactorAuthCode(id: number): Promise<Object> {
     const user = await this.getUser(id);
-    this.logger.log(`setTwoFactorAuthValid: user = ${user}`);
+    this.logger.log(`setTwoFactorAuthValid: user = ${JSON.stringify(user)}`);
 
     const randomNumber: string = randomString(4, '#');
     this.logger.log(`getTwoFactorAuthCode: randomNumber: ${randomNumber}`);
     user.tfa_secret = randomNumber;
+    this.logger.log(`getTwoFactorAuthCode: user: ${user.email}`);
 
-    // this.mailerService
-    //   .sendMail({
-    //     to: user.email, // list of receivers
-    //     from: 'noreply@nestjs.com', // sender address
-    //     subject: 'Testing Nest MailerModule ✔', // Subject line
-    //     text: 'welcome', // plaintext body
-    //     html: '<b>welcome</b>', // HTML body content
-    //   })
-    //   .then(() => {})
-    //   .catch(() => {});
+    this.mailerService
+      .sendMail({
+        to: user.email, // list of receivers
+        from: 'noreply@nestjs.com', // sender address
+        subject: 'ft_transcendence 2FA 코드입니다. ✔', // Subject line
+        text: 'welcome', // plaintext body
+        html: `<b>${randomNumber}</b>`, // HTML body content
+      })
+      .then((e) => {
+        this.logger.log(`mailerService: sendMail successed: ${JSON.stringify(e)}`);
+      })
+      .catch((e) => {
+        this.logger.log(`mailerService: sendMail error: ${JSON.stringify(e)}`);
+        throw new InternalServerErrorException(`Internal Server Error in getTwoFactorAuthCode`);
+      });
 
     await this.usersRepository.save(user);
-    return randomNumber;
+
+    return {
+      statusCode: 200,
+      message: 'Successed',
+    };
   }
 }

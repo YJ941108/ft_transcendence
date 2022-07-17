@@ -35,20 +35,9 @@ export class UsersController {
     return this.usersService.setTwoFactorAuthValid(user.id, req.body.tfa);
   }
 
-  @Get('tfa')
+  @Get('me/tfa')
   async getTwoFactorAuthCode(@Req() req: any): Promise<Object> {
     const user = await this.getUser(req);
-    const randomNumber = this.usersService.getTwoFactorAuthCode(user.id);
-
-    if (randomNumber) {
-      return {
-        statusCode: 200,
-        message: 'Unauthorized',
-      };
-    }
-    return {
-      statusCode: 401,
-      message: 'Unauthorized',
-    };
+    return this.usersService.getTwoFactorAuthCode(user.id);
   }
 }
