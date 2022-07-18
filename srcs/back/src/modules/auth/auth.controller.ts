@@ -47,8 +47,8 @@ export class AuthController {
     const payload = { email };
     const accessToken = this.jwtService.sign(payload);
     this.logger.log(accessToken);
-    const origin = this.configService.get<string>('front.origin');
-    this.logger.log('Front Origin' + origin);
+    const origin = this.configService.get<string>('client.origin');
+    this.logger.log('Client Origin' + origin);
     // response.cookie('access_token', accessToken);
     response.redirect(302, origin + `/auth?access_token=${accessToken}`);
   }

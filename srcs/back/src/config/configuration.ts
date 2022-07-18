@@ -7,8 +7,11 @@ export default () => ({
       callback: process.env.FORTYTWO_APP_CALLBACK_URL,
     },
   },
-  front: {
-    origin: process.env.ORIGIN,
+  client: {
+    origin: process.env.CLIENT_ORIGIN,
+  },
+  server: {
+    origin: process.env.SERVER_ORIGIN,
   },
   jwt: {
     secret: process.env.JWT_SECRET,
