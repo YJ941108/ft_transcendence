@@ -11,6 +11,8 @@ import { Users } from './users.entity';
 import { UsersRepository } from './users.repository';
 import { randomString } from 'src/utils/randomString';
 import { MailerService } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
+import { join } from 'path';
 
 /**
  *  @class UsersService
@@ -25,6 +27,7 @@ export class UsersService {
   constructor(
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
     private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -46,12 +49,24 @@ export class UsersService {
     return user;
   }
 
+  /**
+   *
+   * @param id
+   * @param file
+   * @returns
+   */
   async setUser(id: number, file: Express.Multer.File): Promise<Users> {
     const user = await this.getUser(id);
-    this.logger.log(`setUser: user = ${user}`);
+    this.logger.log(`setUser: user: before: ${JSON.stringify(user)}`);
     this.logger.log(`setUser: file: ${JSON.stringify(file)}`);
 
-    user.photo = ``;
+    const serverOrigin = this.configService.get<string>('server.origin');
+    this.logger.log(`setUser: serverOrigin: ${serverOrigin}`);
+    const fileLocation = serverOrigin + join('/api/users', file.filename);
+    this.logger.log(`setUser: fileLocation: ${fileLocation}`);
+    user.photo = fileLocation;
+
+    this.logger.log(`setUser: user: after: ${JSON.stringify(user)}`);
     await this.usersRepository.save(user);
     return;
   }
