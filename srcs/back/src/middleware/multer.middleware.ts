@@ -7,7 +7,7 @@ export const multerOptions = {
       cb(null, './uploads');
     },
     filename: (req: Profile, file, cb) => {
-      cb(null, `${req.user.username}.png`);
+      cb(null, `${req.user.email}.png`);
     },
   }),
 };

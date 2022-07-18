@@ -57,9 +57,11 @@ export class UsersController {
    */
   @Post('me')
   @UseInterceptors(FileInterceptor('file', multerOptions))
-  async setUser(@Req() req: any, @UploadedFile() file: Express.Multer.File): Promise<Users> {
+  async setUser(@Req() req: any, @UploadedFile() file: Express.Multer.File): Promise<Object> {
+    const nickname = req.body.nickname;
+
     const user = await this.getUser(req);
-    return this.usersService.setUser(user.id, file);
+    return this.usersService.setUser(user.id, file, nickname);
   }
 
   /**
