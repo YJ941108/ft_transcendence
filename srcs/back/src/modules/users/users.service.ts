@@ -72,7 +72,7 @@ export class UsersService {
       this.logger.log(`setUser: file: ${JSON.stringify(file)}`);
       const serverOrigin = this.configService.get<string>('server.origin');
       this.logger.log(`setUser: serverOrigin: ${serverOrigin}`);
-      const fileLocation = serverOrigin + join('/api/users', file.filename);
+      const fileLocation = serverOrigin + join('/api/users/profile', file.filename);
       this.logger.log(`setUser: fileLocation: ${fileLocation}`);
       user.photo = fileLocation;
     }
