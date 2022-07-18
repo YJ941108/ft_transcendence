@@ -10,6 +10,12 @@ export enum GameState {
 	PLAYER_TWO_WIN,
 }
 
+export interface IKey {
+	roomId: string;
+	key: 'ArrowUp' | 'ArrowDown';
+	nickname: string;
+}
+
 export interface IUser {
 	id: number;
 	username: string;

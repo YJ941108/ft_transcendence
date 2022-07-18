@@ -21,13 +21,18 @@ export default class GameData {
 
 	private socket: Socket;
 
-	private app: PIXI.Application;
+	// private app: PIXI.Application;
+	private renderer: PIXI.Renderer;
 
 	private ball: PIXI.Graphics;
 
-	private leftPaddle: PIXI.Graphics;
+	public leftPaddle: PIXI.Graphics;
 
-	private rightPaddle: PIXI.Graphics;
+	public rightPaddle: PIXI.Graphics;
+
+	private stage: PIXI.Container;
+
+	private ticker: PIXI.Ticker;
 
 	// private isLeft: boolean | undefined;
 
@@ -54,14 +59,25 @@ export default class GameData {
 			x: this.room.ball.x,
 			y: this.room.ball.y,
 		};
-		this.app = new PIXI.Application({
+
+		this.renderer = new PIXI.Renderer({
 			view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
+			backgroundColor: 0x696969,
 			resolution: window.devicePixelRatio || 1,
 			autoDensity: true,
-			backgroundColor: 0x696969,
 			width: 1920,
 			height: 1080,
 		});
+		this.stage = new PIXI.Container();
+
+		// this.app = new PIXI.Application({
+		// 	view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
+		// 	resolution: window.devicePixelRatio || 1,
+		// 	autoDensity: true,
+		// 	backgroundColor: 0x696969,
+		// 	width: 1920,
+		// 	height: 1080,
+		// });
 
 		this.leftPaddle = new PIXI.Graphics();
 		this.leftPaddle.beginFill(0xff0000);
@@ -78,9 +94,28 @@ export default class GameData {
 		this.ball.drawCircle(ballInfo.x, ballInfo.y, ballInfo.radius);
 		this.ball.endFill();
 
-		this.app.stage.addChild(this.leftPaddle);
-		this.app.stage.addChild(this.rightPaddle);
-		this.app.stage.addChild(this.ball);
+		this.stage.addChild(this.leftPaddle);
+		this.stage.addChild(this.rightPaddle);
+		this.stage.addChild(this.ball);
+
+		this.ticker = new PIXI.Ticker();
+		// this.app.stage.addChild(this.leftPaddle);
+		// this.app.stage.addChild(this.rightPaddle);
+		// this.app.stage.addChild(this.ball);
+	}
+
+	startGame() {
+		console.log(this.leftPaddle, 'paddle');
+		this.ticker.add(() => this.gameLoop(this.leftPaddle, this.rightPaddle));
+		this.ticker.start();
+	}
+
+	gameLoop(leftPaddle: any, rightPaddle: any) {
+		console.log(leftPaddle);
+		console.log(rightPaddle);
+		console.log(this.ball);
+		// this.leftPaddle.rotation += 0.1;
+		// this.renderer.render(this.stage);
 	}
 
 	setBallPosition(x: number, y: number) {
