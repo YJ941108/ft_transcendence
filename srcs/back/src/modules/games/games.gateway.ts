@@ -113,6 +113,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('handleUserConnect')
   handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): ConnectedUsers {
     this.logger.log(`handleUserConnect: client.id: ${client.id}`);
+    this.logger.log(`handleUserConnect: user: ${JSON.stringify(user)}`);
     this.logger.log(`handleUserConnect: user.id: ${user.id}`);
     let newUser: User = this.connectedUsers.getUserById(user.id);
     if (newUser) {
@@ -141,7 +142,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.logger.log(
       `handleGetCurrentGames: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`,
     );
-    this.logger.log(`handleGetCurrentGames: currentGames: ${this.currentGames}`);
+    this.logger.log(`handleGetCurrentGames: currentGames: ${JSON.stringify(this.currentGames)}`);
+    console.log(this.currentGames);
     this.server.to(client.id).emit('updateCurrentGames', this.currentGames);
     return this.currentGames;
   }
@@ -193,7 +195,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinRoom')
   handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     this.logger.log(`handleJoinRoom: client.id: ${client.id}`);
-    this.logger.log(`handleJoinRoom: client.id: ${client.id}`);
 
     const room: Room = this.rooms.get(roomId);
     const user = this.connectedUsers.getUserBySocketId(client.id);
@@ -206,6 +207,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         room.addUser(user);
       }
 
+      console.log(room.serialize());
       this.server.to(client.id).emit('joinedRoom');
       this.server.to(client.id).emit('updateRoom', JSON.stringify(room.serialize()));
     }
@@ -259,7 +261,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   ) {
     this.logger.log(`keyDown: client.id: ${client.id}`);
     const room: Room = this.rooms.get(data.roomId);
-    this.logger.log(`keyDown: room: before: ${JSON.stringify(room)}`);
+    console.log('keyDown: before', room);
 
     if (room && room.paddleOne.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') room.paddleOne.up = true;
@@ -268,7 +270,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowUp') room.paddleTwo.up = true;
       if (data.key === 'ArrowDown') room.paddleTwo.down = true;
     }
-    this.logger.log(`keyDown: room: after: ${JSON.stringify(room)}`);
+    console.log('keyDown: after', room);
   }
 
   @SubscribeMessage('keyUp')
@@ -278,7 +280,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   ) {
     this.logger.log(`keyUp: client.id: ${client.id}`);
     const room: Room = this.rooms.get(data.roomId);
-    this.logger.log(`keyUp: room: before: ${JSON.stringify(room)}`);
+    console.log('keyUp: before', room);
 
     if (room && room.paddleOne.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') room.paddleOne.up = false;
@@ -287,7 +289,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowUp') room.paddleTwo.up = false;
       if (data.key === 'ArrowDown') room.paddleTwo.down = false;
     }
-    this.logger.log(`keyUp: room: after: ${JSON.stringify(room)}`);
+    console.log('keyUp: after', room);
   }
 
   /**
