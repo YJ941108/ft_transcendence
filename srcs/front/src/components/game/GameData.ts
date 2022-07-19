@@ -1,4 +1,4 @@
-import { canvasWidth, canvasHeight, IBall, IPlayer } from './GameInterfaces';
+import { canvasWidth, canvasHeight, IBall, IPlayer, IRoom } from './GameInterfaces';
 
 export default class GameData {
 	canvas: HTMLCanvasElement;
@@ -19,8 +19,8 @@ export default class GameData {
 
 	screenHeight: number;
 
-	constructor({ roomProps }: any) {
-		this.canvas = document.getElementById('#pong-canvas') as HTMLCanvasElement;
+	constructor(roomProps: IRoom) {
+		this.canvas = document.getElementById('pong-canvas') as HTMLCanvasElement;
 		this.context = this.canvas.getContext('2d');
 		this.degrees = 0;
 		this.screenWidth = canvasWidth;
@@ -45,7 +45,9 @@ export default class GameData {
 			this.context.save();
 			this.context.beginPath();
 			this.context.arc(ballData.x, ballData.y, ballData.r, 0, 2 * Math.PI);
-			this.context.fillStyle = '0x696969';
+			this.context.fillStyle = ballData.color;
+			this.context.fill();
+			this.context.stroke();
 			this.context.restore();
 		}
 	}

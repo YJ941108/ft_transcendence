@@ -15,7 +15,7 @@ export enum GameState {
 
 export interface IKey {
 	roomId: string;
-	key: 'ArrowUp' | 'ArrowDown';
+	key: string;
 	nickname: string;
 }
 
