@@ -14,8 +14,10 @@ import { ConnectedUsers } from './class/connected-user.class';
 import Room from './class/game-room.class';
 import Queue from './class/queue.class';
 import { User } from './class/user.class';
-import { GameState, UserStatus } from '../../enums/games.enum';
+import { GameMode, GameState, UserStatus } from '../../enums/games.enum';
 import { SET_INTERVAL_MILISECONDS } from 'src/constants/games.constant';
+import { GamesService } from './games.service';
+import { UsersService } from '../users/users.service';
 
 /**
  * @decorator WebSocketGateway
@@ -34,7 +36,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   /** Logger */
   private logger: Logger = new Logger('gameGateway');
 
-  constructor() {}
+  constructor(private readonly gamesService: GamesService, private readonly usersService: UsersService) {}
 
   /** @type server */
   @WebSocketServer()
@@ -251,6 +253,109 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     }
     this.server.to(client.id).emit('leavedRoom');
     this.logger.log(`handleGetCurrentGames: currentGames: after: ${this.currentGames}`);
+  }
+
+  // async saveGame(room: Room, currentTimestamp: number) {
+  //   let winnerId: number, loserId: number, winnerScore: number, loserScore: number;
+
+  //   if (room.gameState === GameState.PLAYER_ONE_WIN) {
+  //     winnerId = room.paddleOne.user.id;
+  //     loserId = room.paddleTwo.user.id;
+  //     winnerScore = room.paddleOne.goal;
+  //     loserScore = room.paddleTwo.goal;
+  //   } else if (room.gameState === GameState.PLAYER_TWO_WIN) {
+  //     winnerId = room.paddleTwo.user.id;
+  //     loserId = room.paddleOne.user.id;
+  //     winnerScore = room.paddleTwo.goal;
+  //     loserScore = room.paddleOne.goal;
+  //   }
+
+  //   const winner = await this.usersService.findOne(String(winnerId));
+  //   const loser = await this.usersService.findOne(String(loserId));
+
+  //   /* Update users wins/losses/draws and ratio */
+  //   const isDraw: boolean = false; // This is not used but may be one day
+  //   await this.usersService.updateStats(winner, isDraw, true);
+  //   await this.usersService.updateStats(loser, isDraw, false);
+
+  //   /* Save game in database */
+  //   await this.gamesService.create({
+  //     paddles: [winner, loser],
+  //     winnerId: winnerId,
+  //     loserId: loserId,
+  //     createdAt: new Date(room.timestampStart),
+  //     endedAt: new Date(currentTimestamp),
+  //     gameDuration: room.getDuration(),
+  //     winnerScore: winnerScore,
+  //     loserScore: loserScore,
+  //     mode: room.mode,
+  //   });
+
+  //   const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
+
+  //   if (roomIndex !== -1) {
+  //     this.currentGames.splice(roomIndex, 1);
+  //   }
+  //   this.server.emit('updateCurrentGames', this.currentGames);
+  // }
+
+  secondToTimestamp(second: number): number {
+    return second * 1000;
+  }
+
+  @SubscribeMessage('requestUpdate')
+  async handleRequestUpdate(@MessageBody() roomId: string) {
+    const room: Room = this.rooms.get(roomId);
+
+    if (room) {
+      const currentTimestamp: number = Date.now();
+
+      if (room.gameState === GameState.WAITING) {
+        if (room.paddles.length === 2) {
+          room.gameState = GameState.STARTING;
+          room.start();
+        }
+      }
+      if (
+        room.gameState === GameState.STARTING &&
+        currentTimestamp - room.timestampStart >= this.secondToTimestamp(3.5)
+      ) {
+        room.start();
+      } else if (room.gameState === GameState.PLAYING) {
+        room.update(currentTimestamp);
+        // if (room.isGameEnd) this.saveGame(room, currentTimestamp);
+      } else if (
+        (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
+        currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(3.5)
+      ) {
+        room.resetPosition();
+        room.changeGameState(GameState.PLAYING);
+        room.lastUpdate = Date.now();
+      } else if (
+        room.gameState === GameState.RESUMED &&
+        currentTimestamp - room.pauseTime[room.pauseTime.length - 1].resume >= this.secondToTimestamp(3.5)
+      ) {
+        room.lastUpdate = Date.now();
+        room.changeGameState(GameState.PLAYING);
+      } else if (
+        room.gameState === GameState.PAUSED &&
+        currentTimestamp - room.pauseTime[room.pauseTime.length - 1].pause >= this.secondToTimestamp(42)
+      ) {
+        room.pauseForfait();
+        room.pauseTime[room.pauseTime.length - 1].resume = Date.now();
+        // this.saveGame(room, currentTimestamp);
+      }
+
+      if (
+        room.mode === GameMode.TIMER &&
+        (room.gameState === GameState.PLAYER_ONE_SCORED ||
+          room.gameState === GameState.PLAYER_TWO_SCORED ||
+          room.gameState === GameState.PLAYING)
+      )
+        room.updateTimer();
+
+      this.server.to(room.roomId).emit('updateRoom', JSON.stringify(room.serialize()));
+    }
   }
 
   /* Controls */
