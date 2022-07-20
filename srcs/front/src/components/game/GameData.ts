@@ -52,7 +52,22 @@ export default class GameData {
 		}
 	}
 
+	drawTexture(text: string, x: number, y: number, size: number, color: string) {
+		if (this.context) {
+			this.context.save();
+			this.context.fillStyle = color;
+			this.context.font = '48px serif';
+			this.context.fillText(text, x, y);
+			this.context.restore();
+		}
+	}
+
 	clear() {
 		if (this.context) this.context.clearRect(0, 0, this.screenWidth, this.screenHeight);
+	}
+
+	drawScore(playerOne: IPlayer, playerTwo: IPlayer) {
+		this.drawTexture(`${playerOne.goal}`, canvasWidth / 4, canvasHeight / 10, 200, 'white');
+		this.drawTexture(`${playerTwo.goal}`, 3 * (canvasWidth / 4), canvasHeight / 10, 45, 'white');
 	}
 }

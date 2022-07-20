@@ -46,6 +46,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		gameData.drawPaddle(roomData.paddleOne);
 		gameData.drawPaddle(roomData.paddleTwo);
 		gameData.drawBall(roomData.ball);
+		gameData.drawScore(roomData.paddleOne, roomData.paddleTwo);
 	};
 
 	useEffect(() => {
@@ -70,10 +71,10 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 
 		return () => {
 			if (animationFrameId) window.cancelAnimationFrame(animationFrameId);
-			// if (isPlayer) {
-			// 	window.removeEventListener('keyup', keyUpEvent);
-			// 	window.removeEventListener('keydown', keyDownEvent);
-			// }
+			if (isPlayer) {
+				window.removeEventListener('keyup', keyUpEvent);
+				window.removeEventListener('keydown', keyDownEvent);
+			}
 		};
 	}, []);
 	const leaveRoom = () => {
