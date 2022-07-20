@@ -72,6 +72,9 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 				const count: number = Math.floor((Date.now() - room.timestampStart) / 1000);
 				gameData.drawStartCountDown(countDown[count]);
 			}
+			if (room.gameState === GameState.PAUSED) {
+				gameData.drawPausedState();
+			}
 			animationFrameId = window.requestAnimationFrame(gameLoop);
 		};
 

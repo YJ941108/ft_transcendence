@@ -88,4 +88,8 @@ export default class GameData {
 	drawWaiting() {
 		this.drawCenteredTexture(`Waiting...`, this.screenWidth / 2, this.screenHeight / 2, 45, 'white');
 	}
+
+	drawPausedState() {
+		this.drawCenteredTexture(`Paused...`, this.screenWidth / 2, this.screenHeight / 2, 45, 'white');
+	}
 }
