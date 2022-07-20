@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { useQuery } from 'react-query';
+// import { useQuery } from 'react-query';
 import { GameState, IUser, IRoom } from './GameInterfaces';
-import getUserData from '../../modules/api';
+// import getUserData from '../../modules/api';
 import GameScreen from './GameScreen';
 
 let socket: Socket;
 
 function Game() {
-	const { isLoading, data: userData } = useQuery<IUser>('user', getUserData);
+	// const { isLoading, data: userData } = useQuery<IUser>('user', getUserData);
 	const [isDisplayGame, setIsDisplayGame] = useState(false);
 	const [room, setRoom] = useState<IRoom | null>(null);
 	const [queue, setQueue] = useState(false);
 	const [games, setGames] = useState<IRoom[]>([]);
-	// const userData: IUser = JSON.parse(localStorage.getItem('user') || '{}');
+	const userData: IUser = JSON.parse(localStorage.getItem('user') || '{}');
 	const joinQueue = (event: React.MouseEvent<HTMLButtonElement>) => {
 		socket.emit('joinQueue', event.currentTarget.value);
 	};
@@ -60,7 +60,6 @@ function Game() {
 			setGames([]);
 		};
 	}, []);
-	if (isLoading) return null;
 	return (
 		<div>
 			<h1>GAME</h1>

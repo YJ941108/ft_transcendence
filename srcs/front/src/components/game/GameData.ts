@@ -1,133 +1,73 @@
-import * as PIXI from 'pixi.js';
-import { Socket } from 'socket.io-client';
-import { IRoom } from './GameInterfaces';
-
-interface IPaddleInfo {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-}
-
-interface IBallInfo {
-	color: string;
-	radius: number;
-	x: number;
-	y: number;
-}
+import { canvasWidth, canvasHeight, IBall, IPlayer, IRoom } from './GameInterfaces';
 
 export default class GameData {
-	private room: IRoom;
+	canvas: HTMLCanvasElement;
 
-	private socket: Socket;
+	room: any;
 
-	// private app: PIXI.Application;
-	private renderer: PIXI.Renderer;
+	context: CanvasRenderingContext2D | null;
 
-	private ball: PIXI.Graphics;
+	paddleOne: IPlayer;
 
-	public leftPaddle: PIXI.Graphics;
+	paddleTwo: IPlayer;
 
-	public rightPaddle: PIXI.Graphics;
+	ball: IBall;
 
-	private stage: PIXI.Container;
+	degrees: number;
 
-	private ticker: PIXI.Ticker;
+	screenWidth: number;
 
-	// private isLeft: boolean | undefined;
+	screenHeight: number;
 
-	constructor(socketProps: Socket, roomDataProps: IRoom) {
-		this.socket = socketProps;
-		this.room = roomDataProps;
-		const leftPaddleInfo: IPaddleInfo = {
-			x: this.room.paddleOne.x,
-			y: this.room.paddleOne.y,
-			width: this.room.paddleOne.width,
-			height: this.room.paddleOne.height,
-		};
-
-		const rightPaddleInfo: IPaddleInfo = {
-			x: this.room.paddleTwo.x,
-			y: this.room.paddleTwo.y,
-			width: this.room.paddleTwo.width,
-			height: this.room.paddleTwo.height,
-		};
-
-		const ballInfo: IBallInfo = {
-			color: this.room.ball.color,
-			radius: this.room.ball.r,
-			x: this.room.ball.x,
-			y: this.room.ball.y,
-		};
-
-		this.renderer = new PIXI.Renderer({
-			view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
-			backgroundColor: 0x696969,
-			resolution: window.devicePixelRatio || 1,
-			autoDensity: true,
-			width: 1920,
-			height: 1080,
-		});
-		this.stage = new PIXI.Container();
-
-		// this.app = new PIXI.Application({
-		// 	view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
-		// 	resolution: window.devicePixelRatio || 1,
-		// 	autoDensity: true,
-		// 	backgroundColor: 0x696969,
-		// 	width: 1920,
-		// 	height: 1080,
-		// });
-
-		this.leftPaddle = new PIXI.Graphics();
-		this.leftPaddle.beginFill(0xff0000);
-		this.leftPaddle.drawRect(leftPaddleInfo.x, leftPaddleInfo.y, leftPaddleInfo.width, leftPaddleInfo.height);
-		this.leftPaddle.endFill();
-
-		this.rightPaddle = new PIXI.Graphics();
-		this.rightPaddle.beginFill(0xff0000);
-		this.rightPaddle.drawRect(rightPaddleInfo.x, rightPaddleInfo.y, rightPaddleInfo.width, rightPaddleInfo.height);
-		this.rightPaddle.endFill();
-
-		this.ball = new PIXI.Graphics();
-		this.ball.beginFill(0xff0000);
-		this.ball.drawCircle(ballInfo.x, ballInfo.y, ballInfo.radius);
-		this.ball.endFill();
-
-		this.stage.addChild(this.leftPaddle);
-		this.stage.addChild(this.rightPaddle);
-		this.stage.addChild(this.ball);
-
-		this.ticker = new PIXI.Ticker();
-		// this.app.stage.addChild(this.leftPaddle);
-		// this.app.stage.addChild(this.rightPaddle);
-		// this.app.stage.addChild(this.ball);
+	constructor(roomProps: IRoom) {
+		this.canvas = document.getElementById('pong-canvas') as HTMLCanvasElement;
+		this.context = this.canvas.getContext('2d');
+		this.degrees = 0;
+		this.screenWidth = canvasWidth;
+		this.screenHeight = canvasHeight;
+		this.room = roomProps;
+		this.paddleOne = this.room.paddleOne;
+		this.paddleTwo = this.room.paddleTwo;
+		this.ball = this.room.ball;
 	}
 
-	startGame() {
-		console.log(this.leftPaddle, 'paddle');
-		this.ticker.add(() => this.gameLoop(this.leftPaddle, this.rightPaddle));
-		this.ticker.start();
+	drawPaddle(paddleData: IPlayer) {
+		if (this.context) {
+			this.context.save();
+			this.context.fillStyle = paddleData.color;
+			this.context.fillRect(paddleData.x, paddleData.y, paddleData.width, paddleData.height);
+			this.context.restore();
+		}
 	}
 
-	gameLoop(leftPaddle: any, rightPaddle: any) {
-		console.log(leftPaddle);
-		console.log(rightPaddle);
-		console.log(this.ball);
-		// this.leftPaddle.rotation += 0.1;
-		// this.renderer.render(this.stage);
+	drawBall(ballData: IBall) {
+		if (this.context) {
+			this.context.save();
+			this.context.beginPath();
+			this.context.arc(ballData.x, ballData.y, ballData.r, 0, 2 * Math.PI);
+			this.context.fillStyle = ballData.color;
+			this.context.fill();
+			this.context.stroke();
+			this.context.restore();
+		}
 	}
 
-	setBallPosition(x: number, y: number) {
-		this.ball.x = x;
-		this.ball.y = y;
+	drawTexture(text: string, x: number, y: number, size: number, color: string) {
+		if (this.context) {
+			this.context.save();
+			this.context.fillStyle = color;
+			this.context.font = '48px serif';
+			this.context.fillText(text, x, y);
+			this.context.restore();
+		}
 	}
 
-	setLeftPaddlePosition(y: number) {
-		this.leftPaddle.y = y;
+	clear() {
+		if (this.context) this.context.clearRect(0, 0, this.screenWidth, this.screenHeight);
 	}
 
-	setRightPaddlePosition(y: number) {
-		this.rightPaddle.y = y;
+	drawScore(playerOne: IPlayer, playerTwo: IPlayer) {
+		this.drawTexture(`${playerOne.goal}`, canvasWidth / 4, canvasHeight / 10, 200, 'white');
+		this.drawTexture(`${playerTwo.goal}`, 3 * (canvasWidth / 4), canvasHeight / 10, 45, 'white');
 	}
 }

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Socket } from 'socket.io-client';
+import styled from 'styled-components';
 import GameData from './GameData';
 import { IRoom, IUser, IKey } from './GameInterfaces';
 
@@ -8,16 +9,22 @@ interface IGameScreenProps {
 	roomDataProps: any;
 }
 
+const Canvas = styled.canvas`
+	width: 100%;
+	box-sizing: border-box;
+`;
+
 function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 	const socket: Socket = socketProps;
 	const userData: IUser = JSON.parse(localStorage.getItem('user') || '{}');
-	const room: IRoom = roomDataProps;
+	let room: IRoom = roomDataProps;
 	const isPlayer: boolean = userData.id === room.paddleOne.user.id || userData.id === room.paddleTwo.user.id;
+	let animationFrameId: number;
 	const keyUpEvent = (event: KeyboardEvent) => {
 		event.preventDefault();
 		const keyData: IKey = {
 			roomId: room.roomId,
-			key: 'ArrowUp',
+			key: event.key,
 			nickname: userData.username,
 		};
 		socket.emit('keyUp', keyData);
@@ -27,13 +34,23 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		event.preventDefault();
 		const keyData: IKey = {
 			roomId: room.roomId,
-			key: 'ArrowDown',
+			key: event.key,
 			nickname: userData.username,
 		};
 		socket.emit('keyDown', keyData);
 	};
+
+	const drawGame = (gameData: GameData, roomData: IRoom) => {
+		gameData.clear();
+
+		gameData.drawPaddle(roomData.paddleOne);
+		gameData.drawPaddle(roomData.paddleTwo);
+		gameData.drawBall(roomData.ball);
+		gameData.drawScore(roomData.paddleOne, roomData.paddleTwo);
+	};
+
 	useEffect(() => {
-		const gameData = new GameData(socket, room);
+		const gameData = new GameData(room);
 		if (isPlayer) {
 			window.addEventListener('keyup', keyUpEvent);
 			window.addEventListener('keydown', keyDownEvent);
@@ -41,12 +58,19 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 
 		socket.on('updateRoom', (updatedRoom: string) => {
 			const roomData: IRoom = JSON.parse(updatedRoom);
-			gameData.setBallPosition(roomData.ball.x, roomData.ball.y);
-			gameData.setLeftPaddlePosition(roomData.paddleOne.y);
-			gameData.setRightPaddlePosition(roomData.paddleTwo.y);
+			room = roomData;
 		});
-		gameData.startGame();
+
+		const gameLoop = () => {
+			socket.emit('requestUpdate', room.roomId);
+			drawGame(gameData, room);
+			animationFrameId = window.requestAnimationFrame(gameLoop);
+		};
+
+		gameLoop();
+
 		return () => {
+			if (animationFrameId) window.cancelAnimationFrame(animationFrameId);
 			if (isPlayer) {
 				window.removeEventListener('keyup', keyUpEvent);
 				window.removeEventListener('keydown', keyDownEvent);
@@ -58,7 +82,9 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 	};
 	return (
 		<div>
-			<canvas id="pixi-canvas" width="600" height="300" />
+			<Canvas id="pong-canvas" width="1920" height="1080">
+				hello
+			</Canvas>
 			<button onClick={leaveRoom} type="button">
 				leave room
 			</button>

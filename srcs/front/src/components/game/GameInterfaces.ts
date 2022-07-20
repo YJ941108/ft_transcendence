@@ -1,3 +1,6 @@
+export const canvasWidth = 1920;
+export const canvasHeight = 1080;
+
 export enum GameState {
 	WAITING,
 	STARTING,
@@ -12,7 +15,7 @@ export enum GameState {
 
 export interface IKey {
 	roomId: string;
-	key: 'ArrowUp' | 'ArrowDown';
+	key: string;
 	nickname: string;
 }
 
