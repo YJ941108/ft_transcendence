@@ -380,7 +380,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
       } else if (
         (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
-        currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(3.5)
+        currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(1)
       ) {
         room.resetPosition();
         room.changeGameState(GameState.PLAYING);

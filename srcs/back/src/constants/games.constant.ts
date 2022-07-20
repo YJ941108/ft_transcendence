@@ -17,5 +17,8 @@ export const BALL_ACCELERATION = 200;
 /** */
 export const DEFAULT_MAX_USER = 100;
 
-/** */
-export const SET_INTERVAL_MILISECONDS = 5000;
+/** 게임 큐를 확인하는 주기 */
+export const SET_INTERVAL_MILISECONDS = 3000;
+
+/** 게임 종료 골 수 */
+export const MAX_GOAL = 2;

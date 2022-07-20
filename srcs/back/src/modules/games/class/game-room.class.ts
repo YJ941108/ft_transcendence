@@ -1,7 +1,7 @@
 import { User } from './user.class';
 import { Paddle } from './game-paddle.class';
 import { Ball } from './game-ball.class';
-import { CANVAS_WIDTH } from '../../../constants/games.constant';
+import { CANVAS_WIDTH, MAX_GOAL } from '../../../constants/games.constant';
 import { GameMode, GameState } from '../../../enums/games.enum';
 
 /**
@@ -115,17 +115,13 @@ export default class Room implements IRoom {
     this.paddleOne = new Paddle(users[0], 10);
     this.paddleTwo = new Paddle(users[1], CANVAS_WIDTH - 40);
     this.ball = new Ball();
-
     this.timestampStart = Date.now();
     this.lastUpdate = Date.now();
     this.goalTimestamp = Date.now();
     this.pauseTime = [];
-
     this.mode = customisation.mode;
-    this.maxGoal = 11;
-
+    this.maxGoal = MAX_GOAL;
     this.isGameEnd = false;
-
     this.timer = 0;
     this.gameDuration = 60000 * 5; // 1min * num of minutes
   }
