@@ -375,6 +375,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         room.start();
       } else if (room.gameState === GameState.PLAYING) {
         room.update(currentTimestamp);
+        /** 게임이 종료되었다면 */
         if (room.isGameEnd) {
           this.saveGame(room, currentTimestamp);
         }

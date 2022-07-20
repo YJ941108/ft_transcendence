@@ -3,6 +3,7 @@ import { Paddle } from './game-paddle.class';
 import { Ball } from './game-ball.class';
 import { CANVAS_WIDTH, MAX_GOAL } from '../../../constants/games.constant';
 import { GameMode, GameState } from '../../../enums/games.enum';
+import { Logger } from '@nestjs/common';
 
 /**
  * roomId
@@ -86,6 +87,8 @@ export type SerializeRoom = {
  *
  */
 export default class Room implements IRoom {
+  private logger: Logger = new Logger('game-room.class');
+
   roomId: string;
   gameState: GameState;
   players: User[];
@@ -166,6 +169,9 @@ export default class Room implements IRoom {
   }
 
   /**
+   * 게임 상태 변경
+   * PLAYER_ONE_WIN
+   * PLAYER_TWO_WIN
    *
    * @param newGameState
    */
@@ -219,34 +225,47 @@ export default class Room implements IRoom {
   }
 
   /**
-   *
+   * 점수가 났을 때 실행하는 함수
    */
   checkGoal() {
+    /** 점수가 났을 때 */
     if (this.ball.goal === true) {
       this.goalTimestamp = this.lastUpdate;
+
+      /**
+       * 최대 점수에 도달했다면 -> PLAYER_WIN
+       * 그렇지 않으면 -> PLAYER_SCORED
+       */
       if (
         this.mode === GameMode.DEFAULT &&
         (this.paddleOne.goal === this.maxGoal || this.paddleTwo.goal === this.maxGoal)
       ) {
-        if (this.paddleOne.goal === this.maxGoal) this.changeGameState(GameState.PLAYER_ONE_WIN);
-        else if (this.paddleTwo.goal === this.maxGoal) this.changeGameState(GameState.PLAYER_TWO_WIN);
+        if (this.paddleOne.goal === this.maxGoal) {
+          this.changeGameState(GameState.PLAYER_ONE_WIN);
+        } else if (this.paddleTwo.goal === this.maxGoal) {
+          this.changeGameState(GameState.PLAYER_TWO_WIN);
+        }
         this.isGameEnd = true;
       } else {
-        if (this.ball.x < CANVAS_WIDTH / 2) this.changeGameState(GameState.PLAYER_TWO_SCORED);
-        else this.changeGameState(GameState.PLAYER_ONE_SCORED);
+        if (this.ball.x < CANVAS_WIDTH / 2) {
+          this.changeGameState(GameState.PLAYER_TWO_SCORED);
+        } else {
+          this.changeGameState(GameState.PLAYER_ONE_SCORED);
+        }
       }
       this.ball.goal = false;
+      this.logger.log(`GAME STATE: ${this.gameState}`);
     }
 
-    if (
-      this.mode === GameMode.TIMER &&
-      this.paddleOne.goal !== this.paddleTwo.goal &&
-      this.timer >= this.gameDuration
-    ) {
-      if (this.paddleOne.goal > this.paddleTwo.goal) this.changeGameState(GameState.PLAYER_ONE_WIN);
-      else this.changeGameState(GameState.PLAYER_TWO_WIN);
-      this.isGameEnd = true;
-    }
+    // if (
+    //   this.mode === GameMode.TIMER &&
+    //   this.paddleOne.goal !== this.paddleTwo.goal &&
+    //   this.timer >= this.gameDuration
+    // ) {
+    //   if (this.paddleOne.goal > this.paddleTwo.goal) this.changeGameState(GameState.PLAYER_ONE_WIN);
+    //   else this.changeGameState(GameState.PLAYER_TWO_WIN);
+    //   this.isGameEnd = true;
+    // }
   }
 
   /**
@@ -266,8 +285,11 @@ export default class Room implements IRoom {
    *
    */
   pauseForfait() {
-    if (this.players[0].id === this.paddleOne.user.id) this.changeGameState(GameState.PLAYER_ONE_WIN);
-    else this.changeGameState(GameState.PLAYER_TWO_WIN);
+    if (this.players[0].id === this.paddleOne.user.id) {
+      this.changeGameState(GameState.PLAYER_ONE_WIN);
+    } else {
+      this.changeGameState(GameState.PLAYER_TWO_WIN);
+    }
   }
 
   /**
