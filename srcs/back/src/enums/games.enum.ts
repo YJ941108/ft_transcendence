@@ -8,6 +8,7 @@ export enum GameState {
   PLAYER_TWO_SCORED,
   PLAYER_ONE_WIN,
   PLAYER_TWO_WIN,
+  END_GAME,
 }
 
 export enum GameMode {

@@ -47,6 +47,10 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private queue: Queue = new Queue();
   private rooms: Map<string, Room> = new Map();
 
+  /**
+   * 큐가 찼다면 게임 생성
+   * @param players
+   */
   createNewRoom(players: Array<User>): void {
     const roomId: string = `${players[0].nickname}&${players[1].nickname}`;
     const room: Room = new Room(roomId, players, { mode: players[0].mode });
@@ -195,7 +199,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param client 소켓에 접속한 클라이언트
    */
   @SubscribeMessage('joinQueue')
-  handleJoinQueue(@ConnectedSocket() client: Socket): Object {
+  handleJoinQueue(@ConnectedSocket() client: Socket, @MessageBody() mode: string): Object {
     this.logger.log(`handleJoinQueue: client.id: ${client.id}`);
     this.logger.log(`handleJoinQueue: user: ${JSON.stringify(this.connectedUsers.getUserBySocketId(client.id))}`);
     this.logger.log(`handleJoinQueue: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`);
@@ -205,11 +209,18 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     if (user && !this.queue.isInQueue(user)) {
       this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_QUEUE);
+      this.connectedUsers.setGameMode(client.id, mode);
       this.queue.enqueue(user);
       this.server.to(client.id).emit('joinedQueue');
-      return { code: 200, message: 'joinQueue successed' };
+      return {
+        code: 200,
+        message: 'joinQueue successed',
+      };
     }
-    return { code: 400, message: 'joinQueue failed' };
+    return {
+      code: 400,
+      message: 'joinQueue failed',
+    };
   }
 
   /**
