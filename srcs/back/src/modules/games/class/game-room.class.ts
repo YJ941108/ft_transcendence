@@ -4,31 +4,43 @@ import { Ball } from './game-ball.class';
 import { CANVAS_WIDTH } from '../../../constants/games.constant';
 import { GameMode, GameState } from '../../../enums/games.enum';
 
+/**
+ * roomId
+ * gameState
+ * players
+ * paddleOne
+ * paddleTwo
+ * ball
+ * timestampStart
+ * lastUpdate
+ * goalTimestamp
+ * pauseTime
+ * maxGoal
+ * timer
+ * gameDuration
+ */
 export interface IRoom {
   roomId: string;
   gameState: GameState;
-  paddles: User[];
+  players: User[];
   paddleOne: Paddle;
   paddleTwo: Paddle;
   ball: Ball;
-
-  // Game timestamps
   timestampStart: number;
   lastUpdate: number;
   goalTimestamp: number;
   pauseTime: { pause: number; resume: number }[];
-
-  // settings customisation
   maxGoal: number;
-
   timer: number;
   gameDuration: number;
 }
 
+/**
+ *  소켓에 데이터를 보내기 위해서 사용됨
+ */
 export type SerializeRoom = {
   roomId: string;
   gameState: GameState;
-
   paddleOne: {
     user: {
       id: number;
@@ -41,7 +53,6 @@ export type SerializeRoom = {
     color: string;
     goal: number;
   };
-
   paddleTwo: {
     user: {
       id: number;
@@ -54,14 +65,12 @@ export type SerializeRoom = {
     color: string;
     goal: number;
   };
-
   ball: {
     x: number;
     y: number;
     r: number;
     color: string;
   };
-
   timestampStart: number;
   goalTimestamp: number;
   pauseTime: {
@@ -73,31 +82,36 @@ export type SerializeRoom = {
   gameDuration: number;
 };
 
+/**
+ *
+ */
 export default class Room implements IRoom {
   roomId: string;
   gameState: GameState;
-  paddles: User[];
+  players: User[];
   paddleOne: Paddle;
   paddleTwo: Paddle;
   ball: Ball;
-
   timestampStart: number;
   lastUpdate: number;
   goalTimestamp: number;
   pauseTime: { pause: number; resume: number }[];
-
   isGameEnd: boolean;
-
-  // settings customisation
   maxGoal: number;
   mode: GameMode;
   timer: number;
   gameDuration: number;
 
+  /**
+   *
+   * @param roomId
+   * @param users
+   * @param customisation
+   */
   constructor(roomId: string, users: User[], customisation: { mode?: GameMode } = { mode: GameMode.DEFAULT }) {
     this.roomId = roomId;
     this.gameState = GameState.STARTING;
-    this.paddles = [];
+    this.players = [];
     this.paddleOne = new Paddle(users[0], 10);
     this.paddleTwo = new Paddle(users[1], CANVAS_WIDTH - 40);
     this.ball = new Ball();
@@ -116,19 +130,36 @@ export default class Room implements IRoom {
     this.gameDuration = 60000 * 5; // 1min * num of minutes
   }
 
+  /**
+   *
+   * @param user
+   * @returns
+   */
   isAPlayer(user: User): boolean {
     return this.paddleOne.user.nickname === user.nickname || this.paddleTwo.user.nickname === user.nickname;
   }
 
+  /**
+   *
+   * @param user
+   */
   addUser(user: User) {
-    this.paddles.push(user);
+    this.players.push(user);
   }
 
+  /**
+   *
+   * @param userRm
+   */
   removeUser(userRm: User) {
-    const userIndex: number = this.paddles.findIndex((user) => user.nickname === userRm.nickname);
-    if (userIndex !== -1) this.paddles.splice(userIndex, 1);
+    const userIndex: number = this.players.findIndex((user) => user.nickname === userRm.nickname);
+    if (userIndex !== -1) this.players.splice(userIndex, 1);
   }
 
+  /**
+   *
+   * @returns
+   */
   getDuration(): number {
     let duration: number = Date.now() - this.timestampStart;
 
@@ -138,32 +169,51 @@ export default class Room implements IRoom {
     return duration;
   }
 
+  /**
+   *
+   * @param newGameState
+   */
   changeGameState(newGameState: GameState): void {
     this.gameState = newGameState;
   }
 
+  /**
+   *
+   */
   start(): void {
     this.timestampStart = Date.now();
     this.lastUpdate = Date.now();
     this.changeGameState(GameState.PLAYING);
   }
 
+  /**
+   *
+   */
   pause(): void {
     this.changeGameState(GameState.PAUSED);
     this.pauseTime.push({ pause: Date.now(), resume: Date.now() });
   }
 
+  /**
+   *
+   */
   resume(): void {
     this.changeGameState(GameState.RESUMED);
     this.pauseTime[this.pauseTime.length - 1].resume = Date.now();
   }
 
+  /**
+   *
+   */
   resetPosition(): void {
     this.paddleOne.reset();
     this.paddleTwo.reset();
     this.ball.reset();
   }
 
+  /**
+   *
+   */
   updateTimer() {
     let time: number = Date.now() - this.timestampStart;
     this.pauseTime.forEach((pause) => {
@@ -172,6 +222,9 @@ export default class Room implements IRoom {
     this.timer = time;
   }
 
+  /**
+   *
+   */
   checkGoal() {
     if (this.ball.goal === true) {
       this.goalTimestamp = this.lastUpdate;
@@ -200,6 +253,9 @@ export default class Room implements IRoom {
     }
   }
 
+  /**
+   *
+   */
   update(currentTimestamp: number): void {
     let secondPassed: number = (currentTimestamp - this.lastUpdate) / 1000;
     this.lastUpdate = currentTimestamp;
@@ -210,13 +266,18 @@ export default class Room implements IRoom {
     this.checkGoal();
   }
 
+  /**
+   *
+   */
   pauseForfait() {
-    if (this.paddles[0].id === this.paddleOne.user.id) this.changeGameState(GameState.PLAYER_ONE_WIN);
+    if (this.players[0].id === this.paddleOne.user.id) this.changeGameState(GameState.PLAYER_ONE_WIN);
     else this.changeGameState(GameState.PLAYER_TWO_WIN);
   }
 
+  /**
+   *
+   */
   serialize(): SerializeRoom {
-    // send the littlest amount of data
     const newSerializeRoom: SerializeRoom = {
       roomId: this.roomId,
       gameState: this.gameState,

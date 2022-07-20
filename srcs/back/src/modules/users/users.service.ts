@@ -190,4 +190,35 @@ export class UsersService {
       message: '성공',
     };
   }
+
+  /**
+   * 유저 게임 점수
+   * @param user
+   * @returns
+   */
+  updateUserRatio = (user: Users) => {
+    const ratio = Math.round((user.wins / (user.wins + user.losses)) * 100) / 100;
+
+    return ratio;
+  };
+
+  /**
+   * 게임 결과 업데이트
+   * @param user
+   * @param isWinner
+   * @returns
+   */
+  async updateStats(user: Users, isWinner: boolean) {
+    if (isWinner) {
+      user.wins += 1;
+    } else {
+      user.losses += 1;
+    }
+    user.ratio = this.updateUserRatio(user);
+
+    const updatedUser = await this.usersRepository.save(user);
+    // await this.achievementsService.checkUserAchievement(user, 'wins', user.wins);
+    // await this.achievementsService.checkUserAchievement(user, 'games', user.games.length + 1);
+    return updatedUser;
+  }
 }

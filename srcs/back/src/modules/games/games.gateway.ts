@@ -47,12 +47,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private queue: Queue = new Queue();
   private rooms: Map<string, Room> = new Map();
 
-  createNewRoom(paddles: Array<User>): void {
-    const roomId: string = `${paddles[0].nickname}&${paddles[1].nickname}`;
-    const room: Room = new Room(roomId, paddles, { mode: paddles[0].mode });
+  createNewRoom(players: Array<User>): void {
+    const roomId: string = `${players[0].nickname}&${players[1].nickname}`;
+    const room: Room = new Room(roomId, players, { mode: players[0].mode });
 
-    this.server.to(paddles[0].socketId).emit('newRoom', room);
-    this.server.to(paddles[1].socketId).emit('newRoom', room);
+    this.server.to(players[0].socketId).emit('newRoom', room);
+    this.server.to(players[1].socketId).emit('newRoom', room);
     this.rooms.set(roomId, room);
     this.currentGames.push(room);
 
@@ -68,12 +68,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.logger.log(`afterInit: ${server.name} 초기화`);
     setInterval(() => {
       if (this.queue.size() > 1) {
-        const paddles: Array<User> = this.queue.matchPlayers();
+        const players: Array<User> = this.queue.matchPlayers();
 
-        if (paddles.length === 0) {
+        if (players.length === 0) {
           return;
         }
-        this.createNewRoom(paddles);
+        this.createNewRoom(players);
       }
     }, SET_INTERVAL_MILISECONDS);
   }
@@ -230,7 +230,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (user && room) {
       room.removeUser(user);
 
-      if (room.paddles.length === 0) {
+      if (room.players.length === 0) {
         this.logger.log('No user left in the room deleting it...');
         this.rooms.delete(room.roomId);
 
@@ -255,54 +255,67 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.logger.log(`handleGetCurrentGames: currentGames: after: ${this.currentGames}`);
   }
 
-  // async saveGame(room: Room, currentTimestamp: number) {
-  //   let winnerId: number, loserId: number, winnerScore: number, loserScore: number;
+  /**
+   *
+   * @param room
+   * @param currentTimestamp
+   */
+  async saveGame(room: Room, currentTimestamp: number) {
+    let winner_id: number, loser_id: number, winner_score: number, loser_score: number;
 
-  //   if (room.gameState === GameState.PLAYER_ONE_WIN) {
-  //     winnerId = room.paddleOne.user.id;
-  //     loserId = room.paddleTwo.user.id;
-  //     winnerScore = room.paddleOne.goal;
-  //     loserScore = room.paddleTwo.goal;
-  //   } else if (room.gameState === GameState.PLAYER_TWO_WIN) {
-  //     winnerId = room.paddleTwo.user.id;
-  //     loserId = room.paddleOne.user.id;
-  //     winnerScore = room.paddleTwo.goal;
-  //     loserScore = room.paddleOne.goal;
-  //   }
+    if (room.gameState === GameState.PLAYER_ONE_WIN) {
+      winner_id = room.paddleOne.user.id;
+      loser_id = room.paddleTwo.user.id;
+      winner_score = room.paddleOne.goal;
+      loser_score = room.paddleTwo.goal;
+    } else if (room.gameState === GameState.PLAYER_TWO_WIN) {
+      winner_id = room.paddleTwo.user.id;
+      loser_id = room.paddleOne.user.id;
+      winner_score = room.paddleTwo.goal;
+      loser_score = room.paddleOne.goal;
+    }
 
-  //   const winner = await this.usersService.findOne(String(winnerId));
-  //   const loser = await this.usersService.findOne(String(loserId));
+    const winner = await this.usersService.getUser(winner_id);
+    const loser = await this.usersService.getUser(loser_id);
 
-  //   /* Update users wins/losses/draws and ratio */
-  //   const isDraw: boolean = false; // This is not used but may be one day
-  //   await this.usersService.updateStats(winner, isDraw, true);
-  //   await this.usersService.updateStats(loser, isDraw, false);
+    await this.usersService.updateStats(winner, true);
+    await this.usersService.updateStats(loser, false);
 
-  //   /* Save game in database */
-  //   await this.gamesService.create({
-  //     paddles: [winner, loser],
-  //     winnerId: winnerId,
-  //     loserId: loserId,
-  //     createdAt: new Date(room.timestampStart),
-  //     endedAt: new Date(currentTimestamp),
-  //     gameDuration: room.getDuration(),
-  //     winnerScore: winnerScore,
-  //     loserScore: loserScore,
-  //     mode: room.mode,
-  //   });
+    /* Save game in database */
+    await this.gamesService.create({
+      players: [winner, loser],
+      winner_id: winner_id,
+      loser_id: loser_id,
+      created_at: new Date(room.timestampStart),
+      ended_at: new Date(currentTimestamp),
+      game_duration: room.getDuration(),
+      winner_score: winner_score,
+      loser_score: loser_score,
+      mode: room.mode,
+    });
 
-  //   const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
+    const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
 
-  //   if (roomIndex !== -1) {
-  //     this.currentGames.splice(roomIndex, 1);
-  //   }
-  //   this.server.emit('updateCurrentGames', this.currentGames);
-  // }
-
-  secondToTimestamp(second: number): number {
-    return second * 1000;
+    if (roomIndex !== -1) {
+      this.currentGames.splice(roomIndex, 1);
+    }
+    this.server.emit('updateCurrentGames', this.currentGames);
   }
 
+  /**
+   * milliseconds -> seconds
+   * @param milliseconds
+   * @returns
+   */
+  secondToTimestamp(milliseconds: number): number {
+    return milliseconds * 1000;
+  }
+
+  /**
+   * 게임이 시작되면 Room인스턴스 정보를 계속 요청
+   * 1. Room이
+   * @param roomId
+   */
   @SubscribeMessage('requestUpdate')
   async handleRequestUpdate(@MessageBody() roomId: string) {
     const room: Room = this.rooms.get(roomId);
@@ -311,7 +324,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       const currentTimestamp: number = Date.now();
 
       if (room.gameState === GameState.WAITING) {
-        if (room.paddles.length === 2) {
+        if (room.players.length === 2) {
           room.gameState = GameState.STARTING;
           room.start();
         }
@@ -323,7 +336,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         room.start();
       } else if (room.gameState === GameState.PLAYING) {
         room.update(currentTimestamp);
-        // if (room.isGameEnd) this.saveGame(room, currentTimestamp);
+        if (room.isGameEnd) {
+          this.saveGame(room, currentTimestamp);
+        }
       } else if (
         (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
         currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(3.5)
@@ -343,71 +358,78 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       ) {
         room.pauseForfait();
         room.pauseTime[room.pauseTime.length - 1].resume = Date.now();
-        // this.saveGame(room, currentTimestamp);
+        this.saveGame(room, currentTimestamp);
       }
 
-      if (
-        room.mode === GameMode.TIMER &&
-        (room.gameState === GameState.PLAYER_ONE_SCORED ||
-          room.gameState === GameState.PLAYER_TWO_SCORED ||
-          room.gameState === GameState.PLAYING)
-      )
-        room.updateTimer();
+      // if (
+      //   room.mode === GameMode.TIMER &&
+      //   (room.gameState === GameState.PLAYER_ONE_SCORED ||
+      //     room.gameState === GameState.PLAYER_TWO_SCORED ||
+      //     room.gameState === GameState.PLAYING)
+      // )
+      //   room.updateTimer();
 
       this.server.to(room.roomId).emit('updateRoom', JSON.stringify(room.serialize()));
     }
   }
 
-  /* Controls */
+  /**
+   * 클라이언트에서 Key를 누를 때 동작
+   * ArrowUp / ArrowDown 키를 누르면 paddle 인스턴스의 up 변수가 true로 변경
+   * @param client
+   * @param data
+   */
   @SubscribeMessage('keyDown')
   async handleKeyUp(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomId: string; key: string; nickname: string },
   ) {
-    this.logger.log(`keyDown: client.id: ${client.id}`);
     const room: Room = this.rooms.get(data.roomId);
-    console.log('keyDown: before', room);
 
     if (room && room.paddleOne.user.nickname === data.nickname) {
-      if (data.key === 'ArrowUp') room.paddleOne.up = true;
-      if (data.key === 'ArrowDown') room.paddleOne.down = true;
+      if (data.key === 'ArrowUp') {
+        room.paddleOne.up = true;
+      }
+      if (data.key === 'ArrowDown') {
+        room.paddleOne.down = true;
+      }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
-      if (data.key === 'ArrowUp') room.paddleTwo.up = true;
-      if (data.key === 'ArrowDown') room.paddleTwo.down = true;
+      if (data.key === 'ArrowUp') {
+        room.paddleTwo.up = true;
+      }
+      if (data.key === 'ArrowDown') {
+        room.paddleTwo.down = true;
+      }
     }
-    console.log('keyDown: after', room);
   }
 
+  /**
+   * 클라이언트가 키를 뗄 때 동작
+   * ArrowUp / ArrowDown 키를 떼면 paddle 인스턴스의 up 변수가 false로 변경
+   * @param client
+   * @param data
+   */
   @SubscribeMessage('keyUp')
   async handleKeyDown(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomId: string; key: string; nickname: string },
   ) {
-    this.logger.log(`keyUp: client.id: ${client.id}`);
     const room: Room = this.rooms.get(data.roomId);
-    console.log('keyUp: before', room);
 
     if (room && room.paddleOne.user.nickname === data.nickname) {
-      if (data.key === 'ArrowUp') room.paddleOne.up = false;
-      if (data.key === 'ArrowDown') room.paddleOne.down = false;
+      if (data.key === 'ArrowUp') {
+        room.paddleOne.up = false;
+      }
+      if (data.key === 'ArrowDown') {
+        room.paddleOne.down = false;
+      }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
-      if (data.key === 'ArrowUp') room.paddleTwo.up = false;
-      if (data.key === 'ArrowDown') room.paddleTwo.down = false;
+      if (data.key === 'ArrowUp') {
+        room.paddleTwo.up = false;
+      }
+      if (data.key === 'ArrowDown') {
+        room.paddleTwo.down = false;
+      }
     }
-    console.log('keyUp: after', room);
-  }
-
-  /**
-   * 테스트 용도
-   * @function
-   * @param client 소켓에 접속한 클라이언트
-   * @return Array<Room>
-   */
-  @SubscribeMessage('sendMessage')
-  handleSendMessage(@ConnectedSocket() client: Socket, @MessageBody() payload: any[]): String {
-    this.logger.log(`handleSendMessage: client.id: ${JSON.stringify(client.data)}`);
-    this.logger.log(`handleSendMessage: message: ${payload[0]}`);
-    this.logger.log(`handleSendMessage: message: ${payload[1]}`);
-    return `Server received the message: ${payload[0]}`;
   }
 }

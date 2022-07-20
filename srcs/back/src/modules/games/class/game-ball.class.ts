@@ -8,13 +8,26 @@ import {
 } from '../../../constants/games.constant';
 import { Paddle } from './game-paddle.class';
 
+/**
+ * x: 공의 가로 위치
+ * y: 공의 세로 위치
+ * r: 공의 반지름
+ * speed: 공의 초기 속력
+ * acceleration: 공의 가속도
+ * velocity: 공의 속도
+ * goal: 공이 왼쪽, 오른쪽 벽에 닿으면 true
+ * color: 색상
+ */
 export interface IBall {
   x: number;
   y: number;
   r: number;
   speed: number;
   acceleration: number;
-  velocity: { dx: number; dy: number };
+  velocity: {
+    dx: number;
+    dy: number;
+  };
   goal: boolean;
   color: string;
 }
@@ -23,82 +36,53 @@ export class Ball implements IBall {
   x: number;
   y: number;
   r: number;
-
   speed: number;
   acceleration: number;
-  velocity: { dx: number; dy: number };
+  velocity: {
+    dx: number;
+    dy: number;
+  };
   goal: boolean;
   color: string;
 
+  /**
+   * velocity의 Math.random()에 의해 공이 시작할 때 왼쪽으로 갈지, 오른쪽으로 갈지 정해진다.
+   */
   constructor() {
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
     this.r = BALL_DEFAULT_RADIUS;
-
     this.speed = BALL_DEFAULT_SPEED;
     this.acceleration = BALL_ACCELERATION;
-
     this.velocity = { dx: this.speed * (Math.random() < 0.5 ? 1 : -1), dy: 0 };
     this.goal = false;
     this.color = 'white';
   }
 
+  /**
+   * 공 초기화
+   */
   reset() {
     let dir = this.x < CANVAS_WIDTH / 2 ? -1 : 1;
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
     this.speed = BALL_DEFAULT_SPEED;
-    this.velocity = { dx: dir * this.speed, dy: 0 };
+    this.velocity = {
+      dx: dir * this.speed,
+      dy: 0,
+    };
   }
 
-  update(secondPassed: number, p1: Paddle, p2: Paddle) {
-    if (this.r < BALL_DEFAULT_RADIUS) this.r += 1;
-
-    if (!this.handleCollision(secondPassed, p1, p2)) {
-      this.x += this.velocity.dx * secondPassed;
-      this.y += this.velocity.dy * secondPassed;
-    }
-
-    // Goal Paddle one
-    if (this.x + this.r >= CANVAS_WIDTH && this.goal === false) {
-      p1.goal++;
-      this.goal = true;
-    }
-
-    //Goal player two
-    if (this.x - this.r <= 0 && this.goal === false) {
-      p2.goal++;
-      this.goal = true;
-    }
-  }
-
-  handleCollision(secondPassed: number, p1: Paddle, p2: Paddle) {
-    // Collision on the borders of the board game
-    let nextPosY: number = this.y + this.velocity.dy * secondPassed;
-
-    if (nextPosY - this.r <= 0 || nextPosY + this.r >= 1080) {
-      this.velocity.dy = -this.velocity.dy;
-      this.r -= 5;
-    }
-
-    // Detect a collision between he ball and a Paddle
-    if (this.collision(secondPassed, p1, p2)) {
-      if (this.speed + this.acceleration < BALL_MAX_SPEED) this.speed += this.acceleration;
-      let p = this.x < CANVAS_WIDTH / 2 ? p1 : p2;
-      let collidePoint = this.y - (p.y + p.height / 2);
-      collidePoint = collidePoint / (p.height / 2);
-      let angleRad = (collidePoint * Math.PI) / 4;
-      let dir = this.x < CANVAS_WIDTH / 2 ? 1 : -1;
-      this.velocity.dx = dir * (this.speed * Math.cos(angleRad));
-      this.velocity.dy = this.speed * Math.sin(angleRad);
-      return true;
-    }
-    return false;
-  }
-
-  // Collision between ball and Paddle
+  /**
+   * Collision between ball and Paddle
+   * @param secondPassed
+   * @param p1
+   * @param p2
+   * @returns
+   */
   collision(secondPassed: number, p1: Paddle, p2: Paddle): boolean {
     let nextPosX: number = this.x + this.velocity.dx * secondPassed;
+
     if (this.x < CANVAS_WIDTH / 2) {
       if (nextPosX - this.r < p1.x + p1.width) {
         if (
@@ -125,5 +109,69 @@ export class Ball implements IBall {
       }
     }
     return false;
+  }
+
+  /**
+   *
+   * @param secondPassed
+   * @param p1
+   * @param p2
+   * @returns
+   */
+  handleCollision(secondPassed: number, p1: Paddle, p2: Paddle) {
+    // Collision on the borders of the board game
+    let nextPosY: number = this.y + this.velocity.dy * secondPassed;
+
+    if (nextPosY - this.r <= 0 || nextPosY + this.r >= 1080) {
+      this.velocity.dy = -this.velocity.dy;
+      this.r -= 5;
+    }
+
+    // Detect a collision between he ball and a Paddle
+    if (this.collision(secondPassed, p1, p2)) {
+      if (this.speed + this.acceleration < BALL_MAX_SPEED) {
+        this.speed += this.acceleration;
+      }
+
+      let p = this.x < CANVAS_WIDTH / 2 ? p1 : p2;
+      let collidePoint = this.y - (p.y + p.height / 2);
+      collidePoint = collidePoint / (p.height / 2);
+      let angleRad = (collidePoint * Math.PI) / 4;
+      let dir = this.x < CANVAS_WIDTH / 2 ? 1 : -1;
+      this.velocity.dx = dir * (this.speed * Math.cos(angleRad));
+      this.velocity.dy = this.speed * Math.sin(angleRad);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   *
+   * @param secondPassed
+   * @param p1
+   * @param p2
+   */
+  update(secondPassed: number, p1: Paddle, p2: Paddle) {
+    if (this.r < BALL_DEFAULT_RADIUS) {
+      this.r += 1;
+    }
+
+    if (!this.handleCollision(secondPassed, p1, p2)) {
+      this.x += this.velocity.dx * secondPassed;
+      this.y += this.velocity.dy * secondPassed;
+      this.color += 10;
+    }
+
+    /** Goal Paddle */
+    if (this.x + this.r >= CANVAS_WIDTH && this.goal === false) {
+      p1.goal++;
+      this.goal = true;
+    }
+    if (this.x - this.r <= 0 && this.goal === false) {
+      p2.goal++;
+      this.goal = true;
+    }
   }
 }

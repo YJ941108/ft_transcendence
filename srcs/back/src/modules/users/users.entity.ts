@@ -104,6 +104,22 @@ export class Users extends BaseEntity {
   })
   friends_blocked: number[];
 
+  /** games */
+  @Column({
+    nullable: true,
+  })
+  wins: number;
+
+  @Column({
+    nullable: true,
+  })
+  losses: number;
+
+  @Column({
+    nullable: true,
+  })
+  ratio: number;
+
   /**
    * src/modules/games/games.entity.ts 참고
    * @see https://typeorm.io/many-to-many-relations

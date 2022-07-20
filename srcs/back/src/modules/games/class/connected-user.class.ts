@@ -35,6 +35,7 @@ export class ConnectedUsers {
   }
 
   /**
+   *
    * @param socketId
    * @returns 찾은 User 객체
    */
@@ -70,7 +71,7 @@ export class ConnectedUsers {
   }
 
   /**
-   *
+   * 게임 모드 설정
    * @param socketId
    * @param mode
    */
