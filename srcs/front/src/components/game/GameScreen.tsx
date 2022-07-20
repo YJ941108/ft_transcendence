@@ -50,6 +50,32 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		gameData.drawScore(roomData.paddleOne, roomData.paddleTwo);
 	};
 
+	const gameEnd = (
+		roomId: string,
+		playerOneName: string,
+		playerTwoName: string,
+		gameState: GameState,
+		gameData: GameData
+	) => {
+		if (gameState === GameState.PLAYER_ONE_WIN)
+			gameData.drawCenteredTexture(
+				`${playerOneName} Won!!`,
+				gameData.screenWidth / 2,
+				gameData.screenHeight / 2,
+				45,
+				'white'
+			);
+		else if (gameState === GameState.PLAYER_TWO_WIN)
+			gameData.drawCenteredTexture(
+				`${playerTwoName} Won!!`,
+				gameData.screenWidth / 2,
+				gameData.screenHeight / 2,
+				45,
+				'white'
+			);
+		else if (gameState === GameState.END_GAME) socket.emit('leaveRoom', roomId);
+	};
+
 	useEffect(() => {
 		const gameData = new GameData(room);
 		if (isPlayer) {
@@ -63,17 +89,18 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		});
 
 		const gameLoop = () => {
-			socket.emit('requestUpdate', room.roomId);
+			if (room.gameState !== GameState.PLAYER_ONE_WIN && room.gameState !== GameState.PLAYER_TWO_WIN && isPlayer)
+				socket.emit('requestUpdate', room.roomId);
 			drawGame(gameData, room);
 			if (room.gameState === GameState.WAITING) {
 				gameData.drawWaiting();
-			}
-			if (room.gameState === GameState.STARTING) {
+			} else if (room.gameState === GameState.STARTING) {
 				const count: number = Math.floor((Date.now() - room.timestampStart) / 1000);
 				gameData.drawStartCountDown(countDown[count]);
-			}
-			if (room.gameState === GameState.PAUSED) {
+			} else if (room.gameState === GameState.PAUSED) {
 				gameData.drawPausedState();
+			} else if (room.gameState === GameState.PLAYER_ONE_WIN || room.gameState === GameState.PLAYER_TWO_WIN) {
+				gameEnd(room.roomId, room.paddleOne.user.username, room.paddleTwo.user.username, room.gameState, gameData);
 			}
 			animationFrameId = window.requestAnimationFrame(gameLoop);
 		};
