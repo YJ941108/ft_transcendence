@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import styled from 'styled-components';
 import GameData from './GameData';
-import { IRoom, IUser, IKey } from './GameInterfaces';
+import { IRoom, IUser, IKey, GameState } from './GameInterfaces';
 
 interface IGameScreenProps {
 	socketProps: Socket;
@@ -15,6 +15,7 @@ const Canvas = styled.canvas`
 `;
 
 function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
+	const countDown = ['3', '2', '1', 'start'];
 	const socket: Socket = socketProps;
 	const userData: IUser = JSON.parse(localStorage.getItem('user') || '{}');
 	let room: IRoom = roomDataProps;
@@ -64,6 +65,10 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		const gameLoop = () => {
 			socket.emit('requestUpdate', room.roomId);
 			drawGame(gameData, room);
+			if (room.gameState === GameState.STARTING) {
+				const count: number = Math.floor((Date.now() - room.timestampStart) / 1000);
+				gameData.drawStartCountDown(countDown[count]);
+			}
 			animationFrameId = window.requestAnimationFrame(gameLoop);
 		};
 

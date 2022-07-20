@@ -56,9 +56,19 @@ export default class GameData {
 		if (this.context) {
 			this.context.save();
 			this.context.fillStyle = color;
-			this.context.font = '48px serif';
+			this.context.font = `${size}px serif`;
 			this.context.fillText(text, x, y);
 			this.context.restore();
+		}
+	}
+
+	drawCenteredTexture(text: string, x: number, y: number, size: number, color: string) {
+		if (this.context) {
+			this.context.save();
+			this.context.fillStyle = color;
+			this.context.font = `${size}px serif`;
+			this.context.textAlign = 'center';
+			this.context.fillText(text, x, y);
 		}
 	}
 
@@ -67,7 +77,11 @@ export default class GameData {
 	}
 
 	drawScore(playerOne: IPlayer, playerTwo: IPlayer) {
-		this.drawTexture(`${playerOne.goal}`, canvasWidth / 4, canvasHeight / 10, 200, 'white');
+		this.drawTexture(`${playerOne.goal}`, canvasWidth / 4, canvasHeight / 10, 45, 'white');
 		this.drawTexture(`${playerTwo.goal}`, 3 * (canvasWidth / 4), canvasHeight / 10, 45, 'white');
+	}
+
+	drawStartCountDown(countDown: string) {
+		this.drawCenteredTexture(`${countDown}`, this.screenWidth / 2, this.screenHeight / 2, 45, '0x555555');
 	}
 }
