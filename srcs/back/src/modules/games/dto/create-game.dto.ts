@@ -2,36 +2,39 @@ import { IsString, IsOptional, IsInt } from 'class-validator';
 import { Users } from '../../users/users.entity';
 import { GameMode } from '../../../enums/games.enum';
 
+/**
+ * @see https://github.com/typestack/class-validator
+ */
 export class CreateGameDto {
   readonly players: Users[];
 
   @IsOptional()
   @IsInt()
-  readonly winnerId: number;
+  readonly winner_id: number;
 
   @IsOptional()
   @IsInt()
-  readonly loserId: number;
+  readonly loser_id: number;
 
   @IsOptional()
   @IsInt()
-  readonly winnerScore: number;
+  readonly winner_score: number;
 
   @IsOptional()
   @IsInt()
-  readonly loserScore: number;
+  readonly loser_score: number;
 
   @IsOptional()
   @IsString()
-  readonly createdAt: Date;
+  readonly created_at: Date;
 
   @IsOptional()
   @IsString()
-  readonly endedAt: Date;
+  readonly ended_at: Date;
 
   @IsOptional()
   @IsInt()
-  readonly gameDuration: number;
+  readonly game_duration: number;
 
   @IsOptional()
   @IsInt()

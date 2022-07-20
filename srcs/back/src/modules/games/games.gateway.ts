@@ -14,8 +14,10 @@ import { ConnectedUsers } from './class/connected-user.class';
 import Room from './class/game-room.class';
 import Queue from './class/queue.class';
 import { User } from './class/user.class';
-import { GameState, UserStatus } from '../../enums/games.enum';
+import { GameMode, GameState, UserStatus } from '../../enums/games.enum';
 import { SET_INTERVAL_MILISECONDS } from 'src/constants/games.constant';
+import { GamesService } from './games.service';
+import { UsersService } from '../users/users.service';
 
 /**
  * @decorator WebSocketGateway
@@ -34,7 +36,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   /** Logger */
   private logger: Logger = new Logger('gameGateway');
 
-  constructor() {}
+  constructor(private readonly gamesService: GamesService, private readonly usersService: UsersService) {}
 
   /** @type server */
   @WebSocketServer()
@@ -45,12 +47,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private queue: Queue = new Queue();
   private rooms: Map<string, Room> = new Map();
 
-  createNewRoom(paddles: Array<User>): void {
-    const roomId: string = `${paddles[0].nickname}&${paddles[1].nickname}`;
-    const room: Room = new Room(roomId, paddles, { mode: paddles[0].mode });
+  createNewRoom(players: Array<User>): void {
+    const roomId: string = `${players[0].nickname}&${players[1].nickname}`;
+    const room: Room = new Room(roomId, players, { mode: players[0].mode });
 
-    this.server.to(paddles[0].socketId).emit('newRoom', room);
-    this.server.to(paddles[1].socketId).emit('newRoom', room);
+    this.server.to(players[0].socketId).emit('newRoom', room);
+    this.server.to(players[1].socketId).emit('newRoom', room);
     this.rooms.set(roomId, room);
     this.currentGames.push(room);
 
@@ -66,12 +68,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.logger.log(`afterInit: ${server.name} 초기화`);
     setInterval(() => {
       if (this.queue.size() > 1) {
-        const paddles: Array<User> = this.queue.matchPlayers();
+        const players: Array<User> = this.queue.matchPlayers();
 
-        if (paddles.length === 0) {
+        if (players.length === 0) {
           return;
         }
-        this.createNewRoom(paddles);
+        this.createNewRoom(players);
       }
     }, SET_INTERVAL_MILISECONDS);
   }
@@ -113,6 +115,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('handleUserConnect')
   handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): ConnectedUsers {
     this.logger.log(`handleUserConnect: client.id: ${client.id}`);
+    this.logger.log(`handleUserConnect: user: ${JSON.stringify(user)}`);
     this.logger.log(`handleUserConnect: user.id: ${user.id}`);
     let newUser: User = this.connectedUsers.getUserById(user.id);
     if (newUser) {
@@ -137,11 +140,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('getCurrentGames')
   handleGetCurrentGames(@ConnectedSocket() client: Socket): Array<Room> {
     this.logger.log(`handleGetCurrentGames: client.id: ${client.id}`);
-    this.logger.log(`handleGetCurrentGames: user: ${this.connectedUsers.getUserBySocketId(client.id)}`);
+    this.logger.log(`handleGetCurrentGames: user: ${JSON.stringify(this.connectedUsers.getUserBySocketId(client.id))}`);
     this.logger.log(
       `handleGetCurrentGames: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`,
     );
-    this.logger.log(`handleGetCurrentGames: currentGames: ${this.currentGames}`);
+    this.logger.log(`handleGetCurrentGames: currentGames: ${JSON.stringify(this.currentGames)}`);
+    console.log(this.currentGames);
     this.server.to(client.id).emit('updateCurrentGames', this.currentGames);
     return this.currentGames;
   }
@@ -154,7 +158,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinQueue')
   handleJoinQueue(@ConnectedSocket() client: Socket): Object {
     this.logger.log(`handleJoinQueue: client.id: ${client.id}`);
-    this.logger.log(`handleJoinQueue: user: ${this.connectedUsers.getUserBySocketId(client.id)}`);
+    this.logger.log(`handleJoinQueue: user: ${JSON.stringify(this.connectedUsers.getUserBySocketId(client.id))}`);
     this.logger.log(`handleJoinQueue: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`);
 
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
@@ -193,12 +197,11 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinRoom')
   handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     this.logger.log(`handleJoinRoom: client.id: ${client.id}`);
-    this.logger.log(`handleJoinRoom: client.id: ${client.id}`);
 
     const room: Room = this.rooms.get(roomId);
     const user = this.connectedUsers.getUserBySocketId(client.id);
 
-    if (room && !room.isAPlayer(user)) {
+    if (room) {
       client.join(roomId);
       if (user.status === UserStatus.IN_HUB) {
         this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
@@ -206,6 +209,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         room.addUser(user);
       }
 
+      console.log(room.serialize());
       this.server.to(client.id).emit('joinedRoom');
       this.server.to(client.id).emit('updateRoom', JSON.stringify(room.serialize()));
     }
@@ -226,7 +230,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (user && room) {
       room.removeUser(user);
 
-      if (room.paddles.length === 0) {
+      if (room.players.length === 0) {
         this.logger.log('No user left in the room deleting it...');
         this.rooms.delete(room.roomId);
 
@@ -251,56 +255,181 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.logger.log(`handleGetCurrentGames: currentGames: after: ${this.currentGames}`);
   }
 
-  /* Controls */
+  /**
+   *
+   * @param room
+   * @param currentTimestamp
+   */
+  async saveGame(room: Room, currentTimestamp: number) {
+    let winner_id: number, loser_id: number, winner_score: number, loser_score: number;
+
+    if (room.gameState === GameState.PLAYER_ONE_WIN) {
+      winner_id = room.paddleOne.user.id;
+      loser_id = room.paddleTwo.user.id;
+      winner_score = room.paddleOne.goal;
+      loser_score = room.paddleTwo.goal;
+    } else if (room.gameState === GameState.PLAYER_TWO_WIN) {
+      winner_id = room.paddleTwo.user.id;
+      loser_id = room.paddleOne.user.id;
+      winner_score = room.paddleTwo.goal;
+      loser_score = room.paddleOne.goal;
+    }
+
+    const winner = await this.usersService.getUser(winner_id);
+    const loser = await this.usersService.getUser(loser_id);
+
+    await this.usersService.updateStats(winner, true);
+    await this.usersService.updateStats(loser, false);
+
+    /* Save game in database */
+    await this.gamesService.create({
+      players: [winner, loser],
+      winner_id: winner_id,
+      loser_id: loser_id,
+      created_at: new Date(room.timestampStart),
+      ended_at: new Date(currentTimestamp),
+      game_duration: room.getDuration(),
+      winner_score: winner_score,
+      loser_score: loser_score,
+      mode: room.mode,
+    });
+
+    const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
+
+    if (roomIndex !== -1) {
+      this.currentGames.splice(roomIndex, 1);
+    }
+    this.server.emit('updateCurrentGames', this.currentGames);
+  }
+
+  /**
+   * milliseconds -> seconds
+   * @param milliseconds
+   * @returns
+   */
+  secondToTimestamp(milliseconds: number): number {
+    return milliseconds * 1000;
+  }
+
+  /**
+   * 게임이 시작되면 Room인스턴스 정보를 계속 요청
+   * 1. Room이
+   * @param roomId
+   */
+  @SubscribeMessage('requestUpdate')
+  async handleRequestUpdate(@MessageBody() roomId: string) {
+    const room: Room = this.rooms.get(roomId);
+
+    if (room) {
+      const currentTimestamp: number = Date.now();
+
+      if (room.gameState === GameState.WAITING) {
+        if (room.players.length === 2) {
+          room.gameState = GameState.STARTING;
+          room.start();
+        }
+      }
+      if (
+        room.gameState === GameState.STARTING &&
+        currentTimestamp - room.timestampStart >= this.secondToTimestamp(3.5)
+      ) {
+        room.start();
+      } else if (room.gameState === GameState.PLAYING) {
+        room.update(currentTimestamp);
+        if (room.isGameEnd) {
+          this.saveGame(room, currentTimestamp);
+        }
+      } else if (
+        (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
+        currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(3.5)
+      ) {
+        room.resetPosition();
+        room.changeGameState(GameState.PLAYING);
+        room.lastUpdate = Date.now();
+      } else if (
+        room.gameState === GameState.RESUMED &&
+        currentTimestamp - room.pauseTime[room.pauseTime.length - 1].resume >= this.secondToTimestamp(3.5)
+      ) {
+        room.lastUpdate = Date.now();
+        room.changeGameState(GameState.PLAYING);
+      } else if (
+        room.gameState === GameState.PAUSED &&
+        currentTimestamp - room.pauseTime[room.pauseTime.length - 1].pause >= this.secondToTimestamp(42)
+      ) {
+        room.pauseForfait();
+        room.pauseTime[room.pauseTime.length - 1].resume = Date.now();
+        this.saveGame(room, currentTimestamp);
+      }
+
+      // if (
+      //   room.mode === GameMode.TIMER &&
+      //   (room.gameState === GameState.PLAYER_ONE_SCORED ||
+      //     room.gameState === GameState.PLAYER_TWO_SCORED ||
+      //     room.gameState === GameState.PLAYING)
+      // )
+      //   room.updateTimer();
+
+      this.server.to(room.roomId).emit('updateRoom', JSON.stringify(room.serialize()));
+    }
+  }
+
+  /**
+   * 클라이언트에서 Key를 누를 때 동작
+   * ArrowUp / ArrowDown 키를 누르면 paddle 인스턴스의 up 변수가 true로 변경
+   * @param client
+   * @param data
+   */
   @SubscribeMessage('keyDown')
   async handleKeyUp(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomId: string; key: string; nickname: string },
   ) {
-    this.logger.log(`keyDown: client.id: ${client.id}`);
     const room: Room = this.rooms.get(data.roomId);
-    this.logger.log(`keyDown: room: before: ${JSON.stringify(room)}`);
 
     if (room && room.paddleOne.user.nickname === data.nickname) {
-      if (data.key === 'ArrowUp') room.paddleOne.up = true;
-      if (data.key === 'ArrowDown') room.paddleOne.down = true;
+      if (data.key === 'ArrowUp') {
+        room.paddleOne.up = true;
+      }
+      if (data.key === 'ArrowDown') {
+        room.paddleOne.down = true;
+      }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
-      if (data.key === 'ArrowUp') room.paddleTwo.up = true;
-      if (data.key === 'ArrowDown') room.paddleTwo.down = true;
+      if (data.key === 'ArrowUp') {
+        room.paddleTwo.up = true;
+      }
+      if (data.key === 'ArrowDown') {
+        room.paddleTwo.down = true;
+      }
     }
-    this.logger.log(`keyDown: room: after: ${JSON.stringify(room)}`);
   }
 
+  /**
+   * 클라이언트가 키를 뗄 때 동작
+   * ArrowUp / ArrowDown 키를 떼면 paddle 인스턴스의 up 변수가 false로 변경
+   * @param client
+   * @param data
+   */
   @SubscribeMessage('keyUp')
   async handleKeyDown(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomId: string; key: string; nickname: string },
   ) {
-    this.logger.log(`keyUp: client.id: ${client.id}`);
     const room: Room = this.rooms.get(data.roomId);
-    this.logger.log(`keyUp: room: before: ${JSON.stringify(room)}`);
 
     if (room && room.paddleOne.user.nickname === data.nickname) {
-      if (data.key === 'ArrowUp') room.paddleOne.up = false;
-      if (data.key === 'ArrowDown') room.paddleOne.down = false;
+      if (data.key === 'ArrowUp') {
+        room.paddleOne.up = false;
+      }
+      if (data.key === 'ArrowDown') {
+        room.paddleOne.down = false;
+      }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
-      if (data.key === 'ArrowUp') room.paddleTwo.up = false;
-      if (data.key === 'ArrowDown') room.paddleTwo.down = false;
+      if (data.key === 'ArrowUp') {
+        room.paddleTwo.up = false;
+      }
+      if (data.key === 'ArrowDown') {
+        room.paddleTwo.down = false;
+      }
     }
-    this.logger.log(`keyUp: room: after: ${JSON.stringify(room)}`);
-  }
-
-  /**
-   * 테스트 용도
-   * @function
-   * @param client 소켓에 접속한 클라이언트
-   * @return Array<Room>
-   */
-  @SubscribeMessage('sendMessage')
-  handleSendMessage(@ConnectedSocket() client: Socket, @MessageBody() payload: any[]): String {
-    this.logger.log(`handleSendMessage: client.id: ${JSON.stringify(client.data)}`);
-    this.logger.log(`handleSendMessage: message: ${payload[0]}`);
-    this.logger.log(`handleSendMessage: message: ${payload[1]}`);
-    return `Server received the message: ${payload[0]}`;
   }
 }

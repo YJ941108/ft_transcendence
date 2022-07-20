@@ -30,7 +30,7 @@ export class UsersController {
    * @param filename
    * @param res
    */
-  @Get(':filename')
+  @Get('/profile/:filename')
   getProfileImage(@Req() req: Request, @Param('filename') filename: string, @Res() res: Response) {
     this.logger.log(`user: ${JSON.stringify(req.user)}`);
     this.logger.log(`getProfileImage: ${filename}`);

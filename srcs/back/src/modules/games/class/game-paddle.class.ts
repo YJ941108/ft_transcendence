@@ -1,9 +1,11 @@
 import { User } from './user.class';
 import { CANVAS_HEIGHT, PADDLE_HEIGHT, PADDLE_SPEED, PADDLE_WIDTH, TIMING } from '../../../constants/games.constant';
 
+/**
+ *
+ */
 export interface IPaddle {
   user: User;
-
   x: number;
   y: number;
   width: number;
@@ -13,9 +15,11 @@ export interface IPaddle {
   color: string;
 }
 
+/**
+ *
+ */
 export class Paddle implements IPaddle {
   user: User;
-
   x: number;
   y: number;
   width: number;
@@ -23,33 +27,34 @@ export class Paddle implements IPaddle {
   speed: number;
   goal: number;
   color: string;
-
-  // Controls
   up: boolean;
   down: boolean;
-
-  // UI
   step: number;
 
   constructor(user: User, x: number) {
     this.user = user;
-
     this.width = PADDLE_WIDTH;
     this.height = PADDLE_HEIGHT;
     this.x = x;
     this.y = CANVAS_HEIGHT / 2 - this.height / 2;
     this.speed = PADDLE_SPEED;
     this.goal = 0;
-
     this.up = false;
     this.down = false;
     this.color = 'rgba(255, 255, 255, 0.8)';
   }
 
+  /**
+   *
+   */
   reset(): void {
     this.y = CANVAS_HEIGHT / 2 - this.height / 2;
   }
 
+  /**
+   *
+   * @param secondPassed
+   */
   update(secondPassed: number): void {
     if (this.color !== 'rgba(255, 255, 255, 0.8)' && this.step <= TIMING) {
       this.color =
