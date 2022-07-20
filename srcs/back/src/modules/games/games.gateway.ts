@@ -98,6 +98,40 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
 
     if (user) {
+      /** 게임 중인 경우 게임 방 전체를 조회해야 한다 */
+      this.rooms.forEach((room: Room) => {
+        /** 게임 방에 있다면 우선 유저부터 방에서 지워야 한다 */
+        if (room.isAPlayer(user)) {
+          room.removeUser(user);
+
+          /**
+           * 게임 방에 아무도 없는 경우 -> rooms 인스턴스에서 게임을 지우고, currentGames에서도 지운다.
+           * 누군가 있는 경우 -> pause
+           */
+          if (room.players.length === 0 && room.gameState !== GameState.WAITING) {
+            this.logger.log('No player left in the room deleting it...');
+            this.rooms.delete(room.roomId);
+
+            const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
+            if (roomIndex !== -1) {
+              this.currentGames.splice(roomIndex, 1);
+            }
+            this.server.emit('updateCurrentGames', this.currentGames);
+          } else if (
+            room.gameState !== GameState.PLAYER_ONE_WIN &&
+            room.gameState !== GameState.PLAYER_TWO_WIN &&
+            room.gameState !== GameState.WAITING
+          ) {
+            if (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) {
+              room.resetPosition();
+            }
+            room.pause();
+          }
+          client.leave(room.roomId);
+          return;
+        }
+      });
+
       this.queue.removeUser(user);
       this.connectedUsers.removeUser(user);
       return { code: 200, message: `${user.nickname} is left` };
