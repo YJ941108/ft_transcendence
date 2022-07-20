@@ -82,6 +82,10 @@ export default class GameData {
 	}
 
 	drawStartCountDown(countDown: string) {
-		this.drawCenteredTexture(`${countDown}`, this.screenWidth / 2, this.screenHeight / 2, 45, '0x555555');
+		this.drawCenteredTexture(`${countDown}`, this.screenWidth / 2, this.screenHeight / 2, 45, 'white');
+	}
+
+	drawWaiting() {
+		this.drawCenteredTexture(`Waiting...`, this.screenWidth / 2, this.screenHeight / 2, 45, 'white');
 	}
 }

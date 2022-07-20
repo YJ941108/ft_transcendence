@@ -65,6 +65,9 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		const gameLoop = () => {
 			socket.emit('requestUpdate', room.roomId);
 			drawGame(gameData, room);
+			if (room.gameState === GameState.WAITING) {
+				gameData.drawWaiting();
+			}
 			if (room.gameState === GameState.STARTING) {
 				const count: number = Math.floor((Date.now() - room.timestampStart) / 1000);
 				gameData.drawStartCountDown(countDown[count]);
@@ -83,7 +86,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		};
 	}, []);
 	const leaveRoom = () => {
-		socket.emit('leaveRoom');
+		socket.emit('leaveRoom', room.roomId);
 	};
 	return (
 		<div>
