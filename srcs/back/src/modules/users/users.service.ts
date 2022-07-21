@@ -221,4 +221,11 @@ export class UsersService {
     // await this.achievementsService.checkUserAchievement(user, 'games', user.games.length + 1);
     return updatedUser;
   }
+
+  async actionFriends(nickname: string, action: string): Promise<Object> {
+    return {
+      nickname,
+      action,
+    };
+  }
 }

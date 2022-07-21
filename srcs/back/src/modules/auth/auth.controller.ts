@@ -94,7 +94,25 @@ export class AuthController {
       const payload = { email: user.email };
       const accessToken = this.jwtService.sign(payload);
       const origin = this.configService.get<string>('client.origin');
+      this.logger.log(accessToken);
       response.redirect(302, origin + `/auth?access_token=${accessToken}`);
+    } catch (e) {
+      throw new ConflictException(e);
+    }
+  }
+
+  /**
+   *
+   * @param email
+   * @returns
+   */
+  @Get('token/:email')
+  async token(@Param('email') email: string): Promise<string> {
+    try {
+      const user = await this.userRepository.findOne({ email });
+      const payload = { email: user.email };
+      const accessToken = this.jwtService.sign(payload);
+      return accessToken;
     } catch (e) {
       throw new ConflictException(e);
     }

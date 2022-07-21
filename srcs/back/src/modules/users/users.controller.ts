@@ -79,6 +79,16 @@ export class UsersController {
   }
 
   /**
+   * 다른 유저 정보 반환
+   * @param nickname
+   * @returns
+   */
+  @Get(':nickname/:action')
+  async actionFriends(@Param('nickname') nickname: string, @Param('action') action: string): Promise<Object> {
+    return this.usersService.actionFriends(nickname, action);
+  }
+
+  /**
    * two factor authentication 설정
    * @param req
    * @returns
