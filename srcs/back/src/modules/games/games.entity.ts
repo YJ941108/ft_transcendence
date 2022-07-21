@@ -13,6 +13,9 @@ import {
 } from 'typeorm';
 import { Users } from '../users/users.entity';
 
+/**
+ *
+ */
 @Entity()
 export class Games extends BaseEntity {
   @PrimaryGeneratedColumn()

@@ -6,15 +6,30 @@ import { Response } from 'express';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersRepository } from '../users/users.repository';
 
+/**
+ *
+ */
 @Controller('auth')
 export class AuthController {
   private logger = new Logger('AuthController');
+
+  /**
+   *
+   * @param userRepository
+   * @param jwtService
+   * @param configService
+   */
   constructor(
     private userRepository: UsersRepository,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
 
+  /**
+   *
+   * @param username
+   * @returns
+   */
   @Get('login/:username')
   async login(@Param('username') username: string): Promise<string> {
     try {
@@ -28,6 +43,11 @@ export class AuthController {
     }
   }
 
+  /**
+   *
+   * @param request
+   * @param response
+   */
   @UseGuards(AuthGuard('42'))
   @Get('42/callback')
   async fortyTwoCallback(

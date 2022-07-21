@@ -1,11 +1,11 @@
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { Logger, RequestMethod } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { SocketIoAdapter } from './adapters/socket-io.adapter';
 import { join } from 'path';
+import { AppModule } from './app.module';
+import { SocketIoAdapter } from './adapters/socket-io.adapter';
 
 async function bootstrap() {
   /** 로그 */

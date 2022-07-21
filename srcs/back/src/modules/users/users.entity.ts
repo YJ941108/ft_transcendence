@@ -1,5 +1,6 @@
-// https://github.com/typeorm/typeorm/blob/master/test/functional/database-schema/column-types/postgres/entity/Post.ts
-
+/**
+ * @see https://github.com/typeorm/typeorm/blob/master/test/functional/database-schema/column-types/postgres/entity/Post.ts
+ */
 import {
   BaseEntity,
   Column,

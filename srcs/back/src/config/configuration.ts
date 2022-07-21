@@ -1,3 +1,17 @@
+/**
+ * port
+ * auth
+ *    fortytwo
+ *      id
+ *      secret
+ *      callback
+ * client
+ *    origin
+ * server
+ *    origin
+ * jwt
+ *    secret
+ */
 export default () => ({
   port: parseInt(process.env.PORT, 10) || 3002,
   auth: {
