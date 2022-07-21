@@ -62,7 +62,7 @@ export class AuthController {
     request,
     @Res()
     response: Response,
-  ) {
+  ): Promise<void> {
     this.logger.log(JSON.stringify(request.body));
     const { email } = request.body;
     const photo = email;
@@ -83,17 +83,18 @@ export class AuthController {
 
   /**
    *
-   * @param username
+   * @param email
    * @returns
    */
-  @Get('login/:username')
-  async login(@Param('username') username: string): Promise<string> {
+  @Get('login/:email')
+  async login(@Param('email') email: string, @Res() response: Response): Promise<void> {
     try {
-      const user = await this.userRepository.findOne({ username });
+      const user = await this.userRepository.findOne({ email });
       this.logger.log(user);
       const payload = { email: user.email };
       const accessToken = this.jwtService.sign(payload);
-      return accessToken;
+      const origin = this.configService.get<string>('client.origin');
+      response.redirect(302, origin + `/auth?access_token=${accessToken}`);
     } catch (e) {
       throw new ConflictException(e);
     }
