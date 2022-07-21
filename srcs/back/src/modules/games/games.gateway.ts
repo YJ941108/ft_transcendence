@@ -311,36 +311,38 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param currentTimestamp
    */
   async saveGame(room: Room, currentTimestamp: number) {
-    let winner_id: number, loser_id: number, winner_score: number, loser_score: number;
+    let winnerId: number, loserId: number, winnerScore: number, loserScore: number;
 
     if (room.gameState === GameState.PLAYER_ONE_WIN) {
-      winner_id = room.paddleOne.user.id;
-      loser_id = room.paddleTwo.user.id;
-      winner_score = room.paddleOne.goal;
-      loser_score = room.paddleTwo.goal;
+      winnerId = room.paddleOne.user.id;
+      loserId = room.paddleTwo.user.id;
+      winnerScore = room.paddleOne.goal;
+      loserScore = room.paddleTwo.goal;
     } else if (room.gameState === GameState.PLAYER_TWO_WIN) {
-      winner_id = room.paddleTwo.user.id;
-      loser_id = room.paddleOne.user.id;
-      winner_score = room.paddleTwo.goal;
-      loser_score = room.paddleOne.goal;
+      winnerId = room.paddleTwo.user.id;
+      loserId = room.paddleOne.user.id;
+      winnerScore = room.paddleTwo.goal;
+      loserScore = room.paddleOne.goal;
     }
 
-    const winner = await this.usersService.getUser(winner_id);
-    const loser = await this.usersService.getUser(loser_id);
+    const winner = await this.usersService.getUser(winnerId);
+    const loser = await this.usersService.getUser(loserId);
 
     await this.usersService.updateStats(winner, true);
     await this.usersService.updateStats(loser, false);
 
-    /* Save game in database */
+    /**
+     *
+     */
     await this.gamesService.create({
       players: [winner, loser],
-      winner_id: winner_id,
-      loser_id: loser_id,
-      created_at: new Date(room.timestampStart),
-      ended_at: new Date(currentTimestamp),
-      game_duration: room.getDuration(),
-      winner_score: winner_score,
-      loser_score: loser_score,
+      winnerId: winnerId,
+      loserId: loserId,
+      createdAt: new Date(room.timestampStart),
+      endedAt: new Date(currentTimestamp),
+      gameDuration: room.getDuration(),
+      winnerScore: winnerScore,
+      loserScore: loserScore,
       mode: room.mode,
     });
 

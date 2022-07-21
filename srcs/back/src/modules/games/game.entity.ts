@@ -17,7 +17,7 @@ import { Users } from '../users/users.entity';
  *
  */
 @Entity()
-export class Games extends BaseEntity {
+export class Game extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -39,12 +39,12 @@ export class Games extends BaseEntity {
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
-  public created_at: Date;
+  public createdAt: Date;
 
   @UpdateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
-  public updated_at: Date;
+  public updatedAt: Date;
 }
