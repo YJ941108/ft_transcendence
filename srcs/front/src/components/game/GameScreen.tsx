@@ -99,7 +99,11 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 				gameData.drawStartCountDown(countDown[count]);
 			} else if (room.gameState === GameState.PAUSED) {
 				gameData.drawPausedState();
-			} else if (room.gameState === GameState.PLAYER_ONE_WIN || room.gameState === GameState.PLAYER_TWO_WIN) {
+			} else if (
+				room.gameState === GameState.PLAYER_ONE_WIN ||
+				room.gameState === GameState.PLAYER_TWO_WIN ||
+				room.gameState === GameState.END_GAME
+			) {
 				gameEnd(room.roomId, room.paddleOne.user.username, room.paddleTwo.user.username, room.gameState, gameData);
 			}
 			animationFrameId = window.requestAnimationFrame(gameLoop);

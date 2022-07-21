@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import SignUp from '../../components/login/SignUp';
 
 const LoginC = styled.div`
 	display: flex;
@@ -20,11 +21,14 @@ const LoginButton = styled.div`
 function LoginPage() {
 	return (
 		<LoginC>
+			<h2>로그인</h2>
 			<LoginButton>
 				<a href={process.env.REACT_APP_FORTYTWO_LOGIN_API}>42Login</a>
 			</LoginButton>
 			<LoginButton>KakaoLogin</LoginButton>
 			<LoginButton>GoogleLogin</LoginButton>
+			<h2>회원가입</h2>
+			<SignUp />
 		</LoginC>
 	);
 }
