@@ -11,7 +11,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { Game } from '../games/game.entity';
+import { Game } from '../games/games.entity';
 
 /**
  *
@@ -52,12 +52,12 @@ export class Users extends BaseEntity {
   @Column({
     nullable: true,
   })
-  access_token: string;
+  accessToken: string;
 
   @Column({
     nullable: true,
   })
-  refresh_token: string;
+  refreshToken: string;
 
   /** JSON Web Token */
 
@@ -78,20 +78,14 @@ export class Users extends BaseEntity {
     nullable: true,
     default: false,
   })
-  tfa_code: string;
-
-  @Column({
-    select: false,
-    default: false,
-  })
-  has_tfa_been_validated: boolean;
+  tfaCode: string;
 
   /** friends */
   @Column('int', {
     nullable: true,
     array: true,
   })
-  friends_request: number[];
+  friendsRequest: number[];
 
   @Column('int', {
     nullable: true,
@@ -103,7 +97,7 @@ export class Users extends BaseEntity {
     nullable: true,
     array: true,
   })
-  friends_blocked: number[];
+  friendsBlocked: number[];
 
   /** games */
   @Column({
@@ -122,11 +116,11 @@ export class Users extends BaseEntity {
   ratio: number;
 
   /**
-   * src/modules/games/games.entity.ts 참고
+   * src/modules/games/game.entity.ts 참고
    * @see https://typeorm.io/many-to-many-relations
    */
   @ManyToMany(() => Game, (game) => game.players)
-  games: Game[];
+  game: Game[];
 
   /**
    * @see https://typeorm.io/decorator-reference#createdatecolumn
@@ -136,7 +130,7 @@ export class Users extends BaseEntity {
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
-  public created_at: Date;
+  public createdAt: Date;
 
   /**
    * @see https://typeorm.io/decorator-reference#updatedatecolumn
@@ -147,5 +141,5 @@ export class Users extends BaseEntity {
     default: () => 'CURRENT_TIMESTAMP(6)',
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
-  public updated_at: Date;
+  public updatedAt: Date;
 }

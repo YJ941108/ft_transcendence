@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Game } from './game.entity';
+import { Game } from './games.entity';
 
 /**
  *

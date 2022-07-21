@@ -142,7 +142,7 @@ export class UsersService {
 
     const randomNumber: string = randomString(4, '#');
     this.logger.log(`getTwoFactorAuthCode: randomNumber: ${randomNumber}`);
-    user.tfa_code = randomNumber;
+    user.tfaCode = randomNumber;
     this.logger.log(`getTwoFactorAuthCode: user: ${user.email}`);
 
     this.mailerService
@@ -179,10 +179,10 @@ export class UsersService {
 
     this.logger.log(`checkTwoFactorAuthCode: user = ${JSON.stringify(user)}`);
 
-    if (!user.tfa_code) {
+    if (!user.tfaCode) {
       throw new NotFoundException(`코드가 없습니다.`);
     }
-    if (user.tfa_code !== code) {
+    if (user.tfaCode !== code) {
       throw new NotAcceptableException(`코드가 올바르지 않습니다`);
     }
     return {

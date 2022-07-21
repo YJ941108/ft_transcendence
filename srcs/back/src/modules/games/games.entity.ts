@@ -21,7 +21,7 @@ export class Game extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToMany(() => Users, (player) => player.games)
+  @ManyToMany(() => Users, (player) => player.game)
   @JoinTable()
   players: Users[];
 
