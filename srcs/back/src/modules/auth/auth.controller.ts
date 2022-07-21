@@ -63,6 +63,7 @@ export class AuthController {
     @Res()
     response: Response,
   ) {
+    this.logger.log(JSON.stringify(request.body));
     const { email } = request.body;
     const photo = email;
     const user = await this.userRepository.findOne({ email });
@@ -76,6 +77,7 @@ export class AuthController {
     }
     const payload = { email };
     const accessToken = this.jwtService.sign(payload);
+    const origin = this.configService.get<string>('client.origin');
     response.redirect(302, origin + `/auth?access_token=${accessToken}`);
   }
 
