@@ -18,6 +18,9 @@ import { multerOptions } from 'src/middleware/multer.middleware';
 import { Users } from './users.entity';
 import { UsersService } from './users.service';
 
+/**
+ *
+ */
 @Controller('users')
 @UseGuards(AuthGuard())
 export class UsersController {
@@ -73,6 +76,16 @@ export class UsersController {
   async getUserByNickname(@Param('nickname') nickname: string): Promise<Users> {
     const user = await this.usersService.getUserByNickname(nickname);
     return user;
+  }
+
+  /**
+   * 다른 유저 정보 반환
+   * @param nickname
+   * @returns
+   */
+  @Get(':nickname/:action')
+  async actionFriends(@Param('nickname') nickname: string, @Param('action') action: string): Promise<Object> {
+    return this.usersService.actionFriends(nickname, action);
   }
 
   /**

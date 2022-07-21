@@ -10,31 +10,31 @@ export class CreateGameDto {
 
   @IsOptional()
   @IsInt()
-  readonly winner_id: number;
+  readonly winnerId: number;
 
   @IsOptional()
   @IsInt()
-  readonly loser_id: number;
+  readonly loserId: number;
 
   @IsOptional()
   @IsInt()
-  readonly winner_score: number;
+  readonly winnerScore: number;
 
   @IsOptional()
   @IsInt()
-  readonly loser_score: number;
+  readonly loserScore: number;
 
   @IsOptional()
   @IsString()
-  readonly created_at: Date;
+  readonly createdAt: Date;
 
   @IsOptional()
   @IsString()
-  readonly ended_at: Date;
+  readonly endedAt: Date;
 
   @IsOptional()
   @IsInt()
-  readonly game_duration: number;
+  readonly gameDuration: number;
 
   @IsOptional()
   @IsInt()

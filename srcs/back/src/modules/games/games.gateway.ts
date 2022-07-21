@@ -47,6 +47,10 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private queue: Queue = new Queue();
   private rooms: Map<string, Room> = new Map();
 
+  /**
+   * 큐가 찼다면 게임 생성
+   * @param players
+   */
   createNewRoom(players: Array<User>): void {
     const roomId: string = `${players[0].nickname}&${players[1].nickname}`;
     const room: Room = new Room(roomId, players, { mode: players[0].mode });
@@ -98,6 +102,40 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
 
     if (user) {
+      /** 게임 중인 경우 게임 방 전체를 조회해야 한다 */
+      this.rooms.forEach((room: Room) => {
+        /** 게임 방에 있다면 우선 유저부터 방에서 지워야 한다 */
+        if (room.isAPlayer(user)) {
+          room.removeUser(user);
+
+          /**
+           * 게임 방에 아무도 없는 경우 -> rooms 인스턴스에서 게임을 지우고, currentGames에서도 지운다.
+           * 누군가 있는 경우 -> pause
+           */
+          if (room.players.length === 0 && room.gameState !== GameState.WAITING) {
+            this.logger.log('No player left in the room deleting it...');
+            this.rooms.delete(room.roomId);
+
+            const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
+            if (roomIndex !== -1) {
+              this.currentGames.splice(roomIndex, 1);
+            }
+            this.server.emit('updateCurrentGames', this.currentGames);
+          } else if (
+            room.gameState !== GameState.PLAYER_ONE_WIN &&
+            room.gameState !== GameState.PLAYER_TWO_WIN &&
+            room.gameState !== GameState.WAITING
+          ) {
+            if (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) {
+              room.resetPosition();
+            }
+            room.pause();
+          }
+          client.leave(room.roomId);
+          return;
+        }
+      });
+
       this.queue.removeUser(user);
       this.connectedUsers.removeUser(user);
       return { code: 200, message: `${user.nickname} is left` };
@@ -116,19 +154,24 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): ConnectedUsers {
     this.logger.log(`handleUserConnect: client.id: ${client.id}`);
     this.logger.log(`handleUserConnect: user: ${JSON.stringify(user)}`);
-    this.logger.log(`handleUserConnect: user.id: ${user.id}`);
-    let newUser: User = this.connectedUsers.getUserById(user.id);
-    if (newUser) {
-      newUser.setSocketId(client.id);
-      newUser.setNickname(user.nickname);
-    } else {
-      newUser = new User(user.id, user.nickname, client.id, user.ratio);
+
+    if (user) {
+      this.logger.log(`handleUserConnect: user.id: ${user.id}`);
+      let newUser: User = this.connectedUsers.getUserById(user.id);
+      if (newUser) {
+        newUser.setSocketId(client.id);
+        newUser.setNickname(user.nickname);
+      } else {
+        newUser = new User(user.id, user.nickname, client.id, user.ratio);
+      }
+      newUser.setUserStatus(UserStatus.IN_HUB);
+      this.logger.log(`handleUserConnect: newUser: ${JSON.stringify(newUser)}`);
+      this.connectedUsers.addUser(newUser);
+      this.logger.log(`handleUserConnect: connectedUsers: ${JSON.stringify(this.connectedUsers)}`);
+      return this.connectedUsers;
     }
-    newUser.setUserStatus(UserStatus.IN_HUB);
-    this.logger.log(`handleUserConnect: newUser: ${JSON.stringify(newUser)}`);
-    this.connectedUsers.addUser(newUser);
-    this.logger.log(`handleUserConnect: connectedUsers: ${JSON.stringify(this.connectedUsers)}`);
-    return this.connectedUsers;
+
+    return;
   }
 
   /**
@@ -156,7 +199,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param client 소켓에 접속한 클라이언트
    */
   @SubscribeMessage('joinQueue')
-  handleJoinQueue(@ConnectedSocket() client: Socket): Object {
+  handleJoinQueue(@ConnectedSocket() client: Socket, @MessageBody() mode: string): Object {
     this.logger.log(`handleJoinQueue: client.id: ${client.id}`);
     this.logger.log(`handleJoinQueue: user: ${JSON.stringify(this.connectedUsers.getUserBySocketId(client.id))}`);
     this.logger.log(`handleJoinQueue: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`);
@@ -166,11 +209,18 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     if (user && !this.queue.isInQueue(user)) {
       this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_QUEUE);
+      this.connectedUsers.setGameMode(client.id, mode);
       this.queue.enqueue(user);
       this.server.to(client.id).emit('joinedQueue');
-      return { code: 200, message: 'joinQueue successed' };
+      return {
+        code: 200,
+        message: 'joinQueue successed',
+      };
     }
-    return { code: 400, message: 'joinQueue failed' };
+    return {
+      code: 400,
+      message: 'joinQueue failed',
+    };
   }
 
   /**
@@ -261,36 +311,38 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param currentTimestamp
    */
   async saveGame(room: Room, currentTimestamp: number) {
-    let winner_id: number, loser_id: number, winner_score: number, loser_score: number;
+    let winnerId: number, loserId: number, winnerScore: number, loserScore: number;
 
     if (room.gameState === GameState.PLAYER_ONE_WIN) {
-      winner_id = room.paddleOne.user.id;
-      loser_id = room.paddleTwo.user.id;
-      winner_score = room.paddleOne.goal;
-      loser_score = room.paddleTwo.goal;
+      winnerId = room.paddleOne.user.id;
+      loserId = room.paddleTwo.user.id;
+      winnerScore = room.paddleOne.goal;
+      loserScore = room.paddleTwo.goal;
     } else if (room.gameState === GameState.PLAYER_TWO_WIN) {
-      winner_id = room.paddleTwo.user.id;
-      loser_id = room.paddleOne.user.id;
-      winner_score = room.paddleTwo.goal;
-      loser_score = room.paddleOne.goal;
+      winnerId = room.paddleTwo.user.id;
+      loserId = room.paddleOne.user.id;
+      winnerScore = room.paddleTwo.goal;
+      loserScore = room.paddleOne.goal;
     }
 
-    const winner = await this.usersService.getUser(winner_id);
-    const loser = await this.usersService.getUser(loser_id);
+    const winner = await this.usersService.getUser(winnerId);
+    const loser = await this.usersService.getUser(loserId);
 
     await this.usersService.updateStats(winner, true);
     await this.usersService.updateStats(loser, false);
 
-    /* Save game in database */
+    /**
+     *
+     */
     await this.gamesService.create({
       players: [winner, loser],
-      winner_id: winner_id,
-      loser_id: loser_id,
-      created_at: new Date(room.timestampStart),
-      ended_at: new Date(currentTimestamp),
-      game_duration: room.getDuration(),
-      winner_score: winner_score,
-      loser_score: loser_score,
+      winnerId: winnerId,
+      loserId: loserId,
+      createdAt: new Date(room.timestampStart),
+      endedAt: new Date(currentTimestamp),
+      gameDuration: room.getDuration(),
+      winnerScore: winnerScore,
+      loserScore: loserScore,
       mode: room.mode,
     });
 
@@ -336,12 +388,14 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         room.start();
       } else if (room.gameState === GameState.PLAYING) {
         room.update(currentTimestamp);
-        if (room.isGameEnd) {
+        /** 게임이 종료되었다면 */
+        if (room.isGameEnd && currentTimestamp - room.timestampStart >= this.secondToTimestamp(3.5)) {
+          room.gameState = GameState.END_GAME;
           this.saveGame(room, currentTimestamp);
         }
       } else if (
         (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
-        currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(3.5)
+        currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(1)
       ) {
         room.resetPosition();
         room.changeGameState(GameState.PLAYING);
