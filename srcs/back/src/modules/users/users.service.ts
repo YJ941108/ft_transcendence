@@ -242,6 +242,8 @@ export class UsersService {
       throw new BadRequestException();
     } else if (action === 'request') {
       return this.usersRepository.friendsRequest(actionFriendsDto);
+    } else if (action === 'accept') {
+      return this.usersRepository.friendsAccept(actionFriendsDto);
     }
   }
 }
