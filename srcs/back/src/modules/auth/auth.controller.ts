@@ -65,7 +65,6 @@ export class AuthController {
   ): Promise<void> {
     this.logger.log(JSON.stringify(request.body));
     const { email } = request.body;
-    const photo = email;
     const user = await this.userRepository.findOne({ email });
     if (!user) {
       const serverOrigin = this.configService.get<string>('server.origin');
@@ -77,8 +76,7 @@ export class AuthController {
     }
     const payload = { email };
     const accessToken = this.jwtService.sign(payload);
-    const origin = this.configService.get<string>('client.origin');
-    response.redirect(302, origin + `/auth?access_token=${accessToken}`);
+    response.send(accessToken);
   }
 
   /**
@@ -95,7 +93,8 @@ export class AuthController {
       const accessToken = this.jwtService.sign(payload);
       const origin = this.configService.get<string>('client.origin');
       this.logger.log(accessToken);
-      response.redirect(302, origin + `/auth?access_token=${accessToken}`);
+      this.logger.log(origin);
+      response.send(accessToken);
     } catch (e) {
       throw new ConflictException(e);
     }
