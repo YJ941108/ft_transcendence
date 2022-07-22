@@ -15,6 +15,7 @@ import { randomString } from 'src/utils/randomString';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
+import { ActionFriendsDto } from './dto/action-friends.dto';
 
 /**
  *  @class UsersService
@@ -24,7 +25,10 @@ export class UsersService {
   private logger = new Logger('UsersService');
 
   /**
+   *
    * @param usersRepository
+   * @param mailerService
+   * @param configService
    */
   constructor(
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
@@ -226,10 +230,18 @@ export class UsersService {
     return updatedUser;
   }
 
-  async actionFriends(nickname: string, action: string): Promise<Object> {
-    return {
-      nickname,
-      action,
-    };
+  /**
+   *
+   * @param actionFriendsDto
+   * @returns
+   */
+  async actionFriends(actionFriendsDto: ActionFriendsDto): Promise<Users> {
+    const { id, nickname, action } = actionFriendsDto;
+
+    if (!action) {
+      throw new BadRequestException();
+    } else if (action === 'request') {
+      return this.usersRepository.friendsRequest(actionFriendsDto);
+    }
   }
 }
