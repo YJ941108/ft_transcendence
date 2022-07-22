@@ -1,20 +1,27 @@
-import React from 'react';
-import { useMutation } from 'react-query';
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Navigate } from 'react-router-dom';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { postEmailData } from '../../modules/api';
 import IEmail from './EmailInterface';
 
-function SignUp() {
+function EmailSignIn() {
+	const [isLoading, setIsLoading] = useState(false);
+	const [token, setToken] = useState('');
 	const {
 		register,
 		handleSubmit,
 		formState: { errors },
 	} = useForm<IEmail>();
-	const { mutate } = useMutation(postEmailData);
-	const onSubmit: SubmitHandler<IEmail> = (email) => {
-		mutate(email);
+	const onSubmit: SubmitHandler<IEmail> = async (email: IEmail) => {
+		setIsLoading(true);
+		const { data: tokenData } = await axios.get(`/api/auth/login/${email.email}`);
+		setToken(tokenData);
+		setIsLoading(false);
 	};
-	return (
+	if (isLoading) return <h1>Loading...</h1>;
+	return token ? (
+		<Navigate to={`/auth?token=${token}`} />
+	) : (
 		<form onSubmit={handleSubmit(onSubmit)}>
 			<input
 				placeholder="email을 입력해주세요."
@@ -31,4 +38,4 @@ function SignUp() {
 	);
 }
 
-export default SignUp;
+export default EmailSignIn;

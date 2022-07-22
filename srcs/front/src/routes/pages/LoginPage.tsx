@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import SignUp from '../../components/login/SignUp';
+import EmailSignUp from '../../components/login/EmailSignUp';
+import EmailSignIn from '../../components/login/EmailSignIn';
 
 const LoginC = styled.div`
 	display: flex;
@@ -27,8 +28,9 @@ function LoginPage() {
 			</LoginButton>
 			<LoginButton>KakaoLogin</LoginButton>
 			<LoginButton>GoogleLogin</LoginButton>
+			<EmailSignIn />
 			<h2>회원가입</h2>
-			<SignUp />
+			<EmailSignUp />
 		</LoginC>
 	);
 }

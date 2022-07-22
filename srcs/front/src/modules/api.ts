@@ -10,7 +10,8 @@ const getUserData = async () => {
 };
 
 export const postEmailData = async (email: IEmail) => {
-	return axios.post('/api/auth/email', email);
+	const response = await axios.post('/api/auth/email', email);
+	return response;
 };
 
 export const getEmailData = async (email: IEmail) => {

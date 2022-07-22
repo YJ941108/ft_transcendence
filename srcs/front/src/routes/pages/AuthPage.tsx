@@ -14,11 +14,7 @@ function AuthPage() {
 		};
 		setLogin();
 	}, [location.search]);
-	return (
-		<div>
-			<Navigate to="/game" />
-		</div>
-	);
+	return <Navigate to="/game" />;
 }
 
 export default AuthPage;
