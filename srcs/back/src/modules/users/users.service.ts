@@ -52,6 +52,11 @@ export class UsersService {
    */
   async getUser(id: number): Promise<Users> {
     const user = await this.usersRepository.findOne({ id });
+
+    if (!user) {
+      throw new BadRequestException('유저가 없습니다.');
+    }
+
     return user;
   }
 
@@ -107,8 +112,28 @@ export class UsersService {
    * @param email
    * @returns
    */
+  async getUsers(): Promise<Users[]> {
+    const users = await this.usersRepository.find({});
+    return users;
+  }
+
+  /**
+   * 유저 조회
+   * @param email
+   * @returns
+   */
   async getUserByEmail(email: string): Promise<Users> {
-    const user = await this.usersRepository.findOne({ email });
+    const user = await this.usersRepository.findOne(
+      { email },
+      {
+        relations: ['friendsRequest', 'friends', 'blockedUsers'],
+      },
+    );
+
+    if (!user) {
+      throw new BadRequestException('유저가 없습니다.');
+    }
+
     return user;
   }
 
@@ -119,6 +144,11 @@ export class UsersService {
    */
   async getUserByNickname(nickname: string): Promise<Users> {
     const user = await this.usersRepository.findOne({ nickname });
+
+    if (!user) {
+      throw new BadRequestException('유저가 없습니다.');
+    }
+
     return user;
   }
 

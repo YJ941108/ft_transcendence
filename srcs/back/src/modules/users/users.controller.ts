@@ -29,15 +29,14 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   /**
-   * 프로필 사진 불러오기
-   * @param filename
-   * @param res
+   * 유저 정보 반환
+   * @param req
+   * @returns
    */
-  @Get('/profile/:filename')
-  getProfileImage(@Req() req: Request, @Param('filename') filename: string, @Res() res: Response) {
-    this.logger.log(`user: ${JSON.stringify(req.user)}`);
-    this.logger.log(`getProfileImage: ${filename}`);
-    res.sendFile(filename, { root: './uploads' });
+  @Get()
+  async getUsers(): Promise<Users[]> {
+    const users = await this.usersService.getUsers();
+    return users;
   }
 
   /**

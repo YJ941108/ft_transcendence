@@ -26,6 +26,9 @@ export class UsersRepository extends Repository<Users> {
       email,
       photo,
       nickname,
+      wins: 0,
+      losses: 0,
+      ratio: 0,
     });
 
     try {

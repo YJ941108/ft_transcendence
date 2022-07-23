@@ -48,25 +48,6 @@ export class Users extends BaseEntity {
   })
   photo: string;
 
-  /** OAuth 2.0 */
-
-  @Column({
-    nullable: true,
-  })
-  accessToken: string;
-
-  @Column({
-    nullable: true,
-  })
-  refreshToken: string;
-
-  /** JSON Web Token */
-
-  @Column({
-    nullable: true,
-  })
-  jwt: string;
-
   /** two-factor authentication */
 
   @Column({
@@ -97,18 +78,26 @@ export class Users extends BaseEntity {
   /** games */
   @Column({
     nullable: true,
+    default: 0,
   })
   wins: number;
 
   @Column({
     nullable: true,
+    default: 0,
   })
   losses: number;
 
   @Column({
     nullable: true,
+    default: 0,
   })
   ratio: number;
+
+  @Column({
+    nullable: true,
+  })
+  socketId: string;
 
   /**
    * src/modules/games/game.entity.ts 참고

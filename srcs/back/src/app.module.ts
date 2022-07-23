@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
 import { GamesModule } from './modules/games/games.module';
+import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { GamesModule } from './modules/games/games.module';
     HealthModule,
     UsersModule,
     GamesModule,
+    ProfileModule,
   ],
 })
 export class AppModule {}
