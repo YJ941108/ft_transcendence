@@ -18,6 +18,9 @@ import { multerOptions } from 'src/middleware/multer.middleware';
 import { Users } from './users.entity';
 import { UsersService } from './users.service';
 
+/**
+ *
+ */
 @Controller('users')
 @UseGuards(AuthGuard())
 export class UsersController {
@@ -26,15 +29,14 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   /**
-   * 프로필 사진 불러오기
-   * @param filename
-   * @param res
+   * 유저 정보 반환
+   * @param req
+   * @returns
    */
-  @Get('/profile/:filename')
-  getProfileImage(@Req() req: Request, @Param('filename') filename: string, @Res() res: Response) {
-    this.logger.log(`user: ${JSON.stringify(req.user)}`);
-    this.logger.log(`getProfileImage: ${filename}`);
-    res.sendFile(filename, { root: './uploads' });
+  @Get()
+  async getUsers(): Promise<Users[]> {
+    const users = await this.usersService.getUsers();
+    return users;
   }
 
   /**
@@ -73,6 +75,22 @@ export class UsersController {
   async getUserByNickname(@Param('nickname') nickname: string): Promise<Users> {
     const user = await this.usersService.getUserByNickname(nickname);
     return user;
+  }
+
+  /**
+   * 다른 유저 정보 반환
+   * @param nickname
+   * @returns
+   */
+  @Get(':nickname/:action')
+  async userAction(
+    @Req() req: any,
+    @Param('nickname') nickname: string,
+    @Param('action') action: string,
+  ): Promise<Users> {
+    const id: number = req.user.id;
+
+    return this.usersService.userAction({ id, nickname, action });
   }
 
   /**

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
-import { Games } from './games.entity';
+import { Game } from './games.entity';
 import { GamesRepository } from './games.repository';
 
 /**
@@ -29,7 +29,7 @@ export class GamesService {
    * @param id
    * @returns
    */
-  async findOne(id: number): Promise<Games> {
+  async findOne(id: number): Promise<Game> {
     const game = await this.gamesRepository.findOne(id);
     if (!game) {
       throw new NotFoundException(`Game [${id}] not found`);
@@ -42,7 +42,7 @@ export class GamesService {
    * @param createGameDto
    * @returns
    */
-  async create(createGameDto: CreateGameDto): Promise<Games> {
+  async create(createGameDto: CreateGameDto): Promise<Game> {
     const game = this.gamesRepository.create({ ...createGameDto });
     return this.gamesRepository.save(game);
   }
@@ -53,7 +53,7 @@ export class GamesService {
    * @param updateGameDto
    * @returns
    */
-  async update(id: number, updateGameDto: UpdateGameDto): Promise<Games> {
+  async update(id: number, updateGameDto: UpdateGameDto): Promise<Game> {
     const game = await this.gamesRepository.preload({
       id: +id,
       ...updateGameDto,
@@ -69,7 +69,7 @@ export class GamesService {
    * @param id
    * @returns
    */
-  async remove(id: number): Promise<Games> {
+  async remove(id: number): Promise<Game> {
     const game = await this.findOne(id);
     return this.gamesRepository.remove(game);
   }

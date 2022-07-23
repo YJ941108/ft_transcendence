@@ -6,6 +6,9 @@ import { GamesGateway } from './games.gateway';
 import { GamesRepository } from './games.repository';
 import { UsersModule } from '../users/users.module';
 
+/**
+ *
+ */
 @Module({
   imports: [TypeOrmModule.forFeature([GamesRepository]), UsersModule],
   controllers: [GamesController],

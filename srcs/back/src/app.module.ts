@@ -1,16 +1,22 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { ConfigModule } from '@nestjs/config';
 import defaultConfig from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
 import { GamesModule } from './modules/games/games.module';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
+import { ProfileModule } from './modules/profile/profile.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: `${process.cwd()}/.env`,
+      load: [defaultConfig],
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.HOST,
@@ -20,11 +26,6 @@ import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
       database: 'ft_transcendence',
       entities: [__dirname + '/**/*.entity.{js,ts}'],
       synchronize: true,
-    }),
-    ConfigModule.forRoot({
-      envFilePath: `${process.cwd()}/.env`,
-      load: [defaultConfig],
-      isGlobal: true,
     }),
     MailerModule.forRoot({
       transport: 'smtps://taws0206@gmail.com:rjtnyxlcxdostjzj@smtp.gmail.com',
@@ -43,6 +44,7 @@ import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
     HealthModule,
     UsersModule,
     GamesModule,
+    ProfileModule,
   ],
 })
 export class AppModule {}
