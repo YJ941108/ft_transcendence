@@ -15,6 +15,7 @@ import { randomString } from 'src/utils/randomString';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
+import { UserActionDto } from './dto/user-action.dto';
 
 /**
  *  @class UsersService
@@ -24,7 +25,10 @@ export class UsersService {
   private logger = new Logger('UsersService');
 
   /**
+   *
    * @param usersRepository
+   * @param mailerService
+   * @param configService
    */
   constructor(
     @InjectRepository(UsersRepository) private usersRepository: UsersRepository,
@@ -226,10 +230,30 @@ export class UsersService {
     return updatedUser;
   }
 
-  async actionFriends(nickname: string, action: string): Promise<Object> {
-    return {
-      nickname,
-      action,
-    };
+  /**
+   *
+   * @param userActionDto
+   * @returns
+   */
+  async userAction(userActionDto: UserActionDto): Promise<Users> {
+    const { id, nickname, action } = userActionDto;
+
+    if (!action) {
+      throw new BadRequestException();
+    } else if (action === 'request') {
+      return this.usersRepository.friendRequest(userActionDto);
+    } else if (action === 'accept') {
+      return this.usersRepository.friendAccept(userActionDto);
+    } else if (action === 'deny') {
+      return this.usersRepository.friendDeny(userActionDto);
+    } else if (action === 'delete') {
+      return this.usersRepository.frinedDelete(userActionDto);
+    } else if (action === 'block') {
+      return this.usersRepository.userBlock(userActionDto);
+    } else if (action === 'release') {
+      return this.usersRepository.userRelease(userActionDto);
+    } else {
+      throw new BadRequestException('없는 명령어입니다.');
+    }
   }
 }

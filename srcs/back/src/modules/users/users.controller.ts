@@ -84,8 +84,14 @@ export class UsersController {
    * @returns
    */
   @Get(':nickname/:action')
-  async actionFriends(@Param('nickname') nickname: string, @Param('action') action: string): Promise<Object> {
-    return this.usersService.actionFriends(nickname, action);
+  async userAction(
+    @Req() req: any,
+    @Param('nickname') nickname: string,
+    @Param('action') action: string,
+  ): Promise<Users> {
+    const id: number = req.user.id;
+
+    return this.usersService.userAction({ id, nickname, action });
   }
 
   /**

@@ -6,6 +6,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
   Unique,
@@ -81,23 +82,17 @@ export class Users extends BaseEntity {
   tfaCode: string;
 
   /** friends */
-  @Column('int', {
-    nullable: true,
-    array: true,
-  })
-  friendsRequest: number[];
+  @ManyToMany((type) => Users)
+  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  friendsRequest: Users[];
 
-  @Column('int', {
-    nullable: true,
-    array: true,
-  })
-  friends: number[];
+  @ManyToMany((type) => Users)
+  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  friends: Users[];
 
-  @Column('int', {
-    nullable: true,
-    array: true,
-  })
-  friendsBlocked: number[];
+  @ManyToMany((type) => Users)
+  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  blockedUsers: Users[];
 
   /** games */
   @Column({
