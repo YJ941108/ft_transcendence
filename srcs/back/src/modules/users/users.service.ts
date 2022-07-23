@@ -123,7 +123,12 @@ export class UsersService {
    * @returns
    */
   async getUserByEmail(email: string): Promise<Users> {
-    const user = await this.usersRepository.findOne({ email });
+    const user = await this.usersRepository.findOne(
+      { email },
+      {
+        relations: ['friendsRequest', 'friends', 'blockedUsers'],
+      },
+    );
 
     if (!user) {
       throw new BadRequestException('유저가 없습니다.');
