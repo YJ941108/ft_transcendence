@@ -70,7 +70,7 @@ export class AuthController {
     if (!user) {
       const serverOrigin = this.configService.get<string>('server.origin');
       this.logger.log(`setUser: serverOrigin: ${serverOrigin}`);
-      const fileLocation = serverOrigin + join('/api/users/profile', 'pong.png');
+      const fileLocation = serverOrigin + join('/api/profile', 'pong.png');
       this.logger.log(`setUser: fileLocation: ${fileLocation}`);
       const createUserDto: CreateUserDto = { username: email, email, photo: fileLocation, nickname: email };
       await this.userRepository.createUser(createUserDto);
