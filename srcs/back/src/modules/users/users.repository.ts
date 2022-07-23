@@ -76,7 +76,7 @@ export class UsersRepository extends Repository<Users> {
    * @param actionFriendsDto
    * @returns
    */
-  async friendsRequest(actionFriendsDto: ActionFriendsDto): Promise<Users> {
+  async friendRequest(actionFriendsDto: ActionFriendsDto): Promise<Users> {
     let { user, friend } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
 
     /** 중복 처리 */
@@ -103,8 +103,15 @@ export class UsersRepository extends Repository<Users> {
    * @param actionFriendsDto
    * @returns
    */
-  async friendsAccept(actionFriendsDto: ActionFriendsDto): Promise<Users> {
+  async friendAccept(actionFriendsDto: ActionFriendsDto): Promise<Users> {
     let { user, friend } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+
+    /** 이미 친구인지 확인 */
+    user.friends.map((e: { id: number }) => {
+      if (e.id === friend.id) {
+        throw new BadRequestException('이미 친구입니다');
+      }
+    });
 
     /** 친구 요청이 왔는지 확인 */
     let hasFriendRequest = false;
@@ -114,23 +121,39 @@ export class UsersRepository extends Repository<Users> {
       }
     });
 
-    /**
-     * 예외 처리
-     * 친구 요청이 없는 경우
-     * 친구 요청이 있는 경우 -> 이미 친구인지 확인
-     */
+    /** 친구 요청이 없는 경우 */
     if (!hasFriendRequest) {
       throw new BadRequestException('요청이 오지 않았습니다.');
-    } else {
-      user.friends.map((e: { id: number }) => {
-        if (e.id === friend.id) {
-          throw new BadRequestException('이미 친구입니다');
-        }
-      });
     }
 
     /** 데이터 삽입 */
     user.friends.push(friend);
+    const index = user.friendsRequest.findIndex((e) => e.id === friend.id);
+    user.friendsRequest.splice(index, 1);
+    user.save();
+    return user;
+  }
+
+  async frinedDelete(actionFriendsDto: ActionFriendsDto): Promise<Users> {
+    let { user, friend } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+
+    /** 이미 친구등록이 되어있는지 확인 */
+    let isFriend = false;
+    user.friends.map((e: { id: number }) => {
+      if (e.id === friend.id) {
+        isFriend = true;
+        console.log(e.id);
+      }
+    });
+
+    /** 예외 처리 */
+    if (!isFriend) {
+      console.log('hello');
+      throw new BadRequestException('친구가 아닙니다');
+    }
+
+    const index = user.friends.findIndex((e) => e.id === friend.id);
+    user.friends.splice(index, 1);
     user.save();
     return user;
   }

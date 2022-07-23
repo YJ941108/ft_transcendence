@@ -241,9 +241,11 @@ export class UsersService {
     if (!action) {
       throw new BadRequestException();
     } else if (action === 'request') {
-      return this.usersRepository.friendsRequest(actionFriendsDto);
+      return this.usersRepository.friendRequest(actionFriendsDto);
     } else if (action === 'accept') {
-      return this.usersRepository.friendsAccept(actionFriendsDto);
+      return this.usersRepository.friendAccept(actionFriendsDto);
+    } else if (action === 'delete') {
+      return this.usersRepository.frinedDelete(actionFriendsDto);
     } else {
       throw new BadRequestException('없는 명령어입니다.');
     }
