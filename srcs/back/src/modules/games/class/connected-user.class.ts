@@ -1,12 +1,10 @@
 import { User } from './user.class';
 import { UserStatus } from '../../../enums/games.enum';
 import { DEFAULT_MAX_USER } from 'src/constants/games.constant';
-import { Logger } from '@nestjs/common';
 
 /** 소켓에 접속한 유저 전체이며 Array로 메모리에 저장 */
 export class ConnectedUsers {
-  private users: Array<User> = new Array();
-  private logger: Logger = new Logger('Class ConnectedUsers');
+  users: Array<User> = new Array();
 
   /**
    * @constructor
@@ -22,6 +20,10 @@ export class ConnectedUsers {
     if (this.maxUser !== this.users.length) this.users.push(user);
   }
 
+  findAll(): User[] {
+    return this.users;
+  }
+
   /**
    * connectedUsers에 유저 제거
    * @param user User 객체
@@ -31,7 +33,6 @@ export class ConnectedUsers {
     if (index !== -1) {
       this.users.splice(index, 1);
     }
-    this.logger.log(`removeUser: ${user.nickname}`);
   }
 
   /**
