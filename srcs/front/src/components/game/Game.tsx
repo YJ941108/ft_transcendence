@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
-// import { useQuery } from 'react-query';
 import { GameState, IUser, IRoom } from './GameInterfaces';
-// import getUserData from '../../modules/api';
 import GameScreen from './GameScreen';
+import GameRooms from './GameRooms';
 
 let socket: Socket;
 
 function Game() {
-	// const { isLoading, data: userData } = useQuery<IUser>('user', getUserData);
 	const [isDisplayGame, setIsDisplayGame] = useState(false);
 	const [room, setRoom] = useState<IRoom | null>(null);
 	const [queue, setQueue] = useState(false);
-	const [games, setGames] = useState<IRoom[]>([]);
+	const [gameRooms, setGameRooms] = useState<IRoom[]>([]);
 	const userData: IUser = JSON.parse(localStorage.getItem('user') || '{}');
 	const joinQueue = (event: React.MouseEvent<HTMLButtonElement>) => {
 		socket.emit('joinQueue', event.currentTarget.value);
@@ -22,9 +20,9 @@ function Game() {
 		socket.emit('leaveQueue');
 	};
 
-	const updateCurrentGames = (currentGamesData: IRoom[]) => {
-		setGames(() => {
-			return [...currentGamesData];
+	const updateCurrentGames = (currentGameRooms: IRoom[]) => {
+		setGameRooms(() => {
+			return [...currentGameRooms];
 		});
 	};
 	useEffect(() => {
@@ -57,27 +55,28 @@ function Game() {
 		});
 		return () => {
 			if (socket) socket.disconnect();
-			setGames([]);
+			setGameRooms([]);
 		};
 	}, []);
 	return (
 		<div>
 			<h1>GAME</h1>
-			{isDisplayGame && room ? <GameScreen socketProps={socket} roomDataProps={room} /> : null}
-			{queue ? (
-				<button type="button" onClick={leaveQueue}>
-					leaveQueue
-				</button>
+			{isDisplayGame ? (
+				<GameScreen socketProps={socket} roomDataProps={room} />
 			) : (
-				<button type="button" onClick={joinQueue} value="default">
-					joinQueue
-				</button>
+				<>
+					{queue ? (
+						<button type="button" onClick={leaveQueue}>
+							leaveQueue
+						</button>
+					) : (
+						<button type="button" onClick={joinQueue} value="DEFAULT">
+							joinQueue
+						</button>
+					)}
+					<GameRooms gameRooms={gameRooms} socket={socket} />
+				</>
 			)}
-			<ul>
-				{games.map((game: IRoom) => (
-					<li key={game.roomId}>{game?.roomId}</li>
-				))}
-			</ul>
 		</div>
 	);
 }
