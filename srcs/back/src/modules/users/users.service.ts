@@ -244,6 +244,8 @@ export class UsersService {
       return this.usersRepository.friendRequest(actionFriendsDto);
     } else if (action === 'accept') {
       return this.usersRepository.friendAccept(actionFriendsDto);
+    } else if (action === 'deny') {
+      return this.usersRepository.friendDeny(actionFriendsDto);
     } else if (action === 'delete') {
       return this.usersRepository.frinedDelete(actionFriendsDto);
     } else {

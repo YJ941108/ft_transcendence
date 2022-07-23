@@ -134,6 +134,36 @@ export class UsersRepository extends Repository<Users> {
     return user;
   }
 
+  async friendDeny(actionFriendsDto: ActionFriendsDto): Promise<Users> {
+    let { user, friend } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+
+    /** 이미 친구인지 확인 */
+    user.friends.map((e: { id: number }) => {
+      if (e.id === friend.id) {
+        throw new BadRequestException('이미 친구입니다');
+      }
+    });
+
+    /** 친구 요청이 왔는지 확인 */
+    let hasFriendRequest = false;
+    user.friendsRequest.map((e: { id: number }) => {
+      if (e.id === friend.id) {
+        hasFriendRequest = true;
+      }
+    });
+
+    /** 친구 요청이 없는 경우 */
+    if (!hasFriendRequest) {
+      throw new BadRequestException('요청이 오지 않았습니다.');
+    }
+
+    /** 데이터 삭제 */
+    const index = user.friendsRequest.findIndex((e) => e.id === friend.id);
+    user.friendsRequest.splice(index, 1);
+    user.save();
+    return user;
+  }
+
   async frinedDelete(actionFriendsDto: ActionFriendsDto): Promise<Users> {
     let { user, friend } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
 
