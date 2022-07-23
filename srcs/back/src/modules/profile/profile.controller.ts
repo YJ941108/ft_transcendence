@@ -1,5 +1,5 @@
 import { Controller, Get, Logger, Param, Req, Res } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
 @Controller('profile')
 export class ProfileController {
@@ -11,8 +11,7 @@ export class ProfileController {
    * @param res
    */
   @Get('/:filename')
-  getProfileImage(@Req() req: Request, @Param('filename') filename: string, @Res() res: Response) {
-    this.logger.log(`user: ${JSON.stringify(req.user)}`);
+  getProfileImage(@Param('filename') filename: string, @Res() res: Response) {
     this.logger.log(`getProfileImage: ${filename}`);
     res.sendFile(filename, { root: './uploads' });
   }
