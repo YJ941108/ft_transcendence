@@ -90,11 +90,9 @@ export class Users extends BaseEntity {
   @JoinTable({ joinColumn: { name: 'users_id_1' } })
   friends: Users[];
 
-  @Column('int', {
-    nullable: true,
-    array: true,
-  })
-  friendsBlocked: number[];
+  @ManyToMany((type) => Users)
+  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  blockedUsers: Users[];
 
   /** games */
   @Column({
