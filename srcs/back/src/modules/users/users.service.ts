@@ -244,6 +244,8 @@ export class UsersService {
       return this.usersRepository.friendsRequest(actionFriendsDto);
     } else if (action === 'accept') {
       return this.usersRepository.friendsAccept(actionFriendsDto);
+    } else {
+      throw new BadRequestException('없는 명령어입니다.');
     }
   }
 }
