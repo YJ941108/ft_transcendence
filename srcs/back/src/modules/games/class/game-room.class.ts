@@ -3,7 +3,6 @@ import { Paddle } from './game-paddle.class';
 import { Ball } from './game-ball.class';
 import { CANVAS_WIDTH, MAX_GOAL } from '../../../constants/games.constant';
 import { GameMode, GameState } from '../../../enums/games.enum';
-import { Logger } from '@nestjs/common';
 
 /**
  * roomId
@@ -87,8 +86,6 @@ export type SerializeRoom = {
  *
  */
 export default class Room implements IRoom {
-  private logger: Logger = new Logger('game-room.class');
-
   roomId: string;
   gameState: GameState;
   players: User[];
@@ -254,7 +251,6 @@ export default class Room implements IRoom {
         }
       }
       this.ball.goal = false;
-      this.logger.log(`GAME STATE: ${this.gameState}`);
     }
 
     // if (

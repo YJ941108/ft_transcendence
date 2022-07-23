@@ -47,6 +47,14 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private queue: Queue = new Queue();
   private rooms: Map<string, Room> = new Map();
 
+  returnMessage(code: number, message: string, data?: Object[] | Object): Object {
+    return {
+      code,
+      message,
+      data,
+    };
+  }
+
   /**
    * 큐가 찼다면 게임 생성
    * @param players
@@ -96,7 +104,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @function
    * @param client 소켓에 접속한 클라이언트
    */
-  handleDisconnect(@ConnectedSocket() client: Socket): Object {
+  handleDisconnect(@ConnectedSocket() client: Socket): void {
     this.logger.log(`handleDisconnect: 소켓을 나간 유저 ${client.id}`);
 
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
@@ -138,9 +146,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
       this.queue.removeUser(user);
       this.connectedUsers.removeUser(user);
-      return { code: 200, message: `${user.nickname} is left` };
     }
-    return { code: 400, message: 'Noting to change' };
   }
 
   /**
@@ -151,13 +157,15 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @return connectedUsers
    */
   @SubscribeMessage('handleUserConnect')
-  handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): ConnectedUsers {
+  handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): User[] | Object {
     this.logger.log(`handleUserConnect: client.id: ${client.id}`);
-    this.logger.log(`handleUserConnect: user: ${JSON.stringify(user)}`);
+    this.logger.log(`handleUserConnect: body: ${JSON.stringify(user)}`);
 
-    if (user) {
-      this.logger.log(`handleUserConnect: user.id: ${user.id}`);
+    if (!user.id) {
+      return this.returnMessage(400, '유저 데이터가 없습니다.');
+    } else {
       let newUser: User = this.connectedUsers.getUserById(user.id);
+
       if (newUser) {
         newUser.setSocketId(client.id);
         newUser.setNickname(user.nickname);
@@ -165,13 +173,14 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         newUser = new User(user.id, user.nickname, client.id, user.ratio);
       }
       newUser.setUserStatus(UserStatus.IN_HUB);
-      this.logger.log(`handleUserConnect: newUser: ${JSON.stringify(newUser)}`);
-      this.connectedUsers.addUser(newUser);
-      this.logger.log(`handleUserConnect: connectedUsers: ${JSON.stringify(this.connectedUsers)}`);
-      return this.connectedUsers;
-    }
 
-    return;
+      const isConnected = this.connectedUsers.getUserById(newUser.id);
+      if (!isConnected) {
+        this.connectedUsers.addUser(newUser);
+      }
+      const users = this.connectedUsers.findAll();
+      return this.returnMessage(200, '성공', users);
+    }
   }
 
   /**
@@ -183,12 +192,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('getCurrentGames')
   handleGetCurrentGames(@ConnectedSocket() client: Socket): Array<Room> {
     this.logger.log(`handleGetCurrentGames: client.id: ${client.id}`);
-    this.logger.log(`handleGetCurrentGames: user: ${JSON.stringify(this.connectedUsers.getUserBySocketId(client.id))}`);
-    this.logger.log(
-      `handleGetCurrentGames: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`,
-    );
-    this.logger.log(`handleGetCurrentGames: currentGames: ${JSON.stringify(this.currentGames)}`);
-    console.log(this.currentGames);
     this.server.to(client.id).emit('updateCurrentGames', this.currentGames);
     return this.currentGames;
   }
@@ -201,26 +204,20 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinQueue')
   handleJoinQueue(@ConnectedSocket() client: Socket, @MessageBody() mode: string): Object {
     this.logger.log(`handleJoinQueue: client.id: ${client.id}`);
-    this.logger.log(`handleJoinQueue: user: ${JSON.stringify(this.connectedUsers.getUserBySocketId(client.id))}`);
-    this.logger.log(`handleJoinQueue: user.nickname: ${this.connectedUsers.getUserBySocketId(client.id).nickname}`);
-
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
     this.logger.log(`handleJoinQueue: user: ${JSON.stringify(user)}`);
 
-    if (user && !this.queue.isInQueue(user)) {
+    if (mode !== 'DEFAULT') {
+      return this.returnMessage(400, '모드가 올바르지 않습니다.');
+    } else if (user && this.queue.isInQueue(user)) {
+      return this.returnMessage(400, '이미 큐에 들어왔습니다');
+    } else if (user && !this.queue.isInQueue(user)) {
       this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_QUEUE);
       this.connectedUsers.setGameMode(client.id, mode);
       this.queue.enqueue(user);
       this.server.to(client.id).emit('joinedQueue');
-      return {
-        code: 200,
-        message: 'joinQueue successed',
-      };
+      return this.returnMessage(200, '큐에 정상적으로 들어왔습니다');
     }
-    return {
-      code: 400,
-      message: 'joinQueue failed',
-    };
   }
 
   /**
@@ -234,9 +231,14 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
 
-    if (user && this.queue.isInQueue(user)) {
+    if (!user) {
+      return this.returnMessage(400, '유저가 없습니다.');
+    } else if (!this.queue.isInQueue(user)) {
+      return this.returnMessage(400, '큐에 유저가 없습니다.');
+    } else {
       this.queue.removeUser(user);
       this.server.to(client.id).emit('leavedQueue');
+      return this.returnMessage(200, '큐에서 나왔습니다.');
     }
   }
 
@@ -246,22 +248,28 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    */
   @SubscribeMessage('joinRoom')
   handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
-    this.logger.log(`handleJoinRoom: client.id: ${client.id}`);
-
-    const room: Room = this.rooms.get(roomId);
     const user = this.connectedUsers.getUserBySocketId(client.id);
 
-    if (room) {
+    const room: Room = this.rooms.get(roomId);
+    this.logger.log(`handleJoinRoom: ${roomId}`);
+    this.logger.log(`handleJoinRoom: ${JSON.stringify(room)}`);
+    if (!room) {
+      return this.returnMessage(400, 'roomId가 없습니다.');
+    } else {
       client.join(roomId);
+
+      /**
+       * 관전자인 경우
+       * 플레이어인 경우
+       */
       if (user.status === UserStatus.IN_HUB) {
         this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
       } else if (room.isAPlayer(user)) {
         room.addUser(user);
       }
-
-      console.log(room.serialize());
       this.server.to(client.id).emit('joinedRoom');
       this.server.to(client.id).emit('updateRoom', JSON.stringify(room.serialize()));
+      return this.returnMessage(200, '방에 들어왔습니다.');
     }
   }
 

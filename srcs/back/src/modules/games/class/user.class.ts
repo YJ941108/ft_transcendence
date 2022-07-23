@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { GameMode, UserStatus } from '../../../enums/games.enum';
 
 /**
@@ -12,7 +11,6 @@ export class User {
   socketId?: string;
   roomId?: string;
   mode?: GameMode;
-  private logger: Logger = new Logger('Class User');
 
   /**
    * @constructor

@@ -1,11 +1,9 @@
-import { Logger } from '@nestjs/common';
 import { BALL_DEFAULT_SPEED } from 'src/constants/games.constant';
 import { User } from './user.class';
 
 export default class Queue {
   /** queue는 Array<User> 즉 유저를 담는 배열 */
   private queue: Array<User> = new Array();
-  private logger: Logger = new Logger('Class Queue');
 
   /**
    * Array의 용량 설정
@@ -23,7 +21,6 @@ export default class Queue {
       throw Error('Queue has reached max capacity, you cannot add more items');
     }
     this.queue.push(user);
-    this.logger.log(`enqueue: ${user.nickname}`);
   }
 
   /**
@@ -48,7 +45,6 @@ export default class Queue {
    * @returns
    */
   getUserByNickname(nickname: string): User {
-    this.logger.log(`getUserByNickname: ${nickname}`);
     return this.queue.find((element) => element.nickname === nickname);
   }
 
@@ -61,7 +57,6 @@ export default class Queue {
     if (index !== -1) {
       this.queue.splice(index, 1);
     }
-    this.logger.log(`removeUser: ${user.nickname}`);
   }
 
   /**
@@ -69,7 +64,6 @@ export default class Queue {
    * @returns boolean
    */
   isInQueue(user: User): boolean {
-    this.logger.log(`isInQueue: ${user.nickname}`);
     return this.getUserByNickname(user.nickname) !== undefined;
   }
 
