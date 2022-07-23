@@ -107,6 +107,16 @@ export class UsersService {
    * @param email
    * @returns
    */
+  async getUsers(): Promise<Users[]> {
+    const users = await this.usersRepository.find({});
+    return users;
+  }
+
+  /**
+   * 유저 조회
+   * @param email
+   * @returns
+   */
   async getUserByEmail(email: string): Promise<Users> {
     const user = await this.usersRepository.findOne({ email });
     return user;

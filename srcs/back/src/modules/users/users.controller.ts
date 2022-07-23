@@ -33,6 +33,17 @@ export class UsersController {
    * @param req
    * @returns
    */
+  @Get()
+  async getUsers(): Promise<Users[]> {
+    const users = await this.usersService.getUsers();
+    return users;
+  }
+
+  /**
+   * 유저 정보 반환
+   * @param req
+   * @returns
+   */
   @Get('me')
   async getUser(@Req() req: any): Promise<Users> {
     const email = req?.user?.email;
