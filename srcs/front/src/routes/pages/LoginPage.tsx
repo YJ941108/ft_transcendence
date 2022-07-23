@@ -1,5 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
+import EmailSignUp from '../../components/login/EmailSignUp';
+import EmailSignIn from '../../components/login/EmailSignIn';
 
 const LoginC = styled.div`
 	display: flex;
@@ -20,11 +22,15 @@ const LoginButton = styled.div`
 function LoginPage() {
 	return (
 		<LoginC>
+			<h2>로그인</h2>
 			<LoginButton>
 				<a href={process.env.REACT_APP_FORTYTWO_LOGIN_API}>42Login</a>
 			</LoginButton>
 			<LoginButton>KakaoLogin</LoginButton>
 			<LoginButton>GoogleLogin</LoginButton>
+			<EmailSignIn />
+			<h2>회원가입</h2>
+			<EmailSignUp />
 		</LoginC>
 	);
 }
