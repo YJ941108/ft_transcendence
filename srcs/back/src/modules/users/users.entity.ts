@@ -94,6 +94,11 @@ export class Users extends BaseEntity {
   })
   ratio: number;
 
+  @Column({
+    nullable: true,
+  })
+  socketId: string;
+
   /**
    * src/modules/games/game.entity.ts 참고
    * @see https://typeorm.io/many-to-many-relations
