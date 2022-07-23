@@ -499,15 +499,18 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   handleSpectateRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     const room: Room = this.rooms.get(roomId);
     if (!room) {
+      this.logger.log(`spectateRoom: room: ${room}`);
       return this.returnMessage(400, '방이 없습니다.');
     }
 
     const user = this.connectedUsers.getUserBySocketId(client.id);
     if (!user) {
+      this.logger.log(`spectateRoom: user: ${user}`);
       return this.returnMessage(400, '유저가 접속해있지 않습니다.');
     }
 
     if (!room.isAPlayer(user)) {
+      this.logger.log(`spectateRoom: user: ${user}`);
       this.server.to(client.id).emit('newRoom', room);
       return this.returnMessage(200, '방 정보 전송 성공');
     }
