@@ -397,10 +397,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       } else if (room.gameState === GameState.PLAYING) {
         room.update(currentTimestamp);
         /** 게임이 종료되었다면 */
-        if (room.isGameEnd && currentTimestamp - room.timestampStart >= this.secondToTimestamp(3.5)) {
-          room.gameState = GameState.END_GAME;
-          this.saveGame(room, currentTimestamp);
-        }
+        this.saveGame(room, currentTimestamp);
       } else if (
         (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
         currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(1)
