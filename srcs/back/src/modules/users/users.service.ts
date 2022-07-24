@@ -114,7 +114,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne(
       { email },
       {
-        relations: ['friendsRequest', 'friends', 'blockedUsers'],
+        relations: ['friendsRequest', 'friends', 'blockedUsers', 'games'],
       },
     );
 
