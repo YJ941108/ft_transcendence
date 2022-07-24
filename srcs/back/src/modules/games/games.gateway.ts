@@ -417,7 +417,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       currentTimestamp - room.timestampStart >= this.secondToTimestamp(3.5)
     ) {
       room.start();
-      room.gameState = GameState.PLAYER_ONE_WIN;
     } else if (room.gameState === GameState.PLAYING) {
       room.update(currentTimestamp);
     } else if (room.gameState === GameState.PLAYER_ONE_WIN || room.gameState === GameState.PLAYER_TWO_WIN) {
