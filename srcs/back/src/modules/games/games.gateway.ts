@@ -47,8 +47,13 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private queue: Queue = new Queue();
   private rooms: Map<string, Room> = new Map();
 
-  returnMessage(code: number, message: string, data?: Object[] | Object): Object {
+  returnMessage(func: string, code: number, message: string, data?: Object[] | Object): Object {
+    this.logger.log(`${func} [${code}]: ${message}`);
+    if (data) {
+      this.logger.log(`data: ${JSON.stringify(data)}`);
+    }
     return {
+      func,
       code,
       message,
       data,
@@ -105,48 +110,48 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param client 소켓에 접속한 클라이언트
    */
   handleDisconnect(@ConnectedSocket() client: Socket): void {
-    this.logger.log(`handleDisconnect: 소켓을 나간 유저 ${client.id}`);
-
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
-
-    if (user) {
-      /** 게임 중인 경우 게임 방 전체를 조회해야 한다 */
-      this.rooms.forEach((room: Room) => {
-        /** 게임 방에 있다면 우선 유저부터 방에서 지워야 한다 */
-        if (room.isAPlayer(user)) {
-          room.removeUser(user);
-
-          /**
-           * 게임 방에 아무도 없는 경우 -> rooms 인스턴스에서 게임을 지우고, currentGames에서도 지운다.
-           * 누군가 있는 경우 -> pause
-           */
-          if (room.players.length === 0 && room.gameState !== GameState.WAITING) {
-            this.logger.log('No player left in the room deleting it...');
-            this.rooms.delete(room.roomId);
-
-            const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
-            if (roomIndex !== -1) {
-              this.currentGames.splice(roomIndex, 1);
-            }
-            this.server.emit('updateCurrentGames', this.currentGames);
-          } else if (
-            room.gameState !== GameState.PLAYER_ONE_WIN &&
-            room.gameState !== GameState.PLAYER_TWO_WIN &&
-            room.gameState !== GameState.WAITING
-          ) {
-            if (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) {
-              room.resetPosition();
-            }
-            room.pause();
-          }
-          client.leave(room.roomId);
-          return;
-        }
-      });
-
-      this.queue.removeUser(user);
-      this.connectedUsers.removeUser(user);
+    if (!user) {
+      this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
+      return;
     }
+
+    /** 게임 중인 경우 게임 방 전체를 조회해야 한다 */
+    this.rooms.forEach((room: Room) => {
+      /** 게임 방에 있다면 우선 유저부터 방에서 지워야 한다 */
+      if (room.isAPlayer(user)) {
+        room.removeUser(user);
+
+        /**
+         * 게임 방에 아무도 없는 경우 -> rooms 인스턴스에서 게임을 지우고, currentGames에서도 지운다.
+         * 누군가 있는 경우 -> pause
+         */
+        if (room.players.length === 0 && room.gameState !== GameState.WAITING) {
+          this.logger.log('No player left in the room deleting it...');
+          this.rooms.delete(room.roomId);
+
+          const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
+          if (roomIndex !== -1) {
+            this.currentGames.splice(roomIndex, 1);
+          }
+          this.server.emit('updateCurrentGames', this.currentGames);
+        } else if (
+          room.gameState !== GameState.PLAYER_ONE_WIN &&
+          room.gameState !== GameState.PLAYER_TWO_WIN &&
+          room.gameState !== GameState.WAITING
+        ) {
+          if (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) {
+            room.resetPosition();
+          }
+          room.pause();
+        }
+        client.leave(room.roomId);
+        return;
+      }
+    });
+
+    this.queue.removeUser(user);
+    this.connectedUsers.removeUser(user);
   }
 
   /**
@@ -158,29 +163,29 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    */
   @SubscribeMessage('handleUserConnect')
   handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): User[] | Object {
-    this.logger.log(`handleUserConnect: client.id: ${client.id}`);
-    this.logger.log(`handleUserConnect: body: ${JSON.stringify(user)}`);
-
     if (!user.id) {
-      return this.returnMessage(400, '유저 데이터가 없습니다.');
-    } else {
-      let newUser: User = this.connectedUsers.getUserById(user.id);
-
-      if (newUser) {
-        newUser.setSocketId(client.id);
-        newUser.setNickname(user.nickname);
-      } else {
-        newUser = new User(user.id, user.nickname, client.id, user.ratio);
-      }
-      newUser.setUserStatus(UserStatus.IN_HUB);
-
-      const isConnected = this.connectedUsers.getUserById(newUser.id);
-      if (!isConnected) {
-        this.connectedUsers.addUser(newUser);
-      }
-      const users = this.connectedUsers.findAll();
-      return this.returnMessage(200, '성공', users);
+      return this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
     }
+
+    /** 유저 생성 */
+    let newUser: User = this.connectedUsers.getUserById(user.id);
+    if (!newUser) {
+      newUser = new User(user.id, user.nickname, client.id, user.ratio);
+    } else {
+      newUser.setSocketId(client.id);
+      newUser.setNickname(user.nickname);
+    }
+    newUser.setUserStatus(UserStatus.IN_HUB);
+
+    /** 접속중인 유저에 추가 */
+    const isConnected = this.connectedUsers.getUserById(newUser.id);
+    if (!isConnected) {
+      this.connectedUsers.addUser(newUser);
+    }
+
+    /** 접속중인 유저 반환 */
+    const users = this.connectedUsers.findAll();
+    return this.returnMessage('handleUserConnect', 200, '성공', users);
   }
 
   /**
@@ -191,7 +196,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    */
   @SubscribeMessage('getCurrentGames')
   handleGetCurrentGames(@ConnectedSocket() client: Socket): Array<Room> {
-    this.logger.log(`handleGetCurrentGames: client.id: ${client.id}`);
     this.server.to(client.id).emit('updateCurrentGames', this.currentGames);
     return this.currentGames;
   }
@@ -203,20 +207,21 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    */
   @SubscribeMessage('joinQueue')
   handleJoinQueue(@ConnectedSocket() client: Socket, @MessageBody() mode: string): Object {
-    this.logger.log(`handleJoinQueue: client.id: ${client.id}`);
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
-    this.logger.log(`handleJoinQueue: user: ${JSON.stringify(user)}`);
+    if (!user.id) {
+      return this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
+    }
 
     if (mode !== 'DEFAULT') {
-      return this.returnMessage(400, '모드가 올바르지 않습니다.');
+      return this.returnMessage('joinQueue', 400, '모드가 올바르지 않습니다.');
     } else if (user && this.queue.isInQueue(user)) {
-      return this.returnMessage(400, '이미 큐에 들어왔습니다');
+      return this.returnMessage('joinQueue', 400, '이미 큐에 들어왔습니다');
     } else if (user && !this.queue.isInQueue(user)) {
       this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_QUEUE);
       this.connectedUsers.setGameMode(client.id, mode);
       this.queue.enqueue(user);
       this.server.to(client.id).emit('joinedQueue');
-      return this.returnMessage(200, '큐에 정상적으로 들어왔습니다');
+      return this.returnMessage('joinQueue', 200, '큐에 정상적으로 들어왔습니다');
     }
   }
 
@@ -227,18 +232,15 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    */
   @SubscribeMessage('leaveQueue')
   handleLeaveQueue(@ConnectedSocket() client: Socket) {
-    this.logger.log(`handleLeaveQueue: client.id: ${client.id}`);
-
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
-
     if (!user) {
-      return this.returnMessage(400, '유저가 없습니다.');
+      return this.returnMessage('leaveQueue', 400, '유저가 없습니다.');
     } else if (!this.queue.isInQueue(user)) {
-      return this.returnMessage(400, '큐에 유저가 없습니다.');
+      return this.returnMessage('leaveQueue', 400, '큐에 유저가 없습니다.', user);
     } else {
       this.queue.removeUser(user);
       this.server.to(client.id).emit('leavedQueue');
-      return this.returnMessage(200, '큐에서 나왔습니다.');
+      return this.returnMessage('leaveQueue', 200, '큐에서 나왔습니다.');
     }
   }
 
@@ -249,28 +251,31 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinRoom')
   handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     const user = this.connectedUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('joinRoom', 400, '유저가 없습니다.');
+    }
 
     const room: Room = this.rooms.get(roomId);
-    this.logger.log(`handleJoinRoom: ${roomId}`);
-    this.logger.log(`handleJoinRoom: ${JSON.stringify(room)}`);
     if (!room) {
-      return this.returnMessage(400, 'roomId가 없습니다.');
-    } else {
-      client.join(roomId);
-
-      /**
-       * 관전자인 경우
-       * 플레이어인 경우
-       */
-      if (user.status === UserStatus.IN_HUB) {
-        this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
-      } else if (room.isAPlayer(user)) {
-        room.addUser(user);
-      }
-      this.server.to(client.id).emit('joinedRoom');
-      this.server.to(client.id).emit('updateRoom', JSON.stringify(room.serialize()));
-      return this.returnMessage(200, '방에 들어왔습니다.');
+      return this.returnMessage('joinRoom', 400, 'room이 없습니다.', roomId);
+    } else if (room.findOne(user) !== -1) {
+      return this.returnMessage('joinRoom', 400, '이미 방에 들어왔습니다.');
     }
+    /** 방 접속 */
+    client.join(roomId);
+
+    /**
+     * 관전자인 경우
+     * 플레이어인 경우
+     */
+    if (user.status === UserStatus.IN_HUB) {
+      this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
+    } else if (room.isAPlayer(user)) {
+      room.addUser(user);
+    }
+    this.server.to(client.id).emit('joinedRoom');
+    this.server.to(client.id).emit('updateRoom', JSON.stringify(room.serialize()));
+    return this.returnMessage('joinRoom', 200, '방에 들어왔습니다.');
   }
 
   /**
@@ -279,36 +284,42 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    */
   @SubscribeMessage('leaveRoom')
   handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
-    this.logger.log(`handleLeaveRoom: client.id: ${client.id}`);
-    this.logger.log(`handleGetCurrentGames: currentGames: before: ${this.currentGames}`);
+    const user: User = this.connectedUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('leaveRoom', 400, '유저가 없습니다.');
+    }
 
     const room: Room = this.rooms.get(roomId);
-    const user: User = this.connectedUsers.getUserBySocketId(client.id);
-
-    if (user && room) {
-      room.removeUser(user);
-
-      if (room.players.length === 0) {
-        this.logger.log('No user left in the room deleting it...');
-        this.rooms.delete(room.roomId);
-
-        const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
-        if (roomIndex !== -1) {
-          this.currentGames.splice(roomIndex, 1);
-        }
-        this.server.emit('updateCurrentGames', this.currentGames);
-      }
-      if (
-        room.isAPlayer(user) &&
-        room.gameState !== GameState.PLAYER_ONE_WIN &&
-        room.gameState !== GameState.PLAYER_TWO_WIN
-      ) {
-        room.pause();
-      }
-
-      client.leave(room.roomId);
-      this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_HUB);
+    if (!room) {
+      return this.returnMessage('leaveRoom', 400, 'room이 없습니다.', roomId);
+    } else if (!room.isAPlayer(user)) {
+      return this.returnMessage('leaveRoom', 400, '이미 방을 나갔습니다.');
     }
+    room.removeUser(user);
+
+    /** 방에 아무도 없다면 */
+    if (room.players.length === 0) {
+      this.logger.log('No user left in the room deleting it...');
+      this.rooms.delete(room.roomId);
+
+      const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
+      if (roomIndex !== -1) {
+        this.currentGames.splice(roomIndex, 1);
+      }
+      this.server.emit('updateCurrentGames', this.currentGames);
+    }
+
+    /** 게임이 진행중이었다면 일시정지 */
+    if (
+      room.isAPlayer(user) &&
+      room.gameState !== GameState.PLAYER_ONE_WIN &&
+      room.gameState !== GameState.PLAYER_TWO_WIN
+    ) {
+      room.pause();
+    }
+
+    client.leave(room.roomId);
+    this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_HUB);
     this.server.to(client.id).emit('leavedRoom');
     this.logger.log(`handleGetCurrentGames: currentGames: after: ${this.currentGames}`);
   }
@@ -379,57 +390,67 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('requestUpdate')
   async handleRequestUpdate(@MessageBody() roomId: string) {
     const room: Room = this.rooms.get(roomId);
-
-    if (room) {
-      const currentTimestamp: number = Date.now();
-
-      if (room.gameState === GameState.WAITING) {
-        if (room.players.length === 2) {
-          room.gameState = GameState.STARTING;
-          room.start();
-        }
-      }
-      if (
-        room.gameState === GameState.STARTING &&
-        currentTimestamp - room.timestampStart >= this.secondToTimestamp(3.5)
-      ) {
-        room.start();
-      } else if (room.gameState === GameState.PLAYING) {
-        room.update(currentTimestamp);
-        /** 게임이 종료되었다면 */
-        this.saveGame(room, currentTimestamp);
-      } else if (
-        (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
-        currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(1)
-      ) {
-        room.resetPosition();
-        room.changeGameState(GameState.PLAYING);
-        room.lastUpdate = Date.now();
-      } else if (
-        room.gameState === GameState.RESUMED &&
-        currentTimestamp - room.pauseTime[room.pauseTime.length - 1].resume >= this.secondToTimestamp(3.5)
-      ) {
-        room.lastUpdate = Date.now();
-        room.changeGameState(GameState.PLAYING);
-      } else if (
-        room.gameState === GameState.PAUSED &&
-        currentTimestamp - room.pauseTime[room.pauseTime.length - 1].pause >= this.secondToTimestamp(42)
-      ) {
-        room.pauseForfait();
-        room.pauseTime[room.pauseTime.length - 1].resume = Date.now();
-        this.saveGame(room, currentTimestamp);
-      }
-
-      // if (
-      //   room.mode === GameMode.TIMER &&
-      //   (room.gameState === GameState.PLAYER_ONE_SCORED ||
-      //     room.gameState === GameState.PLAYER_TWO_SCORED ||
-      //     room.gameState === GameState.PLAYING)
-      // )
-      //   room.updateTimer();
-
-      this.server.to(room.roomId).emit('updateRoom', JSON.stringify(room.serialize()));
+    if (!room) {
+      return this.returnMessage('requestUpdate', 400, 'room이 없습니다.', roomId);
     }
+
+    const currentTimestamp: number = Date.now();
+
+    /** 친구 초대로 대기중이라면 */
+    if (room.gameState === GameState.WAITING) {
+      if (room.players.length === 2) {
+        room.gameState = GameState.STARTING;
+        room.start();
+      }
+    }
+
+    /**
+     * 1. 게임 시작
+     * 2. 게임 중
+     * 3. 점수 났을 때
+     * 4. 재시작 되었을때
+     * 5. 일시정지라면
+     */
+    if (
+      room.gameState === GameState.STARTING &&
+      currentTimestamp - room.timestampStart >= this.secondToTimestamp(3.5)
+    ) {
+      room.start();
+    } else if (room.gameState === GameState.PLAYING) {
+      room.update(currentTimestamp);
+    } else if (room.gameState === GameState.PLAYER_ONE_WIN || room.gameState === GameState.PLAYER_TWO_WIN) {
+      this.saveGame(room, currentTimestamp);
+    } else if (
+      (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
+      currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(1)
+    ) {
+      room.resetPosition();
+      room.changeGameState(GameState.PLAYING);
+      room.lastUpdate = Date.now();
+    } else if (
+      room.gameState === GameState.RESUMED &&
+      currentTimestamp - room.pauseTime[room.pauseTime.length - 1].resume >= this.secondToTimestamp(3.5)
+    ) {
+      room.lastUpdate = Date.now();
+      room.changeGameState(GameState.PLAYING);
+    } else if (
+      room.gameState === GameState.PAUSED &&
+      currentTimestamp - room.pauseTime[room.pauseTime.length - 1].pause >= this.secondToTimestamp(42)
+    ) {
+      room.pauseForfait();
+      room.pauseTime[room.pauseTime.length - 1].resume = Date.now();
+      this.saveGame(room, currentTimestamp);
+    }
+
+    // if (
+    //   room.mode === GameMode.TIMER &&
+    //   (room.gameState === GameState.PLAYER_ONE_SCORED ||
+    //     room.gameState === GameState.PLAYER_TWO_SCORED ||
+    //     room.gameState === GameState.PLAYING)
+    // )
+    //   room.updateTimer();
+
+    this.server.to(room.roomId).emit('updateRoom', JSON.stringify(room.serialize()));
   }
 
   /**
@@ -496,20 +517,17 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   handleSpectateRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     const room: Room = this.rooms.get(roomId);
     if (!room) {
-      this.logger.log(`spectateRoom: room: ${room}`);
-      return this.returnMessage(400, '방이 없습니다.');
+      return this.returnMessage('spectateRoom', 400, '방이 없습니다.');
     }
 
     const user = this.connectedUsers.getUserBySocketId(client.id);
     if (!user) {
-      this.logger.log(`spectateRoom: user: ${user}`);
-      return this.returnMessage(400, '유저가 접속해있지 않습니다.');
+      return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
     }
 
     if (!room.isAPlayer(user)) {
-      this.logger.log(`spectateRoom: user: ${user}`);
       this.server.to(client.id).emit('newRoom', room);
-      return this.returnMessage(200, '방 정보 전송 성공');
+      return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
     }
   }
 }
