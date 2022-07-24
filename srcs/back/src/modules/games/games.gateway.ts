@@ -353,7 +353,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     /**
      *
      */
-    await this.gamesService.create({
+    const game = await this.gamesService.create({
       players: [winner, loser],
       winnerId: winnerId,
       loserId: loserId,
@@ -371,6 +371,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       this.currentGames.splice(roomIndex, 1);
     }
     this.server.emit('updateCurrentGames', this.currentGames);
+    return this.returnMessage('saveGame', 200, '저장 성공');
   }
 
   /**

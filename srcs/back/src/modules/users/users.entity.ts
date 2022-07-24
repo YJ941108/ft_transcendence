@@ -12,7 +12,6 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { Game } from '../games/games.entity';
 
 /**
  *
@@ -98,13 +97,6 @@ export class Users extends BaseEntity {
     nullable: true,
   })
   socketId: string;
-
-  /**
-   * src/modules/games/game.entity.ts 참고
-   * @see https://typeorm.io/many-to-many-relations
-   */
-  @ManyToMany(() => Game, (game) => game.players)
-  game: Game[];
 
   /**
    * @see https://typeorm.io/decorator-reference#createdatecolumn

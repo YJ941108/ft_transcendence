@@ -52,11 +52,9 @@ export class UsersService {
    */
   async getUser(id: number): Promise<Users> {
     const user = await this.usersRepository.findOne({ id });
-
     if (!user) {
       throw new BadRequestException('유저가 없습니다.');
     }
-
     return user;
   }
 
@@ -68,28 +66,20 @@ export class UsersService {
    */
   async setUser(id: number, file: Express.Multer.File, nickname: string | undefined): Promise<Object> {
     const user = await this.getUser(id);
-    this.logger.log(`setUser: req: file: ${JSON.stringify(file)}`);
-    this.logger.log(`setUser: req: nickname: ${nickname}`);
-
+    if (!user) {
+      throw new BadRequestException('유저가 없습니다');
+    }
     if (!file && !nickname) {
       throw new BadRequestException('변경된 내용이 없습니다');
     }
-
-    this.logger.log(`setUser: user: before: ${JSON.stringify(user)}`);
-
     if (file) {
-      this.logger.log(`setUser: file: ${JSON.stringify(file)}`);
       const serverOrigin = this.configService.get<string>('server.origin');
-      this.logger.log(`setUser: serverOrigin: ${serverOrigin}`);
       const fileLocation = serverOrigin + join('/api/users/profile', file.filename);
-      this.logger.log(`setUser: fileLocation: ${fileLocation}`);
       user.photo = fileLocation;
     }
-
     if (nickname) {
       const isUser = await this.usersRepository.findOne({ nickname });
       const regex = /^[0-9a-zA-Z]+$/;
-
       if (isUser) {
         throw new ConflictException('중복된 닉네임입니다');
       } else if (!nickname.match(regex)) {
@@ -97,8 +87,6 @@ export class UsersService {
       }
       user.nickname = nickname;
     }
-
-    this.logger.log(`setUser: user: after: ${JSON.stringify(user)}`);
     await this.usersRepository.save(user);
     return {
       statusCode: 200,

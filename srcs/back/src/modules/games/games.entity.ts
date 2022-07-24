@@ -17,11 +17,11 @@ import { Users } from '../users/users.entity';
  *
  */
 @Entity()
-export class Game extends BaseEntity {
+export class Games extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToMany(() => Users, (player) => player.game)
+  @ManyToMany(() => Users)
   @JoinTable()
   players: Users[];
 
