@@ -78,6 +78,18 @@ export class UsersController {
   }
 
   /**
+   * 유저 정보 반환
+   * @param req
+   * @returns
+   */
+  @Get('online')
+  async getOnlineUsers(): Promise<Users[]> {
+    const users = await this.usersService.getOnlineUsers();
+    this.logger.log('online');
+    return users;
+  }
+
+  /**
    * 다른 유저 정보 반환
    * @param nickname
    * @returns

@@ -60,6 +60,19 @@ export class UsersService {
   }
 
   /**
+   * 접속중인 유저 조회
+   * @param id
+   * @returns
+   */
+  async getOnlineUsers(): Promise<Users[]> {
+    const user = await this.usersRepository.createQueryBuilder('users').where('users.socketId IS NOT NULL').getMany();
+    if (!user) {
+      throw new BadRequestException('유저가 없습니다.');
+    }
+    return user;
+  }
+
+  /**
    *
    * @param id
    * @param file
