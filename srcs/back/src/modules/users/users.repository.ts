@@ -9,6 +9,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { UserActionDto } from './dto/user-action.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from './users.entity';
+import { AchievementList } from 'src/enums/achievements.enum';
 
 /**
  *
@@ -132,6 +133,14 @@ export class UsersRepository extends Repository<Users> {
     user.friends.push(another);
     const index = user.friendsRequest.findIndex((e) => e.id === another.id);
     user.friendsRequest.splice(index, 1);
+
+    /** 업적 추가 */
+    const array = user.achievement.split('').map((e) => +e);
+    if (array[AchievementList.FRIENDS_FIRST_MAKE] === 0) {
+      array[AchievementList.FRIENDS_FIRST_MAKE] = 1;
+      user.achievement = array.join('');
+    }
+
     user.save();
     return user;
   }

@@ -16,6 +16,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { UserActionDto } from './dto/user-action.dto';
+import { AchievementList } from 'src/enums/achievements.enum';
 
 /**
  *  @class UsersService
@@ -237,6 +238,13 @@ export class UsersService {
   async updateStats(user: Users, isWinner: boolean) {
     if (isWinner) {
       user.wins += 1;
+
+      /** 업적 추가 */
+      const array = user.achievement.split('').map((e) => +e);
+      if (array[AchievementList.GAME_FIRST_WIN] === 0) {
+        array[AchievementList.GAME_FIRST_WIN] = 1;
+        user.achievement = array.join('');
+      }
     } else {
       user.losses += 1;
     }

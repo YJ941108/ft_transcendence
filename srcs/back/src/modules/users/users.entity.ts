@@ -99,6 +99,12 @@ export class Users extends BaseEntity {
   })
   socketId: string;
 
+  @Column({
+    nullable: true,
+    default: '100',
+  })
+  achievement: string;
+
   /**
    * src/modules/games/game.entity.ts 참고
    * @see https://typeorm.io/many-to-many-relations
