@@ -18,4 +18,9 @@ export const getEmailData = async (email: IEmail) => {
 	return axios.get(`/api/auth/${email.email}`);
 };
 
+export const getFriendsListData = async () => {
+	const response = await axios.get('/api/users');
+	return response.data;
+};
+
 export default getUserData;
