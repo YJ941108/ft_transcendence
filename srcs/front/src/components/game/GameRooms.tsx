@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Socket } from 'socket.io-client';
 import { IRoom } from './GameInterfaces';
 
@@ -8,9 +8,6 @@ interface IGameRoomsProps {
 }
 
 function GameRooms({ gameRooms, socket }: IGameRoomsProps) {
-	useEffect(() => {
-		console.log(gameRooms);
-	}, [gameRooms]);
 	const onEnterGameRoom = (event: React.MouseEvent<HTMLButtonElement>) => {
 		socket.emit('spectateRoom', event.currentTarget.value);
 	};
