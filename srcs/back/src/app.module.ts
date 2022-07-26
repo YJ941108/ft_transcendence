@@ -9,6 +9,8 @@ import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
 import { GamesModule } from './modules/games/games.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { ChannelModule } from './modules/channel/channel.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { ProfileModule } from './modules/profile/profile.module';
     UsersModule,
     GamesModule,
     ProfileModule,
+    ChatModule,
+    ChannelModule,
   ],
 })
 export class AppModule {}
