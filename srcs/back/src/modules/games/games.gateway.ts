@@ -370,9 +370,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (roomIndex !== -1) {
       this.currentGames.splice(roomIndex, 1);
     }
-    setInterval(() => {
-      room.gameState = GameState.END_GAME;
-    }, 3000);
+    room.gameState = GameState.END_GAME;
     this.server.emit('updateCurrentGames', this.currentGames);
     return this.returnMessage('saveGame', 200, '저장 성공');
   }
