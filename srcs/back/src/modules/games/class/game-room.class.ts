@@ -135,6 +135,10 @@ export default class Room implements IRoom {
     return this.paddleOne.user.nickname === user.nickname || this.paddleTwo.user.nickname === user.nickname;
   }
 
+  findOne(user: User): number {
+    return this.players.findIndex((element) => element.id === user.id);
+  }
+
   /**
    *
    * @param user

@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
-import { Game } from './games.entity';
+import { Games } from './games.entity';
 import { GamesRepository } from './games.repository';
 
 /**
@@ -21,7 +21,24 @@ export class GamesService {
    * @returns
    */
   async findAll() {
-    return this.gamesRepository.find({});
+    return this.gamesRepository.find({
+      relations: ['players'],
+    });
+  }
+
+  /**
+   *
+   * @returns
+   */
+  async find(id: number) {
+    const found = await this.gamesRepository.find({
+      where: [{ winnerId: id }, { loserId: id }],
+      relations: ['players'],
+    });
+    if (!found.length) {
+      throw new BadRequestException('없는 유저입니다.');
+    }
+    return found;
   }
 
   /**
@@ -29,10 +46,10 @@ export class GamesService {
    * @param id
    * @returns
    */
-  async findOne(id: number): Promise<Game> {
+  async findOne(id: number): Promise<Games> {
     const game = await this.gamesRepository.findOne(id);
     if (!game) {
-      throw new NotFoundException(`Game [${id}] not found`);
+      throw new NotFoundException(`Games [${id}] not found`);
     }
     return game;
   }
@@ -42,7 +59,7 @@ export class GamesService {
    * @param createGameDto
    * @returns
    */
-  async create(createGameDto: CreateGameDto): Promise<Game> {
+  async create(createGameDto: CreateGameDto): Promise<Games> {
     const game = this.gamesRepository.create({ ...createGameDto });
     return this.gamesRepository.save(game);
   }
@@ -53,7 +70,7 @@ export class GamesService {
    * @param updateGameDto
    * @returns
    */
-  async update(id: number, updateGameDto: UpdateGameDto): Promise<Game> {
+  async update(id: number, updateGameDto: UpdateGameDto): Promise<Games> {
     const game = await this.gamesRepository.preload({
       id: +id,
       ...updateGameDto,
@@ -69,7 +86,7 @@ export class GamesService {
    * @param id
    * @returns
    */
-  async remove(id: number): Promise<Game> {
+  async remove(id: number): Promise<Games> {
     const game = await this.findOne(id);
     return this.gamesRepository.remove(game);
   }

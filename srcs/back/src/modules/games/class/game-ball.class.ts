@@ -161,7 +161,6 @@ export class Ball implements IBall {
     if (!this.handleCollision(secondPassed, p1, p2)) {
       this.x += this.velocity.dx * secondPassed;
       this.y += this.velocity.dy * secondPassed;
-      this.color += 10;
     }
 
     /** Goal Paddle */
