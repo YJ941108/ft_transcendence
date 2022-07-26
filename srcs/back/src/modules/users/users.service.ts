@@ -237,7 +237,7 @@ export class UsersService {
    * @returns
    */
   updateUserRatio = (user: Users) => {
-    const ratio = Math.round((user.wins / (user.wins + user.losses)) * 100) / 100;
+    const ratio = user.wins - user.losses;
 
     return ratio;
   };
