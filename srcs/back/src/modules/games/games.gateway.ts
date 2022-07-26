@@ -208,7 +208,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinQueue')
   handleJoinQueue(@ConnectedSocket() client: Socket, @MessageBody() mode: string): Object {
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
-    if (!user.id) {
+    if (!user) {
       return this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
     }
 
