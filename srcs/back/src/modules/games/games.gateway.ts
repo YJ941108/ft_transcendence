@@ -426,7 +426,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       this.saveGame(room, currentTimestamp);
     } else if (
       (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
-      currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(1)
+      currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(1.5)
     ) {
       room.resetPosition();
       room.changeGameState(GameState.PLAYING);
@@ -439,7 +439,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       room.changeGameState(GameState.PLAYING);
     } else if (
       room.gameState === GameState.PAUSED &&
-      currentTimestamp - room.pauseTime[room.pauseTime.length - 1].pause >= this.secondToTimestamp(42)
+      currentTimestamp - room.pauseTime[room.pauseTime.length - 1].pause >= this.secondToTimestamp(42.5)
     ) {
       room.pauseForfait();
       room.pauseTime[room.pauseTime.length - 1].resume = Date.now();
