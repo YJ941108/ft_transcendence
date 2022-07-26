@@ -57,7 +57,12 @@ export class UsersRepository extends Repository<Users> {
         relations: relations,
       },
     );
-    const another = await this.findOne({ nickname });
+    const another = await this.findOne(
+      { nickname },
+      {
+        relations: relations,
+      },
+    );
 
     /** 예외 처리 */
     if (!another) {
@@ -95,8 +100,8 @@ export class UsersRepository extends Repository<Users> {
     });
 
     /** 데이터 삽입 */
-    user.friendsRequest.push(another);
-    user.save();
+    another.friendsRequest.push(user);
+    another.save();
     return user;
   }
 
