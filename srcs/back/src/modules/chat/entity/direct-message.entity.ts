@@ -1,4 +1,4 @@
-import { Message } from 'src/modules/channel/entity/message.entity';
+import { Message } from 'src/modules/chat/entity/message.entity';
 import { Users } from 'src/modules/users/entity/users.entity';
 import { CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 

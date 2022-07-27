@@ -10,8 +10,6 @@ import { UsersModule } from './modules/users/users.module';
 import { GamesModule } from './modules/games/games.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ChatModule } from './modules/chat/chat.module';
-import { ChannelModule } from './modules/channel/channel.module';
-import { DirectMessageModule } from './modules/direct-message/direct-message.module';
 
 @Module({
   imports: [
@@ -49,8 +47,6 @@ import { DirectMessageModule } from './modules/direct-message/direct-message.mod
     GamesModule,
     ProfileModule,
     ChatModule,
-    ChannelModule,
-    DirectMessageModule,
   ],
 })
 export class AppModule {}

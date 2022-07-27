@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Channel } from './channel.entity';
-import { DirectMessage } from 'src/modules/direct-message/entity/direct-message.entity';
+import { DirectMessage } from 'src/modules/chat/entity/direct-message.entity';
 import { Users } from 'src/modules/users/entity/users.entity';
 
 /**
