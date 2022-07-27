@@ -11,7 +11,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Users } from './users.entity';
+import { Users } from './entity/users.entity';
 import { UsersRepository } from './users.repository';
 import { UsersService } from './users.service';
 

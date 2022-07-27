@@ -15,7 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { multerOptions } from 'src/middleware/multer.middleware';
-import { Users } from './users.entity';
+import { Users } from './entity/users.entity';
 import { UsersService } from './users.service';
 
 /**

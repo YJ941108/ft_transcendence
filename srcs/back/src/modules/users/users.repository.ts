@@ -8,7 +8,7 @@ import {
 import { EntityRepository, Repository } from 'typeorm';
 import { UserActionDto } from './dto/user-action.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Users } from './users.entity';
+import { Users } from './entity/users.entity';
 import { AchievementList } from 'src/enums/achievements.enum';
 
 /**
