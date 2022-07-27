@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UsersService } from '../users/users.service';
-import { Channel } from './entity/channel.entity';
-import { Punishment, PunishmentType } from './entity/punishment.entity';
+import { UsersService } from '../../users/users.service';
+import { Channel } from '../entity/channel.entity';
+import { Punishment, PunishmentType } from '../entity/punishment.entity';
 
 type PunishmentOptions = {
   // durationInSeconds?: number;

@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { hash as hashPassword } from 'bcryptjs';
-import { Channel } from './entity/channel.entity';
-import { CreateChannelDto } from './dto/create-channel.dto';
-import { UpdateChannelDto } from './dto/update-channel.dto';
+import { Channel } from '../entity/channel.entity';
+import { CreateChannelDto } from '../dto/create-channel.dto';
+import { UpdateChannelDto } from '../dto/update-channel.dto';
 import { PunishmentService } from './punishment.service';
 
 @Injectable()
