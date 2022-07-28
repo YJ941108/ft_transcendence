@@ -3,8 +3,8 @@ import { User } from '../../games/class/user.class';
 export class ChatUser extends User {
   joinedRooms: string[];
 
-  constructor(id: number, username: string, socketId: string) {
-    super(id, username, socketId);
+  constructor(id: number, nickname: string, socketId: string) {
+    super(id, nickname, socketId);
     this.joinedRooms = [];
   }
 

@@ -1,13 +1,22 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { UserStatus } from 'src/enums/games.enum';
+import { CreateDirectMessageDto } from '../direct-message/dto/create-direct-message.dto';
+import { CreateMessageDto } from '../message/dto/create-message.dto';
+import { BadRequestTransformationFilter } from './chat.filter';
+import { ChatService } from './chat.service';
+import { ChatUser } from './class/chat-user.class';
 import { ChatUsers } from './class/chat-users.class';
 
 /**
@@ -23,21 +32,18 @@ import { ChatUsers } from './class/chat-users.class';
   },
   namespace: 'api/chat',
 })
-export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  /** Logger */
+export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private logger: Logger = new Logger('chatGateway');
+  private chatUsers: ChatUsers = new ChatUsers();
 
-  constructor() {}
-
-  /** @type server */
   @WebSocketServer()
   server: Server;
 
-  private chatUsers: ChatUsers = new ChatUsers();
+  constructor(private readonly chatService: ChatService) {}
 
-  returnMessage(func: string, code: number, message: string, data?: Object[] | Object): Object {
+  returnMessage(func: string, code: number, message: string, data?: Object[] | Object, dataLog?: boolean): Object {
     this.logger.log(`${func} [${code}]: ${message}`);
-    if (data) {
+    if (data && dataLog) {
       this.logger.log(`data: ${JSON.stringify(data)}`);
     }
     return {
@@ -47,6 +53,10 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       data,
     };
   }
+
+  /**
+   * Socket.io
+   */
 
   /**
    * 소켓이 만들어질 때 실행
@@ -72,4 +82,172 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param client 소켓에 접속한 클라이언트
    */
   async handleDisconnect(@ConnectedSocket() client: Socket): Promise<void> {}
+
+  /**
+   * 유저 관리
+   */
+
+  /**
+   *
+   * @param client
+   * @param newUser
+   */
+  @SubscribeMessage('joinChat')
+  handleNewUser(@ConnectedSocket() client: Socket, @MessageBody() newUser: ChatUser) {
+    let user = this.chatUsers.getUserById(newUser.id);
+
+    if (user) {
+      return this.returnMessage(
+        'joinChat',
+        400,
+        '채팅 소켓에 이미 접속했습니다',
+        {
+          userId: user.id,
+          status: UserStatus[user.status],
+        },
+        true,
+      );
+    }
+    user = new ChatUser(newUser.id, newUser.nickname, client.id);
+    user.setUserStatus(UserStatus.ONLINE);
+    this.chatUsers.addUser(user);
+    this.server.emit('listeningUser', {
+      func: 'listeningUser',
+      code: 200,
+      message: '누군가 채팅 소켓에 접속했습니다',
+      data: {
+        userId: user.id,
+        status: 'ONLINE',
+      },
+    });
+    return this.returnMessage(
+      'joinChat',
+      200,
+      '채팅 소켓에 접속했습니다',
+      {
+        userId: user.id,
+        status: UserStatus[user.status],
+      },
+      true,
+    );
+  }
+
+  /**
+   *
+   * @param client
+   * @param param1
+   */
+  @SubscribeMessage('getUserStatus')
+  async handleGetUserStatus(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
+    const user = this.chatUsers.getUserById(userId);
+
+    let data = {};
+
+    if (!user) {
+      data = {
+        userId,
+        status: UserStatus[UserStatus.OFFLINE],
+      };
+    } else {
+      data = {
+        userId,
+        status: UserStatus[user.status],
+      };
+    }
+
+    return this.returnMessage('getUserStatus', 200, '상태 불러오기 성공', data, true);
+  }
+
+  userJoinRoom(socketId: string, roomId: string) {
+    this.chatUsers.addRoomToUser(socketId, roomId);
+    this.server.in(socketId).socketsJoin(roomId);
+  }
+
+  userLeaveRoom(socketId: string, roomId: string) {
+    this.chatUsers.addRoomToUser(socketId, roomId);
+    this.server.in(socketId).socketsLeave(roomId);
+  }
+
+  /**
+   * DM
+   */
+
+  @SubscribeMessage('getUserDMRooms')
+  async handleUserDms(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
+    const dms = await this.chatService.getUserDms(userId);
+
+    for (const dm of dms) {
+      this.userJoinRoom(client.id, `dm_${dm.id}`);
+    }
+
+    console.log(dms);
+    return this.returnMessage('getUserDMRooms', 200, 'DM 리스트', dms, false);
+  }
+
+  @UseFilters(new BadRequestTransformationFilter())
+  @SubscribeMessage('createDMRoom')
+  async handleCreateDm(@ConnectedSocket() client: Socket, @MessageBody() data: CreateDirectMessageDto) {
+    try {
+      let dm = await this.chatService.checkIfDmExists(data.users[0].id.toString(), data.users[1].id.toString());
+      console.log(dm);
+
+      if (!dm) {
+        dm = await this.chatService.createDm(data);
+
+        const user = this.chatUsers.getUser(client.id);
+        const friend = data.users.find((dmUser) => dmUser.id !== user.id);
+        const friendUser = this.chatUsers.getUserById(friend.id);
+
+        /**
+         * 상대방에게 방 만든걸 알려줘야함 그래서 상대방이 getUserDMs를 해야 함
+         */
+        if (friendUser) {
+          this.userJoinRoom(friendUser.socketId, `dm_${dm.id}`);
+          this.server.to(friendUser.socketId).emit('listeningDMRoom');
+        }
+      }
+      this.userJoinRoom(client.id, `dm_${dm.id}`);
+      return this.returnMessage('createDMRoom', 200, '방 정보', dm);
+    } catch (e) {
+      console.log(e);
+      this.server.to(client.id).emit('chatError', e.message);
+    }
+  }
+
+  @SubscribeMessage('joinDMRoom')
+  async handleDmData(@ConnectedSocket() client: Socket, @MessageBody() body: { DMId: number }) {
+    let user = this.chatUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('joinChat', 400, '채팅 소켓에 유저가 없습니다');
+    }
+    if (!body.DMId) {
+      return this.returnMessage('joinDMRoom', 400, '키가 올바르지 않습니다');
+    }
+
+    const dm = await this.chatService.getDmData(body.DMId);
+    const roomId = `dm_${dm.id}`;
+    this.userJoinRoom(client.id, roomId);
+    return this.returnMessage('joinDMRoom', 200, 'DM 방에 들어왔습니다.', dm, false);
+  }
+
+  @UseFilters(new BadRequestTransformationFilter())
+  @SubscribeMessage('sendDM')
+  async handleDmSubmit(@ConnectedSocket() client: Socket, @MessageBody() data: CreateMessageDto) {
+    let user = this.chatUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('joinChat', 400, '채팅 소켓에 유저가 없습니다');
+    }
+    try {
+      const message = await this.chatService.addMessageToDm(data);
+      this.server.to(`dm_${message.DM.id}`).emit('listeningDM', {
+        func: 'listeningUser',
+        code: 200,
+        message: '누군가 채팅 소켓에 접속했습니다',
+        data: message,
+      });
+      return this.returnMessage('sendDM', 200, '메시지 보내기 성공', message, true);
+    } catch (e) {
+      this.server.to(client.id).emit('chatError', e.message);
+    }
+  }
 }

@@ -24,8 +24,13 @@ export class ChatUsers {
     return user;
   }
 
-  getUserById(userId: string): ChatUser | undefined {
-    const user: ChatUser = this.users.find((user) => user.id === parseInt(userId));
+  getUserById(id: number): ChatUser | undefined {
+    const user: ChatUser = this.users.find((user) => user.id === id);
+    return user;
+  }
+
+  getUserBySocketId(socketId: string): ChatUser | undefined {
+    const user: ChatUser = this.users.find((user) => user.socketId === socketId);
     return user;
   }
 

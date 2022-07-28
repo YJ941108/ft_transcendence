@@ -11,7 +11,7 @@ export class DirectMessage {
   @JoinTable()
   users: Users[];
 
-  @OneToMany(() => Message, (message) => message.directMessage, {
+  @OneToMany(() => Message, (message) => message.DM, {
     cascade: true,
   })
   messages: Message[];

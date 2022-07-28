@@ -13,7 +13,7 @@ export class CreateMessageDto {
   readonly content: string;
 
   @IsNotEmpty()
-  readonly directMessage?: DirectMessage;
+  readonly DM?: DirectMessage;
 
   @IsNotEmpty()
   readonly channel?: Channel;

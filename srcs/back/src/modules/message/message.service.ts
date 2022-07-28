@@ -34,8 +34,6 @@ export class MessageService {
   async create(createChanMessageDto: CreateMessageDto) {
     const message = this.messagesRepository.create(createChanMessageDto);
 
-    this.logger.log(`Create new message in channel [${createChanMessageDto.channel.id}]`);
-
     return await this.messagesRepository.save(message).catch(() => {
       throw new Error('Message may not be longer than 640 characters.');
     });

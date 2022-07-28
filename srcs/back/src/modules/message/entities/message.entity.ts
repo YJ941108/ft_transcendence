@@ -19,10 +19,10 @@ export class Message {
   })
   channel: Channel;
 
-  @ManyToOne(() => DirectMessage, (directMessage) => directMessage.messages, {
+  @ManyToOne(() => DirectMessage, (DM) => DM.messages, {
     onDelete: 'CASCADE',
   })
-  directMessage: DirectMessage;
+  DM: DirectMessage;
 
   @ManyToOne(() => Users)
   author: Users;
