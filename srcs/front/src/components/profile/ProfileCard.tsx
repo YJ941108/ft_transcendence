@@ -55,15 +55,17 @@ interface IUser {
 	friends: number[];
 	friends_blocked: number[];
 	friends_request: number[];
+	tfa: boolean;
 	id: number;
 	jwt: string;
 	refresh_token: string;
 }
 
 function ProfileCard() {
-	const { isLoading, data } = useQuery<IUser>('user', getUserData);
+	const { isLoading, data, error } = useQuery<IUser>('user', getUserData);
 
 	if (isLoading) return null;
+	if (error) return null;
 	return (
 		<RootStyled>
 			<ProfileCardBox>
@@ -71,7 +73,7 @@ function ProfileCard() {
 				<h1>{data?.nickname}</h1>
 				<Link to="/ProfileEdit">USER EDIT</Link>
 			</ProfileCardBox>
-			<Toggle />
+			<Toggle tfa={data?.tfa} />
 		</RootStyled>
 	);
 }

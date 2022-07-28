@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
+import axios from 'axios';
 
 interface Props {
-	toggle: boolean;
+	tfa: boolean | undefined;
 }
 
 const ToggleBtn = styled.button`
@@ -12,7 +13,7 @@ const ToggleBtn = styled.button`
 	border: none;
 	cursor: pointer;
 	float: right;
-	background-color: ${(props: Props) => (!props.toggle ? 'darkgray' : 'green')};
+	background-color: ${(props: Props) => (props.tfa ? 'green' : 'darkgray')};
 	display: block;
 	justify-content: center;
 	align-items: center;
@@ -26,7 +27,7 @@ const Circle = styled.div`
 	left: 2%;
 	transition: all 0.5s ease-in-out;
 	${(props: Props) =>
-		props.toggle &&
+		props.tfa &&
 		css`
 			transform: translate(30px, 0);
 			transition: all 0.5s ease-in-out;
@@ -41,17 +42,28 @@ const ToggleBox = styled.div`
 	line-height: 30px;
 `;
 
-function Toggle() {
-	const [toggle, setToggle] = useState(false);
+function Toggle({ tfa }: Props) {
+	const [toggle, setToggle] = useState(tfa);
 	const clickedToggle = () => {
-		setToggle((prev: boolean) => !prev);
+		setToggle((prev) => !prev);
 	};
+	const didMount = React.useRef(false);
+
+	useEffect(() => {
+		if (didMount.current) {
+			axios
+				.patch('/api/users/me/tfa', { tfa: toggle })
+				// eslint-disable-next-line no-alert
+				.then((r) => (r.data.tfa ? alert('2차인증이 활성화 되었습니다.') : alert('2차인증이 비활성화 되었습니다.')));
+		} else didMount.current = true;
+	}, [toggle]);
+
 	return (
 		<ToggleBox>
 			{/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-			<label>2AF 인증 {!toggle ? 'Off' : 'On'}</label>
-			<ToggleBtn onClick={clickedToggle} toggle={toggle}>
-				<Circle toggle={toggle} />
+			<label>2AF 인증 {toggle ? 'On' : 'Off'}</label>
+			<ToggleBtn onClick={clickedToggle} tfa={toggle}>
+				<Circle tfa={toggle} />
 			</ToggleBtn>
 		</ToggleBox>
 	);

@@ -12,13 +12,11 @@ axios.defaults.baseURL = process.env.REACT_APP_BASE_URL;
 axios.defaults.withCredentials = true;
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
-	<React.StrictMode>
-		<QueryClientProvider client={queryClient}>
-			<ThemeProvider theme={mainTheme}>
-				<RecoilRoot>
-					<App />
-				</RecoilRoot>
-			</ThemeProvider>
-		</QueryClientProvider>
-	</React.StrictMode>
+	<QueryClientProvider client={queryClient}>
+		<ThemeProvider theme={mainTheme}>
+			<RecoilRoot>
+				<App />
+			</RecoilRoot>
+		</ThemeProvider>
+	</QueryClientProvider>
 );
