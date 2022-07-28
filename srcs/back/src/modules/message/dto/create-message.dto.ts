@@ -1,8 +1,8 @@
 import { IsIn, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { Users } from 'src/modules/users/entity/users.entity';
-import { DirectMessage } from '../entity/direct-message.entity';
-import { Channel } from '../entity/channel.entity';
+import { DirectMessage } from 'src/modules/direct-message/entities/direct-message.entity';
+import { Channel } from 'src/modules/channel/entities/channel.entity';
+import { Users } from 'src/modules/users/entities/users.entity';
 
 export class CreateMessageDto {
   @Transform(({ value }) => value.trim())

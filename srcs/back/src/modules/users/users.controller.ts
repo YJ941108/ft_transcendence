@@ -6,16 +6,14 @@ import {
   Patch,
   Post,
   Req,
-  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Request, Response } from 'express';
 import { multerOptions } from 'src/middleware/multer.middleware';
-import { Users } from './entity/users.entity';
+import { Users } from './entities/users.entity';
 import { UsersService } from './users.service';
 
 /**

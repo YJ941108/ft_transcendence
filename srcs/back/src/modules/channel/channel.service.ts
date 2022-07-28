@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { hash as hashPassword } from 'bcryptjs';
-import { Channel } from '../entity/channel.entity';
-import { CreateChannelDto } from '../dto/create-channel.dto';
-import { UpdateChannelDto } from '../dto/update-channel.dto';
-import { PunishmentService } from './punishment.service';
+import { Channel } from './entities/channel.entity';
+import { PunishmentService } from '../punishment/punishment.service';
+import { CreateChannelDto } from './dto/create-channel.dto';
+import { UpdateChannelDto } from './dto/update-channel.dto';
 
 @Injectable()
 export class ChannelService {
@@ -14,25 +14,25 @@ export class ChannelService {
   constructor(
     @InjectRepository(Channel)
     private readonly channelsRepository: Repository<Channel>,
-    private readonly channelPunishmentService: PunishmentService,
+    private readonly PunishmentService: PunishmentService,
   ) {}
 
   /**
    * Channel punishments
    */
   async findOutIfUserIsMuted(channelId: number, userId: number) {
-    return await this.channelPunishmentService.isUserCurrentlyMuted(channelId, userId);
+    return await this.PunishmentService.isUserCurrentlyMuted(channelId, userId);
   }
 
   async findOutIfUserIsBanned(channelId: number, userId: number) {
-    return await this.channelPunishmentService.isUserCurrentlyBanned(channelId, userId);
+    return await this.PunishmentService.isUserCurrentlyBanned(channelId, userId);
   }
 
   async banUser(channelId: number, punishedId: number, punisherId: number) {
-    const isBanned = await this.channelPunishmentService.isUserCurrentlyBanned(channelId, punishedId);
+    const isBanned = await this.PunishmentService.isUserCurrentlyBanned(channelId, punishedId);
 
     if (!isBanned) {
-      return this.channelPunishmentService.punishUser(channelId, punishedId, punisherId, 'ban', {
+      return this.PunishmentService.punishUser(channelId, punishedId, punisherId, 'ban', {
         reason: "Un méchant garçon, à n'en point douter.",
       });
     }
@@ -40,10 +40,10 @@ export class ChannelService {
   }
 
   async muteUser(channelId: number, punishedId: number, punisherId: number) {
-    const isMuted = await this.channelPunishmentService.isUserCurrentlyMuted(channelId, punishedId);
+    const isMuted = await this.PunishmentService.isUserCurrentlyMuted(channelId, punishedId);
 
     if (!isMuted) {
-      return this.channelPunishmentService.punishUser(channelId, punishedId, punisherId, 'mute', {
+      return this.PunishmentService.punishUser(channelId, punishedId, punisherId, 'mute', {
         reason: "Un méchant garçon, à n'en point douter.",
       });
     }

@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateDirectMessageDto } from '../dto/create-direct-message.dto';
-import { UpdateDirectMessageDto } from '../dto/update-direct-message.dto';
-import { DirectMessage } from '../entity/direct-message.entity';
+import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
+import { UpdateDirectMessageDto } from './dto/update-direct-message.dto';
+import { DirectMessage } from './entities/direct-message.entity';
 
 @Injectable()
 export class DirectMessageService {

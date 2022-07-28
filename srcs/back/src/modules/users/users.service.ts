@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Users } from './entity/users.entity';
+import { Users } from './entities/users.entity';
 import { UsersRepository } from './users.repository';
 import { randomString } from 'src/utils/randomString';
 import { MailerService } from '@nestjs-modules/mailer';

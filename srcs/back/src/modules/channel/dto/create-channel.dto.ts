@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 import { PasswordValidator } from 'src/utils/patternValidator';
 import { Transform, Type } from 'class-transformer';
-import { Users } from 'src/modules/users/entity/users.entity';
+import { Users } from 'src/modules/users/entities/users.entity';
 
 export class CreateChannelDto {
   @Transform(({ value }) => value.trim())

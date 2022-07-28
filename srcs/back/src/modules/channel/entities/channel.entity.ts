@@ -9,9 +9,9 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { IsOptional } from 'class-validator';
-import { Users } from 'src/modules/users/entity/users.entity';
-import { Message } from './message.entity';
-import { Punishment } from './punishment.entity';
+import { Users } from 'src/modules/users/entities/users.entity';
+import { Message } from 'src/modules/message/entities/message.entity';
+import { Punishment } from 'src/modules/punishment/entities/punishment.entity';
 
 @Entity()
 export class Channel {

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { compare as comparePassword } from 'bcryptjs';
-import { UsersService } from '../../users/users.service';
-import { ChannelService } from './channel.service';
-import { DirectMessageService } from './direct-message.service';
-import { CreateChannelDto } from '../dto/create-channel.dto';
-import { CreateDirectMessageDto } from '../dto/create-direct-message.dto';
-import { CreateMessageDto } from '../dto/create-message.dto';
-import { UpdateChannelDto } from '../dto/update-channel.dto';
-import { Channel } from '../entity/channel.entity';
-import { DirectMessage } from '../entity/direct-message.entity';
-import { MessageService } from './message.service';
+import { ChannelService } from '../channel/channel.service';
+import { CreateChannelDto } from '../channel/dto/create-channel.dto';
+import { UpdateChannelDto } from '../channel/dto/update-channel.dto';
+import { Channel } from '../channel/entities/channel.entity';
+import { DirectMessageService } from '../direct-message/direct-message.service';
+import { CreateDirectMessageDto } from '../direct-message/dto/create-direct-message.dto';
+import { DirectMessage } from '../direct-message/entities/direct-message.entity';
+import { CreateMessageDto } from '../message/dto/create-message.dto';
+import { MessageService } from '../message/message.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ChatService {

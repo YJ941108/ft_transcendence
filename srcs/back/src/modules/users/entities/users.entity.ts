@@ -1,9 +1,10 @@
 /**
  * @see https://github.com/typeorm/typeorm/blob/master/test/functional/database-schema/column-types/postgres/entity/Post.ts
  */
-import { Channel } from 'src/modules/chat/entity/channel.entity';
-import { Punishment } from 'src/modules/chat/entity/punishment.entity';
-import { DirectMessage } from 'src/modules/chat/entity/direct-message.entity';
+
+import { Channel } from 'src/modules/channel/entities/channel.entity';
+import { DirectMessage } from 'src/modules/direct-message/entities/direct-message.entity';
+import { Punishment } from 'src/modules/punishment/entities/punishment.entity';
 import {
   BaseEntity,
   Column,

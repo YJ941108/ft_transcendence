@@ -11,7 +11,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Users } from '../users/entity/users.entity';
+import { Users } from '../users/entities/users.entity';
 
 /**
  *

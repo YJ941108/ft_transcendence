@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Users } from 'src/modules/users/entity/users.entity';
-import { Channel } from './channel.entity';
+import { Users } from 'src/modules/users/entities/users.entity';
+import { Channel } from 'src/modules/channel/entities/channel.entity';
 
 export type PunishmentType = 'mute' | 'ban';
 

@@ -10,6 +10,10 @@ import { UsersModule } from './modules/users/users.module';
 import { GamesModule } from './modules/games/games.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { ChannelModule } from './modules/channel/channel.module';
+import { DirectMessageModule } from './modules/direct-message/direct-message.module';
+import { PunishmentModule } from './modules/punishment/punishment.module';
+import { MessageModule } from './modules/message/message.module';
 
 @Module({
   imports: [
@@ -47,6 +51,10 @@ import { ChatModule } from './modules/chat/chat.module';
     GamesModule,
     ProfileModule,
     ChatModule,
+    ChannelModule,
+    DirectMessageModule,
+    PunishmentModule,
+    MessageModule,
   ],
 })
 export class AppModule {}

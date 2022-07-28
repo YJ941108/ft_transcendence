@@ -1,6 +1,6 @@
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Users } from 'src/modules/users/entity/users.entity';
+import { Users } from 'src/modules/users/entities/users.entity';
 
 export class CreateDirectMessageDto {
   @IsNotEmpty()

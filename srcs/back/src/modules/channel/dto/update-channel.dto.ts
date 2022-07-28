@@ -2,9 +2,9 @@ import { PartialType } from '@nestjs/mapped-types';
 import { IsArray, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateChannelDto } from './create-channel.dto';
-import { Users } from 'src/modules/users/entity/users.entity';
-import { Message } from '../entity/message.entity';
-import { Punishment } from '../entity/punishment.entity';
+import { Users } from 'src/modules/users/entities/users.entity';
+import { Message } from 'src/modules/message/entities/message.entity';
+import { Punishment } from 'src/modules/punishment/entities/punishment.entity';
 
 export class UpdateChannelDto extends PartialType(CreateChannelDto) {
   @IsOptional()

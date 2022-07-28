@@ -1,7 +1,7 @@
+import { Channel } from 'src/modules/channel/entities/channel.entity';
+import { DirectMessage } from 'src/modules/direct-message/entities/direct-message.entity';
+import { Users } from 'src/modules/users/entities/users.entity';
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Channel } from './channel.entity';
-import { DirectMessage } from 'src/modules/chat/entity/direct-message.entity';
-import { Users } from 'src/modules/users/entity/users.entity';
 
 /**
  * DM과 Channel모두 같은 message 엔티티를 공유합니다.

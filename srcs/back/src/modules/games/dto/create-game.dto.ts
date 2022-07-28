@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsInt } from 'class-validator';
-import { Users } from '../../users/entity/users.entity';
+import { Users } from '../../users/entities/users.entity';
 import { GameMode } from '../../../enums/games.enum';
 
 /**
