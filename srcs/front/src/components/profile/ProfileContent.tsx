@@ -8,7 +8,7 @@ const ProfileContentBox = styled.div`
 	border: 3px solid white;
 	padding: 20px;
 	box-sizing: border-box;
-	color: black;
+	color: white;
 `;
 
 // interface IUser {

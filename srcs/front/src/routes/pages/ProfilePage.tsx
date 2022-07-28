@@ -7,6 +7,7 @@ import ContentBox from '../../components/styles/box/ContentBox';
 import SideBox from '../../components/styles/box/SideBox';
 import ProfileCard from '../../components/profile/ProfileCard';
 import isAdmin from '../../modules/login/isAdmin';
+import ProfileContent from '../../components/profile/ProfileContent';
 
 const ProfileDiv = styled.div`
 	display: grid;
@@ -29,6 +30,7 @@ function ProfilePage() {
 			<ContentBox>
 				<ProfileDiv>
 					<ProfileCard />
+					<ProfileContent />
 				</ProfileDiv>
 			</ContentBox>
 			<SideBox />

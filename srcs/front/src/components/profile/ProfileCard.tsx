@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
 import getUserData from '../../modules/api';
+import Toggle from './Toggle';
 
 const RootStyled = styled.div`
 	grid-area: ProfileCard;
@@ -70,6 +71,7 @@ function ProfileCard() {
 				<h1>{data?.nickname}</h1>
 				<Link to="/ProfileEdit">USER EDIT</Link>
 			</ProfileCardBox>
+			<Toggle />
 		</RootStyled>
 	);
 }
