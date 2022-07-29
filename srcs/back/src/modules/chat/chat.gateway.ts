@@ -120,7 +120,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.emit('listeningUser', {
       func: 'listeningUser',
       code: 200,
-      message: '누군가 채팅 소켓에 접속했습니다',
+      message: `${user.nickname}가 채팅 소켓에 접속했습니다`,
       data: {
         userId: user.id,
         status: 'ONLINE',
@@ -203,7 +203,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
          */
         if (friendUser) {
           this.userJoinRoom(friendUser.socketId, `dm_${dm.id}`);
-          this.server.to(friendUser.socketId).emit('listeningDMRoom');
+          this.server.to(friendUser.socketId).emit('listeningDMRoom', {
+            func: 'listeningUser',
+            code: 200,
+            message: `${user.nickname}가 dm_${dm.id} DM방을 만들었습니다.`,
+            data: dm,
+          });
         }
       }
       this.userJoinRoom(client.id, `dm_${dm.id}`);
@@ -271,7 +276,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.server.to(`dm_${message.DM.id}`).emit('listeningDM', {
         func: 'listeningUser',
         code: 200,
-        message: '누군가 채팅 소켓에 접속했습니다',
+        message: `${message.DM.id}에서 메시지가 도착했습니다`,
         data: message,
       });
       return this.returnMessage('sendDM', 200, '메시지 보내기 성공', message, true);
