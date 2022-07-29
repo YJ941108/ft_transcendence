@@ -81,7 +81,25 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    * @function
    * @param client 소켓에 접속한 클라이언트
    */
-  async handleDisconnect(@ConnectedSocket() client: Socket): Promise<void> {}
+  async handleDisconnect(@ConnectedSocket() client: Socket): Promise<void> {
+    let user = this.chatUsers.getUser(client.id);
+    if (!user) {
+      return;
+    }
+
+    this.server.emit('listeningUser', {
+      func: 'listeningUser',
+      code: 200,
+      message: `${user.nickname}가 채팅을 나갔습니다`,
+      data: {
+        userId: user.id,
+        status: UserStatus[UserStatus.OFFLINE],
+      },
+    });
+
+    this.logger.log(`handleDisconnect: ${user.nickname}`);
+    this.chatUsers.removeUser(user);
+  }
 
   /**
    * 유저 관리
@@ -187,6 +205,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @UseFilters(new BadRequestTransformationFilter())
   @SubscribeMessage('createDMRoom')
   async handleCreateDm(@ConnectedSocket() client: Socket, @MessageBody() data: CreateDirectMessageDto) {
+    let user = this.chatUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('joinChat', 400, '채팅 소켓에 유저가 없습니다');
+    }
+
     try {
       let dm = await this.chatService.checkIfDmExists(data.users[0].id.toString(), data.users[1].id.toString());
       console.log(dm);
@@ -227,6 +250,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
   @SubscribeMessage('joinUserDMRooms')
   async handleUserDms(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
+    let user = this.chatUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('joinChat', 400, '채팅 소켓에 유저가 없습니다');
+    }
+
     const DMRooms = await this.chatService.getUserDMRooms(userId);
 
     for (const DMRoom of DMRooms) {
@@ -283,5 +311,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
+  }
+
+  /**
+   * Channels
+   */
+  @SubscribeMessage('getUserChannels')
+  async handleUserChannels(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
+    const channels = await this.chatService.getUserChannels(userId);
+
+    for (const channel of channels) {
+      this.userJoinRoom(client.id, `channel_${channel.id}`);
+    }
+    this.server.to(client.id).emit('updateUserChannels', channels);
   }
 }
