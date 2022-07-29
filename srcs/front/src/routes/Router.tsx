@@ -8,6 +8,7 @@ import ProfilePage from './pages/ProfilePage';
 import UsersPage from './pages/UsersPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ErrorPage from './pages/ErrorPage';
+import ProfileEditPage from './pages/ProfileEditPage';
 
 function Router() {
 	return (
