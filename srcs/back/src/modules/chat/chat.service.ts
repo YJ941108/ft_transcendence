@@ -209,7 +209,7 @@ export class ChatService {
    */
 
   /* Getters */
-  async getUserDms(userId: number) {
+  async getUserDMRooms(userId: number) {
     const dms = await this.directMessageService.findAll();
 
     if (!dms) {

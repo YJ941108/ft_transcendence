@@ -95,7 +95,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('joinChat')
   handleNewUser(@ConnectedSocket() client: Socket, @MessageBody() newUser: ChatUser) {
     let user = this.chatUsers.getUserById(newUser.id);
-
     if (user) {
       return this.returnMessage(
         'joinChat',
@@ -108,6 +107,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         true,
       );
     }
+
+    /**
+     * 유저 추가
+     * 유저 상태 변경
+     * 유저 리스트에 추가
+     * 유저 생성 알림
+     */
     user = new ChatUser(newUser.id, newUser.nickname, client.id);
     user.setUserStatus(UserStatus.ONLINE);
     this.chatUsers.addUser(user);
@@ -164,26 +170,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   userLeaveRoom(socketId: string, roomId: string) {
-    this.chatUsers.addRoomToUser(socketId, roomId);
+    this.chatUsers.removeRoomFromUser(socketId, roomId);
     this.server.in(socketId).socketsLeave(roomId);
   }
 
+  /** DM */
+
   /**
-   * DM
+   * DM을 한 번도 하지 않은 유저와 사용
+   * 방이 없다면 방을 만들고 상대방에게 알림
+   * 방이 있다면 방 정보 불러오기
+   * @param client
+   * @param data
+   * @returns
    */
-
-  @SubscribeMessage('getUserDMRooms')
-  async handleUserDms(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
-    const dms = await this.chatService.getUserDms(userId);
-
-    for (const dm of dms) {
-      this.userJoinRoom(client.id, `dm_${dm.id}`);
-    }
-
-    console.log(dms);
-    return this.returnMessage('getUserDMRooms', 200, 'DM 리스트', dms, false);
-  }
-
   @UseFilters(new BadRequestTransformationFilter())
   @SubscribeMessage('createDMRoom')
   async handleCreateDm(@ConnectedSocket() client: Socket, @MessageBody() data: CreateDirectMessageDto) {
@@ -214,6 +214,29 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  /**
+   * DM 모든 리스트 불러오고 조인
+   * @param client
+   * @param param1
+   * @returns
+   */
+  @SubscribeMessage('joinUserDMRooms')
+  async handleUserDms(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
+    const DMRooms = await this.chatService.getUserDMRooms(userId);
+
+    for (const DMRoom of DMRooms) {
+      this.userJoinRoom(client.id, `dm_${DMRoom.id}`);
+    }
+
+    return this.returnMessage('joinUserDMRooms', 200, 'DM 리스트', DMRooms, false);
+  }
+
+  /**
+   * DM 방에 접속하고
+   * @param client
+   * @param body
+   * @returns
+   */
   @SubscribeMessage('joinDMRoom')
   async handleDmData(@ConnectedSocket() client: Socket, @MessageBody() body: { DMId: number }) {
     let user = this.chatUsers.getUserBySocketId(client.id);
@@ -230,6 +253,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return this.returnMessage('joinDMRoom', 200, 'DM 방에 들어왔습니다.', dm, false);
   }
 
+  /**
+   * 메시지 보내기
+   * @param client
+   * @param data
+   * @returns
+   */
   @UseFilters(new BadRequestTransformationFilter())
   @SubscribeMessage('sendDM')
   async handleDmSubmit(@ConnectedSocket() client: Socket, @MessageBody() data: CreateMessageDto) {
