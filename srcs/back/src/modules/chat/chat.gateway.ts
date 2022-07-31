@@ -12,8 +12,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UserStatus } from 'src/enums/games.enum';
+import { CreateChannelDto } from '../channel/dto/create-channel.dto';
+import { UpdateChannelDto } from '../channel/dto/update-channel.dto';
 import { CreateDirectMessageDto } from '../direct-message/dto/create-direct-message.dto';
 import { CreateMessageDto } from '../message/dto/create-message.dto';
+import { UsersService } from '../users/users.service';
 import { BadRequestTransformationFilter } from './chat.filter';
 import { ChatService } from './chat.service';
 import { ChatUser } from './class/chat-user.class';
@@ -39,7 +42,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly chatService: ChatService) {}
+  constructor(private readonly chatService: ChatService, private readonly usersService: UsersService) {}
 
   returnMessage(func: string, code: number, message: string, data?: Object[] | Object, dataLog?: boolean): Object {
     this.logger.log(`${func} [${code}]: ${message}`);
@@ -248,7 +251,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    * @param param1
    * @returns
    */
-  @SubscribeMessage('joinUserDMRooms')
+  @SubscribeMessage('joinDMRooms')
   async handleUserDms(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
     let user = this.chatUsers.getUserBySocketId(client.id);
     if (!user) {
@@ -261,7 +264,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.userJoinRoom(client.id, `dm_${DMRoom.id}`);
     }
 
-    return this.returnMessage('joinUserDMRooms', 200, 'DM 리스트', DMRooms, false);
+    return this.returnMessage('joinDMRooms', 200, 'DM 리스트', DMRooms, false);
   }
 
   /**
@@ -313,16 +316,96 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  /** Channels */
   /**
-   * Channels
+   * 방 생성이 성공하면 클라이언트에서 방 리스트를 다시 업데이트해야함
+   * @param client
+   * @param data
    */
-  @SubscribeMessage('getUserChannels')
-  async handleUserChannels(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
-    const channels = await this.chatService.getUserChannels(userId);
+  @UseFilters(new BadRequestTransformationFilter())
+  @SubscribeMessage('createChannel')
+  async handleCreateChannel(@ConnectedSocket() client: Socket, @MessageBody() data: CreateChannelDto) {
+    try {
+      const channel = await this.chatService.createChannel(data);
+      const roomId = `channel_${channel.id}`;
+      this.userJoinRoom(client.id, roomId);
 
+      /* 방이 비공개가 아니면 모두에게 알려야 함 */
+      if (channel.privacy !== 'private') {
+        this.server.socketsJoin(roomId);
+        this.server.emit('listeningChannelCreated', channel);
+      } else {
+        this.server.to(roomId).emit('listeningChannelCreated', channel);
+      }
+    } catch (e) {
+      this.server.to(client.id).emit('chatError', e.message);
+    }
+  }
+
+  @UseFilters(new BadRequestTransformationFilter())
+  @SubscribeMessage('updateChannel')
+  async handleUpdateChannel(@ConnectedSocket() client: Socket, @MessageBody() data: UpdateChannelDto) {
+    try {
+      const channel = await this.chatService.updateChannel((data as any).id, data);
+      const roomId = `channel_${channel.id}`;
+
+      /* 방이 비공개가 아니면 모두에게 알려야 함 */
+      if (channel.privacy !== 'private') {
+        this.server.emit('channelUpdated', channel);
+      } else {
+        this.server.to(roomId).emit('channelUpdated', channel);
+      }
+    } catch (e) {
+      this.server.to(client.id).emit('chatError', e.message);
+    }
+  }
+
+  @SubscribeMessage('deleteChannel')
+  async handleDeleteChannel(@ConnectedSocket() client: Socket, @MessageBody() { channelId }: { channelId: number }) {
+    try {
+      const channel = await this.chatService.deleteChannel(channelId);
+      const roomId = `channel_${channelId}`;
+
+      /* 방이 비공개가 아니면 모두에게 알려야 함 */
+      if (channel.privacy !== 'private') {
+        this.server.emit('listeningChannelDeleted', channelId);
+      } else {
+        this.server.to(roomId).emit('listeningChannelDeleted', channelId);
+        this.server.socketsLeave(roomId);
+      }
+    } catch (e) {
+      this.server.to(client.id).emit('chatError', e.message);
+    }
+  }
+
+  /** 채널 데이터 획득 */
+
+  @SubscribeMessage('getChannels')
+  async handleUserChannels(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
+    let user = this.chatUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('joinChat', 400, '채팅 소켓에 유저가 없습니다');
+    }
+
+    const channels = await this.chatService.getUserChannels(userId);
     for (const channel of channels) {
       this.userJoinRoom(client.id, `channel_${channel.id}`);
     }
-    this.server.to(client.id).emit('updateUserChannels', channels);
+    return this.returnMessage('getChannels', 200, '채널 리스트 정보', channels, false);
+  }
+
+  @SubscribeMessage('getChannel')
+  async handleChannelData(@ConnectedSocket() client: Socket, @MessageBody() { channelId }: { channelId: number }) {
+    const channel = await this.chatService.getChannelData(channelId);
+
+    this.userJoinRoom(client.id, `channel_${channel.id}`);
+    return this.returnMessage('getChannel', 200, '채널 정보', channel, false);
+  }
+
+  @SubscribeMessage('getChannelWithUser')
+  async handleChannelUserList(@ConnectedSocket() client: Socket, @MessageBody() { channelId }: { channelId: number }) {
+    const channel = await this.chatService.getChannelUserList(channelId);
+
+    return this.returnMessage('getChannelWithUser', 200, '채널 정보', channel, false);
   }
 }

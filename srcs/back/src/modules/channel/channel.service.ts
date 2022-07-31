@@ -98,7 +98,7 @@ export class ChannelService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: number) {
     const channel = await this.channelsRepository.findOne(id, {
       relations: ['owner', 'users', 'admins', 'messages', 'messages.author'],
     });

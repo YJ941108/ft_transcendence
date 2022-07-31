@@ -26,7 +26,7 @@ export class ChatService {
 
   /* Helpers */
   async userIsInChannel(channelId: number, userId: number) {
-    const channel = await this.channelService.findOne(channelId.toString());
+    const channel = await this.channelService.findOne(channelId);
 
     if (!channel) {
       throw new Error('No channel found.');
@@ -38,7 +38,7 @@ export class ChatService {
   }
 
   async checkChannelPassword(channelId: number, password: string) {
-    const channel = await this.channelService.findOne(channelId.toString());
+    const channel = await this.channelService.findOne(channelId);
 
     if (channel && channel.privacy === 'protected') {
       const chanPassword = await this.channelService.getChannelPassword(channelId.toString());
@@ -83,7 +83,7 @@ export class ChatService {
   }
 
   async getChannelData(channelId: number) {
-    return await this.channelService.findOne(channelId.toString());
+    return await this.channelService.findOne(channelId);
   }
 
   async getChannelUserList(channelId: number) {
@@ -94,7 +94,7 @@ export class ChatService {
   async createChannel(createChannelDto: CreateChannelDto) {
     const res = await this.channelService.create(createChannelDto);
 
-    return await this.channelService.findOne(res.id.toString());
+    return await this.channelService.findOne(res.id);
   }
 
   async updateChannel(channelId: number, updateChannelDto: UpdateChannelDto) {
