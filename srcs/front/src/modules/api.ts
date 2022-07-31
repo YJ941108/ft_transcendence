@@ -9,6 +9,11 @@ const getUserData = async () => {
 	return response.data;
 };
 
+export const getUsersData = async () => {
+	const response = await axios.get('/api/users');
+	return response.data;
+};
+
 export const postEmailData = async (email: IEmail) => {
 	const response = await axios.post('/api/auth/email', email);
 	return response;
