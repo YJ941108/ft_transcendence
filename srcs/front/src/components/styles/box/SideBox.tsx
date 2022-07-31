@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import ChatButton from '../../chat/ChatButton';
 
 interface ISideBoxProps {
 	children?: React.ReactNode;
@@ -15,6 +16,11 @@ const defaultProps = {
 };
 
 export default function SideBox({ children }: ISideBoxProps) {
-	return <SideBoxC>{children}</SideBoxC>;
+	return (
+		<SideBoxC>
+			{children}
+			<ChatButton />
+		</SideBoxC>
+	);
 }
 SideBox.defaultProps = defaultProps;
