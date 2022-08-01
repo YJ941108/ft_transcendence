@@ -103,7 +103,7 @@ export class ChannelService {
       relations: ['owner', 'users', 'admins', 'messages', 'messages.author'],
     });
     if (!channel) {
-      throw new Error(`Channel [${id}] not found`);
+      throw new Error(`Channel [${id}]이 존재하지 않습니다.`);
     }
 
     return channel;
@@ -128,10 +128,11 @@ export class ChannelService {
     });
   }
 
-  async update(id: string, updateChannelDto: UpdateChannelDto) {
+  async update(id: number, updateChannelDto: UpdateChannelDto) {
     if (updateChannelDto.name) {
       const existingChannel = await this.nameIsAvailable(updateChannelDto.name);
-      if (existingChannel && existingChannel.id !== parseInt(id)) {
+
+      if (existingChannel && existingChannel.id !== id) {
         throw new Error(`Group '${updateChannelDto.name}' already exists. Choose another name.`);
       }
     }

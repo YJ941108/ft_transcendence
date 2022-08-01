@@ -50,12 +50,14 @@ export class ChatService {
     throw new Error('Invalid operation');
   }
 
-  async checkIfUserIsBanned(channelId: number, userId: number) {
+  async checkIfUserIsBanned(channelId: number, userId: number): Promise<boolean> {
     const isBanned = await this.channelService.findOutIfUserIsBanned(channelId, userId);
 
     if (isBanned) {
       throw new Error('You were banned from this group.');
     }
+
+    return isBanned;
   }
 
   async checkIfUserIsMuted(channelId: number, userId: number) {
@@ -98,7 +100,7 @@ export class ChatService {
   }
 
   async updateChannel(channelId: number, updateChannelDto: UpdateChannelDto) {
-    return await this.channelService.update(channelId.toString(), updateChannelDto);
+    return await this.channelService.update(channelId, updateChannelDto);
   }
 
   async deleteChannel(channelId: number) {
@@ -118,7 +120,7 @@ export class ChatService {
   async addUserToChannel(channel: Channel, userId: number) {
     const user = await this.usersService.getUser(userId);
 
-    await this.channelService.update(channel.id.toString(), {
+    await this.channelService.update(channel.id, {
       users: [...channel.users, user],
     });
     return user;
@@ -134,7 +136,7 @@ export class ChatService {
       return chanUser.id !== user.id;
     });
 
-    await this.channelService.update(channel.id.toString(), {
+    await this.channelService.update(channel.id, {
       users: filteredUsers,
     });
     return user;
@@ -149,7 +151,7 @@ export class ChatService {
     if (!isAdmin) {
       const newAdmin = await this.usersService.getUser(userId);
 
-      await this.channelService.update(channel.id.toString(), {
+      await this.channelService.update(channel.id, {
         admins: [...channel.admins, newAdmin],
       });
       return newAdmin;
@@ -168,7 +170,7 @@ export class ChatService {
         return chanAdmin.id !== formerAdmin.id;
       });
 
-      await this.channelService.update(channel.id.toString(), {
+      await this.channelService.update(channel.id, {
         admins: filteredAdmins,
       });
       return formerAdmin;
