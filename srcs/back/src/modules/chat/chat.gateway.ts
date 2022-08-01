@@ -15,6 +15,8 @@ import { UserStatus } from 'src/enums/games.enum';
 import { CreateChannelDto } from '../channel/dto/create-channel.dto';
 import { UpdateChannelDto } from '../channel/dto/update-channel.dto';
 import { CreateDirectMessageDto } from '../direct-message/dto/create-direct-message.dto';
+import { User } from '../games/class/user.class';
+import { GamesGateway } from '../games/games.gateway';
 import { CreateMessageDto } from '../message/dto/create-message.dto';
 import { UsersService } from '../users/users.service';
 import { BadRequestTransformationFilter } from './chat.filter';
@@ -42,7 +44,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly chatService: ChatService, private readonly usersService: UsersService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly usersService: UsersService,
+    private readonly pongGateway: GamesGateway,
+  ) {}
 
   returnMessage(func: string, code: number, message: string, data?: Object[] | Object, dataLog?: boolean): Object {
     this.logger.log(`${func} [${code}]: ${message}`);
@@ -701,6 +707,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (adminId === userId) {
       throw new WsException('If you want to leave the channel, go to Channel settings.');
     }
+
     try {
       const admin = this.chatUsers.getUserById(adminId);
       const channel = await this.chatService.getChannelData(channelId);
@@ -761,6 +768,90 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if (chatUser) {
         this.server.to(chatUser.socketId).emit('punishedInChannel', message);
       }
+    } catch (e) {
+      this.server.to(client.id).emit('chatError', e.message);
+    }
+  }
+
+  /**
+   * Game-related
+   */
+  @SubscribeMessage('userGameStatus')
+  async handleUserGameStatus(@ConnectedSocket() client: Socket, @MessageBody() { isPlaying }: { isPlaying: boolean }) {
+    const user = this.chatUsers.getUser(client.id);
+
+    if (user) {
+      if (isPlaying) {
+        user.setUserStatus(UserStatus.PLAYING);
+      } else {
+        user.setUserStatus(UserStatus.ONLINE);
+      }
+      this.server.emit('updateUserStatus', {
+        userId: user.id,
+        status: UserStatus[user.status],
+      });
+    }
+  }
+
+  @SubscribeMessage('acceptPongInvite')
+  async handleAcceptPongInvite(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() { roomId, userId }: { roomId: string; userId: number },
+  ) {
+    try {
+      this.pongGateway.setInviteRoomToReady(roomId);
+      this.logger.log(`Pong invite accepted by User [${userId}]`);
+
+      this.server.to(client.id).emit('redirectToGame');
+    } catch (e) {
+      this.server.to(client.id).emit('chatError', e.message);
+    }
+  }
+
+  @SubscribeMessage('sendPongInvite')
+  async handleSendPongInvite(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() { senderId, receiverId }: { senderId: number; receiverId: number },
+  ) {
+    try {
+      this.pongGateway.roomAlreadyExists(senderId, receiverId);
+
+      let DM = await this.chatService.checkIfDmExists(senderId.toString(), receiverId.toString());
+      const sender = this.chatUsers.getUser(client.id);
+      const receiver = this.chatUsers.getUserById(receiverId);
+
+      if (!DM) {
+        DM = await this.chatService.createDm({
+          users: [{ id: senderId }, { id: receiverId }],
+        } as CreateDirectMessageDto);
+
+        if (receiver) {
+          this.userJoinRoom(receiver.socketId, `dm_${DM.id}`);
+          this.server.to(receiver.socketId).emit('dmCreated');
+        }
+      }
+      if (receiver) {
+        this.server
+          .to(receiver.socketId)
+          .emit('chatInfo', `${sender.nickname} wants to play Pong! Open your DM and accept the challenge!`);
+      }
+
+      const roomId = await this.pongGateway.createInviteRoom(
+        { id: sender.id, nickname: sender.nickname } as User,
+        receiverId,
+      );
+
+      const message = await this.chatService.addMessageToDm({
+        content: "Let's play!",
+        author: { id: senderId },
+        type: 'invite',
+        roomId,
+        DM,
+      } as CreateMessageDto);
+
+      this.server.to(`dm_${DM.id}`).emit('newPongInvite', { message });
+      this.logger.log(`New Pong invite in DM [${message.DM.id}]`);
+      this.server.to(client.id).emit('launchInviteGame');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }

@@ -531,4 +531,62 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
     }
   }
+
+  setInviteRoomToReady(roomId: string) {
+    const room = this.rooms.get(roomId);
+
+    if (!room) {
+      throw new Error('Game is over');
+    }
+    room.changeGameState(GameState.STARTING);
+  }
+
+  /* Create room when invite is sent by a User */
+  async createInviteRoom(sender: User, receiverId: number) {
+    this.logger.log('Create new Invite room');
+
+    const firstPlayer: User = this.createInvitedUser(sender.id, sender.nickname);
+    const receiverData = await this.usersService.getUser(receiverId);
+    const secondPlayer: User = this.createInvitedUser(receiverData.id, receiverData.nickname);
+
+    const roomId: string = `${Date.now()}${firstPlayer.nickname}&${secondPlayer.nickname}`;
+
+    let room: Room = new Room(roomId, [firstPlayer, secondPlayer]);
+    room.gameState = GameState.WAITING;
+
+    this.rooms.set(roomId, room);
+    this.currentGames.push(room);
+
+    this.server.emit('updateCurrentGames', this.currentGames);
+
+    return roomId;
+  }
+
+  createInvitedUser(id: number, username: string) {
+    let newUser: User = this.connectedUsers.getUserById(id);
+
+    if (newUser) {
+      newUser.setNickname(username);
+    } else {
+      newUser = new User(id, username);
+    }
+    this.connectedUsers.addUser(newUser);
+    return newUser;
+  }
+
+  roomAlreadyExists(senderId: number, receiverId: number) {
+    const sender = this.connectedUsers.getUserById(senderId);
+    const receiver = this.connectedUsers.getUserById(receiverId);
+
+    if (!sender || !receiver) return;
+
+    this.rooms.forEach((room: Room) => {
+      if (room.isAPlayer(sender)) {
+        throw Error('You already have a pending game. Finish it or leave the room.');
+      }
+      if (room.isAPlayer(receiver)) {
+        throw Error('User already in a game.');
+      }
+    });
+  }
 }
