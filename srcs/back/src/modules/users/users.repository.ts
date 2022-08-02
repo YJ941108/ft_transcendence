@@ -88,8 +88,8 @@ export class UsersRepository extends Repository<Users> {
     let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
 
     /** 중복 처리 */
-    user.friendsRequest.map((e: { id: number }) => {
-      if (e.id === another.id) {
+    another.friendsRequest.map((e: { id: number }) => {
+      if (e.id === user.id) {
         throw new BadRequestException('이미 요청을 했습니다');
       }
     });

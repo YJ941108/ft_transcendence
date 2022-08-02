@@ -50,6 +50,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private readonly pongGateway: GamesGateway,
   ) {}
 
+  /**
+   * 소켓 반환 함수
+   *
+   * @param func 함수 이름
+   * @param code 함수 상태 코드
+   * @param message 반환 메시지
+   * @param data 반환 데이터
+   * @param dataLog 반환 데이터 로그
+   * @returns 반환 객체
+   */
   returnMessage(func: string, code: number, message: string, data?: Object[] | Object, dataLog?: boolean): Object {
     this.logger.log(`${func} [${code}]: ${message}`);
     if (data && dataLog) {
@@ -63,14 +73,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     };
   }
 
-  /**
-   * Socket.io
-   */
-
+  /** Socket.io */
   /**
    * 소켓이 만들어질 때 실행
-   * @function
-   * @param server 서버 소켓
    */
   afterInit(server: any) {
     this.logger.log(`afterInit: ${server.name} 초기화`);
@@ -78,8 +83,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   /**
    * 클라이언트가 서버 소켓에 접속할 때 실행
-   * @function
-   * @param client 소켓에 접속한 클라이언트
    */
   handleConnection(@ConnectedSocket() client: Socket) {
     this.logger.log(`handleConnection: 접속한 유저 ${client.id}`);
@@ -87,41 +90,40 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   /**
    * 클라이언트가 다른 페이지로 벗어나면 실행
-   * @function
-   * @param client 소켓에 접속한 클라이언트
    */
   async handleDisconnect(@ConnectedSocket() client: Socket): Promise<void> {
+    /** 메모리에 존재하는 유저인지 확인 */
     let user = this.chatUsers.getUser(client.id);
     if (!user) {
       return;
     }
 
+    /** DB유저의 소켓 정보를 null로 변경 */
     const dbUser = await this.usersService.setUserSocketId(user.id, null);
 
+    /** 메모리에서 유저 제거 */
+    this.logger.log(`handleDisconnect: ${user.nickname}`);
+    this.chatUsers.removeUser(user);
+
+    /** 모두에게 유저가 나갔다는 것을 알리기 */
     this.server.emit('listeningUser', {
       func: 'listeningUser',
       code: 200,
       message: `${user.nickname}가 채팅을 나갔습니다`,
       data: dbUser,
     });
-
-    this.logger.log(`handleDisconnect: ${user.nickname}`);
-    this.chatUsers.removeUser(user);
   }
 
   /**
    * 유저 관리
    */
-
   /**
-   *
-   * @param client
-   * @param newUser
+   * 채팅 소켓 접속시 실행되어 유저 정보를 메모리에 저장
    */
   @SubscribeMessage('joinChat')
   async handleNewUser(@ConnectedSocket() client: Socket, @MessageBody() newUser: ChatUser) {
+    /** 유저가 접속했는지 확인 */
     let user = this.chatUsers.getUserById(newUser.id);
-
     if (user) {
       return this.returnMessage(
         'joinChat',
@@ -135,30 +137,32 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       );
     }
 
-    /**
-     * 유저 추가
-     * 유저 상태 변경
-     * 유저 리스트에 추가
-     * 유저 생성 알림
-     */
+    /** 유저 추가 */
     user = new ChatUser(newUser.id, newUser.nickname, client.id);
+
+    /** 유저 상태 변경 */
     user.setUserStatus(UserStatus.ONLINE);
+
+    /** 유저 리스트에 추가 */
     this.chatUsers.addUser(user);
+
+    /** DB유저 소켓 아이디 추가 */
     const dbUser = await this.usersService.setUserSocketId(newUser.id, client.id);
 
+    /** 유저 생성 알림 */
     this.server.emit('listeningUser', {
       func: 'listeningUser',
       code: 200,
       message: `${user.nickname}가 채팅 소켓에 접속했습니다`,
       data: dbUser,
     });
+
+    /** 결과 반환 */
     return this.returnMessage('joinChat', 200, '채팅 소켓에 접속했습니다', dbUser, true);
   }
 
   /**
-   *
-   * @param client
-   * @param param1
+   * 유저 정보 반환
    */
   @SubscribeMessage('getUserStatus')
   async handleGetUserStatus(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
@@ -182,9 +186,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
-   *
-   * @param client
-   * @param param1
+   * 유저 전체 정보 획득
    */
   @SubscribeMessage('getUsers')
   async handleGetUsers(@ConnectedSocket() client: Socket) {
@@ -203,8 +205,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.in(socketId).socketsLeave(roomId);
   }
 
-  /** DM */
+  /** 친구 */
+  @SubscribeMessage('userAction')
+  async handleUserAction(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { who: string; action: string },
+  ): Promise<Object> {
+    /** 메모리에 존재하는 유저인지 확인 */
+    let user = this.chatUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('userAction', 400, '채팅 소켓에 유저가 없습니다');
+    }
 
+    /** 어떤 액션을 할 것이냐 */
+    try {
+      const dbUser = await this.usersService.userAction({ id: user.id, nickname: data.who, action: data.action });
+      return this.returnMessage('userAction', 200, '액션 성공', dbUser, true);
+    } catch (e) {
+      return this.returnMessage('userAction', 400, '액션 실패', e, true);
+    }
+  }
+
+  /** DM */
   /**
    * DM을 한 번도 하지 않은 유저와 사용
    * 방이 없다면 방을 만들고 상대방에게 알림
