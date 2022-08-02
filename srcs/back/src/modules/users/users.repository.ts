@@ -147,6 +147,10 @@ export class UsersRepository extends Repository<Users> {
     }
 
     user.save();
+
+    /** 상대방도 저장 */
+    another.friends.push(user);
+    another.save();
     return user;
   }
 
@@ -196,9 +200,16 @@ export class UsersRepository extends Repository<Users> {
       throw new BadRequestException('친구가 아닙니다');
     }
 
-    const index = user.friends.findIndex((e) => e.id === another.id);
+    /** 삭제 */
+    let index = user.friends.findIndex((e) => e.id === another.id);
     user.friends.splice(index, 1);
     user.save();
+
+    /** 상대방도 삭제 */
+    index = another.friends.findIndex((e) => e.id === user.id);
+    another.friends.splice(index, 1);
+    another.save();
+
     return user;
   }
 

@@ -68,16 +68,25 @@ export class Users extends BaseEntity {
   tfaCode: string;
 
   /** friends */
-  @ManyToMany((type) => Users)
-  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  @ManyToMany((type) => Users, (user) => user.friendsRequest)
+  friendsRequestParents: Users[];
+
+  @ManyToMany((type) => Users, (user) => user.friendsRequestParents)
+  @JoinTable()
   friendsRequest: Users[];
 
-  @ManyToMany((type) => Users)
-  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  @ManyToMany((type) => Users, (user) => user.friends)
+  friendsParents: Users[];
+
+  @ManyToMany((type) => Users, (user) => user.friendsParents)
+  @JoinTable()
   friends: Users[];
 
-  @ManyToMany((type) => Users)
-  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  @ManyToMany((type) => Users, (user) => user.blockedUsers)
+  blockedUsersParents: Users[];
+
+  @ManyToMany((type) => Users, (user) => user.blockedUsersParents)
+  @JoinTable()
   blockedUsers: Users[];
 
   /** games */
