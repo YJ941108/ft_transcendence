@@ -96,14 +96,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return;
     }
 
+    const dbUser = await this.usersService.setUserSocketId(user.id, null);
+
     this.server.emit('listeningUser', {
       func: 'listeningUser',
       code: 200,
       message: `${user.nickname}가 채팅을 나갔습니다`,
-      data: {
-        userId: user.id,
-        status: UserStatus[UserStatus.OFFLINE],
-      },
+      data: dbUser,
     });
 
     this.logger.log(`handleDisconnect: ${user.nickname}`);
@@ -120,8 +119,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    * @param newUser
    */
   @SubscribeMessage('joinChat')
-  handleNewUser(@ConnectedSocket() client: Socket, @MessageBody() newUser: ChatUser) {
+  async handleNewUser(@ConnectedSocket() client: Socket, @MessageBody() newUser: ChatUser) {
     let user = this.chatUsers.getUserById(newUser.id);
+
     if (user) {
       return this.returnMessage(
         'joinChat',
@@ -144,25 +144,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     user = new ChatUser(newUser.id, newUser.nickname, client.id);
     user.setUserStatus(UserStatus.ONLINE);
     this.chatUsers.addUser(user);
+    const dbUser = await this.usersService.setUserSocketId(newUser.id, client.id);
+
     this.server.emit('listeningUser', {
       func: 'listeningUser',
       code: 200,
       message: `${user.nickname}가 채팅 소켓에 접속했습니다`,
-      data: {
-        userId: user.id,
-        status: 'ONLINE',
-      },
+      data: dbUser,
     });
-    return this.returnMessage(
-      'joinChat',
-      200,
-      '채팅 소켓에 접속했습니다',
-      {
-        userId: user.id,
-        status: UserStatus[user.status],
-      },
-      true,
-    );
+    return this.returnMessage('joinChat', 200, '채팅 소켓에 접속했습니다', dbUser, true);
   }
 
   /**
@@ -179,16 +169,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (!user) {
       data = {
         userId,
-        status: UserStatus[UserStatus.OFFLINE],
+        socketId: null,
       };
     } else {
       data = {
         userId,
-        status: UserStatus[user.status],
+        socketId: user.socketId,
       };
     }
 
     return this.returnMessage('getUserStatus', 200, '상태 불러오기 성공', data, true);
+  }
+
+  /**
+   *
+   * @param client
+   * @param param1
+   */
+  @SubscribeMessage('getUsers')
+  async handleGetUsers(@ConnectedSocket() client: Socket) {
+    const users = await this.usersService.getUsers();
+
+    return this.returnMessage('getUserStatus', 200, '상태 불러오기 성공', users, true);
   }
 
   userJoinRoom(socketId: string, roomId: string) {

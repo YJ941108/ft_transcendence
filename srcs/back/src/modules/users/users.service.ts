@@ -109,6 +109,16 @@ export class UsersService {
     };
   }
 
+  async setUserSocketId(id: number, socketId: string | null): Promise<Users> {
+    const user = await this.getUser(id);
+    if (!user) {
+      throw new Error('유저가 없습니다');
+    }
+
+    user.socketId = socketId;
+    return user.save();
+  }
+
   /**
    * 유저 조회
    * @param email
