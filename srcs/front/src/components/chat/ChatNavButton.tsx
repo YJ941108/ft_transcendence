@@ -1,5 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useSetRecoilState } from 'recoil';
+import { chatContentC } from '../../modules/atoms';
 
 const ChatNavButtonStyleC = styled.button`
 	width: 25%;
@@ -7,16 +9,12 @@ const ChatNavButtonStyleC = styled.button`
 `;
 
 interface IChatNavButton {
-	func: (event: React.MouseEvent<HTMLButtonElement>) => void;
 	name: string;
 }
 
-function ChatNavButton({ func, name }: IChatNavButton) {
-	return (
-		<ChatNavButtonStyleC onClick={func} name={name}>
-			{name}
-		</ChatNavButtonStyleC>
-	);
+function ChatNavButton({ name }: IChatNavButton) {
+	const setAllUserList = useSetRecoilState(chatContentC);
+	return <ChatNavButtonStyleC onClick={() => setAllUserList(name)}>{name}</ChatNavButtonStyleC>;
 }
 
 export default ChatNavButton;
