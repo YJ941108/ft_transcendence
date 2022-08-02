@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import MainBox from '../../components/styles/box/MainBox';
-import Navbar from '../../components/ navbar/Navbar';
+import Navbar from '../../components/navbar/Navbar';
 import ContentBox from '../../components/styles/box/ContentBox';
 import SideBox from '../../components/styles/box/SideBox';
 import ProfileCard from '../../components/profile/ProfileCard';
@@ -16,9 +16,7 @@ const ProfileDiv = styled.div`
 	height: 100%;
 	//grid-template-rows: 300px 1fr;
 	grid-template-columns: 1fr 4fr;
-	grid-template-areas: '
-	ProfileCard ProfileContent
-	';
+	grid-template-areas: 'ProfileCard ProfileContent';
 	grid-gap: 10px;
 `;
 
