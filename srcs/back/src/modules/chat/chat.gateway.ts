@@ -158,11 +158,46 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         data: dbUser,
       });
 
+      const users = await this.usersService.getUsers();
+      /** 자기 자신 삭제 */
+      const index = users.findIndex((element) => element.id === user.id);
+      users.splice(index, 1);
+
+      for (let i = 0; i < dbUser.friends.length; i++) {
+        for (let j = 0; j < users.length; j++) {
+          if (dbUser.friends[i].id === users[j].id) {
+            users[j].isFriend = true;
+          } else {
+            users[j].isFriend = false;
+          }
+        }
+      }
+      this.server.to(client.id).emit('listeningGetUsers', {
+        func: 'listeningGetUsers',
+        code: 200,
+        message: `전체 유저를 불러왔습니다.`,
+        data: users,
+      });
+
       /** 결과 반환 */
       return this.returnMessage('joinChat', 200, '채팅 소켓에 접속했습니다', dbUser, true);
     } catch (e) {
       this.chatUsers.removeUser(user);
     }
+  }
+
+  @SubscribeMessage('getUser')
+  async handleGetUser(@ConnectedSocket() client: Socket): Promise<Object> {
+    /** 메모리에 존재하는 유저인지 확인 */
+    let user = this.chatUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('getUser', 400, '채팅 소켓에 유저가 없습니다');
+    }
+
+    let dbUser = await this.usersService.getUser(user.id);
+
+    /** 어떤 액션을 할 것이냐 */
+    return this.returnMessage('getUser', 200, `${user.nickname}정보 불러오기 성공`, dbUser);
   }
 
   /**
@@ -204,21 +239,27 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const users = await this.usersService.getUsers();
 
     /** db 내 데이터 불러오기 */
-    const dbuser = await this.usersService.getUser(user.id);
+    const dbUser = await this.usersService.getUser(user.id);
 
     /** 자기 자신 삭제 */
     const index = users.findIndex((element) => element.id === user.id);
     users.splice(index, 1);
 
-    for (let i = 0; i < dbuser.friends.length; i++) {
+    for (let i = 0; i < dbUser.friends.length; i++) {
       for (let j = 0; j < users.length; j++) {
-        if (dbuser.friends[i].id === users[j].id) {
+        if (dbUser.friends[i].id === users[j].id) {
           users[j].isFriend = true;
         } else {
           users[j].isFriend = false;
         }
       }
     }
+    this.server.to(client.id).emit('listeningGetUsers', {
+      func: 'listeningGetUsers',
+      code: 200,
+      message: `전체 유저를 불러왔습니다.`,
+      data: users,
+    });
 
     return this.returnMessage('getUsers', 200, '유저 리스트 불러오기 성공', users, false);
   }
@@ -248,12 +289,42 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     /** 어떤 액션을 할 것이냐 */
     try {
       const dbUser = await this.usersService.userAction({ id: user.id, nickname: data.who, action: data.action });
+      if (dbUser.socketId) {
+        this.server.to(dbUser.socketId).emit('listeningFriends', {
+          func: 'listeningFriends',
+          code: 200,
+          message: `${user.nickname}가 ${data.action}을 했습니다.`,
+          data: dbUser,
+        });
+        const dbAnother = await this.usersService.getUserByNickname(data.who);
+        this.server.to(dbAnother.socketId).emit('listeningFriends', {
+          func: 'listeningFriends',
+          code: 200,
+          message: `${user.nickname}가 ${data.action}을 했습니다.`,
+          data: dbAnother,
+        });
+      }
+
       return this.returnMessage('userAction', 200, `${data.action} 성공`);
     } catch (e) {
+      console.log(e);
       return this.returnMessage('userAction', 400, `${data.action} 실패`);
     }
   }
 
+  @SubscribeMessage('getFriends')
+  async handleGetFriends(@ConnectedSocket() client: Socket): Promise<Object> {
+    /** 메모리에 존재하는 유저인지 확인 */
+    let user = this.chatUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('getFriends', 400, '채팅 소켓에 유저가 없습니다');
+    }
+
+    let dbUser = await this.usersService.getUser(user.id);
+
+    /** 어떤 액션을 할 것이냐 */
+    return this.returnMessage('getFriends', 200, '친구 목록 불러오기 성공', dbUser);
+  }
   /** DM */
   /**
    * DM을 한 번도 하지 않은 유저와 사용

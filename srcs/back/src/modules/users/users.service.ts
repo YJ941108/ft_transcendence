@@ -65,6 +65,19 @@ export class UsersService {
   }
 
   /**
+   * 유저 조회
+   * @param id
+   * @returns
+   */
+  async getUserWithoutFriends(id: number): Promise<Users> {
+    const user = await this.usersRepository.findOne({ id });
+    if (!user) {
+      throw new BadRequestException('유저가 없습니다.');
+    }
+    return user;
+  }
+
+  /**
    * 접속중인 유저 조회
    * @param id
    * @returns
@@ -160,7 +173,12 @@ export class UsersService {
    * @returns
    */
   async getUserByNickname(nickname: string): Promise<Users> {
-    const user = await this.usersRepository.findOne({ nickname });
+    const user = await this.usersRepository.findOne(
+      { nickname },
+      {
+        relations: ['friendsRequest', 'friends', 'blockedUsers', 'games'],
+      },
+    );
 
     if (!user) {
       throw new BadRequestException('유저가 없습니다.');
