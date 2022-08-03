@@ -322,6 +322,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     let dbUser = await this.usersService.getUser(user.id);
 
+    if (dbUser.socketId) {
+      this.server.to(dbUser.socketId).emit('listeningFriends', {
+        func: 'listeningFriends',
+        code: 200,
+        message: `${user.nickname}의 정보를 보냈습니다. data.friends, data.friendsRequest를 활용하세요.`,
+        data: dbUser,
+      });
+    }
+
     /** 어떤 액션을 할 것이냐 */
     return this.returnMessage('getFriends', 200, '친구 목록 불러오기 성공', dbUser);
   }
