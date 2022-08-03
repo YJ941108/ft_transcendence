@@ -89,6 +89,12 @@ export class Users extends BaseEntity {
   @JoinTable()
   blockedUsers: Users[];
 
+  @Column({
+    nullable: true,
+    default: false,
+  })
+  isFriend: boolean;
+
   /** games */
   @Column({
     nullable: true,

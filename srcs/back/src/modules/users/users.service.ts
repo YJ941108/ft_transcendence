@@ -52,7 +52,12 @@ export class UsersService {
    * @returns
    */
   async getUser(id: number): Promise<Users> {
-    const user = await this.usersRepository.findOne({ id });
+    const user = await this.usersRepository.findOne(
+      { id },
+      {
+        relations: ['friendsRequest', 'friends', 'blockedUsers', 'games'],
+      },
+    );
     if (!user) {
       throw new BadRequestException('유저가 없습니다.');
     }

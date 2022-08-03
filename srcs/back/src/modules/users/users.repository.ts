@@ -140,17 +140,21 @@ export class UsersRepository extends Repository<Users> {
     user.friendsRequest.splice(index, 1);
 
     /** 업적 추가 */
-    const array = user.achievement.split('').map((e) => +e);
+    let array = user.achievement.split('').map((e) => +e);
     if (array[AchievementList.FRIENDS_FIRST_MAKE] === 0) {
       array[AchievementList.FRIENDS_FIRST_MAKE] = 1;
       user.achievement = array.join('');
     }
-
-    user.save();
+    array = another.achievement.split('').map((e) => +e);
+    if (array[AchievementList.FRIENDS_FIRST_MAKE] === 0) {
+      array[AchievementList.FRIENDS_FIRST_MAKE] = 1;
+      user.achievement = array.join('');
+    }
+    await user.save();
 
     /** 상대방도 저장 */
     another.friends.push(user);
-    another.save();
+    await another.save();
     return user;
   }
 

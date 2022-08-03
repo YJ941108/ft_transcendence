@@ -146,19 +146,23 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     /** 유저 리스트에 추가 */
     this.chatUsers.addUser(user);
 
-    /** DB유저 소켓 아이디 추가 */
-    const dbUser = await this.usersService.setUserSocketId(newUser.id, client.id);
+    try {
+      /** DB유저 소켓 아이디 추가 */
+      const dbUser = await this.usersService.setUserSocketId(newUser.id, client.id);
 
-    /** 유저 생성 알림 */
-    this.server.emit('listeningUser', {
-      func: 'listeningUser',
-      code: 200,
-      message: `${user.nickname}가 채팅 소켓에 접속했습니다`,
-      data: dbUser,
-    });
+      /** 유저 생성 알림 */
+      this.server.emit('listeningUser', {
+        func: 'listeningUser',
+        code: 200,
+        message: `${user.nickname}가 채팅 소켓에 접속했습니다`,
+        data: dbUser,
+      });
 
-    /** 결과 반환 */
-    return this.returnMessage('joinChat', 200, '채팅 소켓에 접속했습니다', dbUser, true);
+      /** 결과 반환 */
+      return this.returnMessage('joinChat', 200, '채팅 소켓에 접속했습니다', dbUser, true);
+    } catch (e) {
+      this.chatUsers.removeUser(user);
+    }
   }
 
   /**
@@ -196,10 +200,27 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return this.returnMessage('getUsers', 400, '채팅 소켓에 유저가 없습니다');
     }
 
+    /** db유저 불러오기 */
     const users = await this.usersService.getUsers();
+
+    /** db 내 데이터 불러오기 */
+    const dbuser = await this.usersService.getUser(user.id);
+
+    /** 자기 자신 삭제 */
     const index = users.findIndex((element) => element.id === user.id);
     users.splice(index, 1);
-    return this.returnMessage('getUsers', 200, '유저 리스트 불러오기 성공', users, true);
+
+    for (let i = 0; i < dbuser.friends.length; i++) {
+      for (let j = 0; j < users.length; j++) {
+        if (dbuser.friends[i].id === users[j].id) {
+          users[j].isFriend = true;
+        } else {
+          users[j].isFriend = false;
+        }
+      }
+    }
+
+    return this.returnMessage('getUsers', 200, '유저 리스트 불러오기 성공', users, false);
   }
 
   userJoinRoom(socketId: string, roomId: string) {
@@ -227,9 +248,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     /** 어떤 액션을 할 것이냐 */
     try {
       const dbUser = await this.usersService.userAction({ id: user.id, nickname: data.who, action: data.action });
-      return this.returnMessage('userAction', 200, '액션 성공', dbUser, true);
+      return this.returnMessage('userAction', 200, `${data.action} 성공`);
     } catch (e) {
-      return this.returnMessage('userAction', 400, '액션 실패', e, true);
+      return this.returnMessage('userAction', 400, `${data.action} 실패`);
     }
   }
 
