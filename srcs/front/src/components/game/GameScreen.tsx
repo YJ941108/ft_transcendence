@@ -26,7 +26,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		const keyData: IKey = {
 			roomId: room.roomId,
 			key: event.key,
-			nickname: userData.username,
+			nickname: userData.nickname,
 		};
 		socket.emit('keyUp', keyData);
 	};
@@ -36,7 +36,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		const keyData: IKey = {
 			roomId: room.roomId,
 			key: event.key,
-			nickname: userData.username,
+			nickname: userData.nickname,
 		};
 		socket.emit('keyDown', keyData);
 	};
@@ -57,7 +57,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		gameState: GameState,
 		gameData: GameData
 	) => {
-		if (gameState === GameState.PLAYER_ONE_WIN)
+		if (gameState === GameState.PLAYER_ONE_WIN) {
 			gameData.drawCenteredTexture(
 				`${playerOneName} Won!!`,
 				gameData.screenWidth / 2,
@@ -65,7 +65,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 				45,
 				'white'
 			);
-		else if (gameState === GameState.PLAYER_TWO_WIN)
+		} else if (gameState === GameState.PLAYER_TWO_WIN)
 			gameData.drawCenteredTexture(
 				`${playerTwoName} Won!!`,
 				gameData.screenWidth / 2,
@@ -73,7 +73,6 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 				45,
 				'white'
 			);
-		else if (gameState === GameState.END_GAME) socket.emit('leaveRoom', roomId);
 	};
 
 	useEffect(() => {
@@ -99,12 +98,8 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 				gameData.drawStartCountDown(countDown[count]);
 			} else if (room.gameState === GameState.PAUSED) {
 				gameData.drawPausedState();
-			} else if (
-				room.gameState === GameState.PLAYER_ONE_WIN ||
-				room.gameState === GameState.PLAYER_TWO_WIN ||
-				room.gameState === GameState.END_GAME
-			) {
-				gameEnd(room.roomId, room.paddleOne.user.username, room.paddleTwo.user.username, room.gameState, gameData);
+			} else if (room.gameState === GameState.PLAYER_ONE_WIN || room.gameState === GameState.PLAYER_TWO_WIN) {
+				gameEnd(room.roomId, room.paddleOne.user.nickname, room.paddleTwo.user.nickname, room.gameState, gameData);
 			}
 			animationFrameId = window.requestAnimationFrame(gameLoop);
 		};

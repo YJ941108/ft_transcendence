@@ -34,8 +34,8 @@ function Navbar() {
 				<NavbarListC current={url === 'profile'}>
 					<Link to="/profile">profile</Link>
 				</NavbarListC>
-				<NavbarListC current={url === 'friends'}>
-					<Link to="/friends">friends</Link>
+				<NavbarListC current={url === 'users'}>
+					<Link to="/users">users</Link>
 				</NavbarListC>
 				<NavbarListC current={url === 'leaderboard'}>
 					<Link to="/leaderboard">leaderboard</Link>

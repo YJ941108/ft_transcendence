@@ -35,7 +35,7 @@ function Game() {
 			updateCurrentGames(currentGamesData);
 		});
 		socket.on('newRoom', (newRoomData: IRoom) => {
-			if (GameState.WAITING !== newRoomData.gameState || userData?.username !== newRoomData.paddleOne.user.username)
+			if (GameState.WAITING !== newRoomData.gameState || userData?.nickname !== newRoomData.paddleOne.user.nickname)
 				socket.emit('joinRoom', newRoomData.roomId);
 			setRoom(newRoomData);
 			setQueue(false);
