@@ -197,7 +197,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     const users = await this.usersService.getUsers();
-    return this.returnMessage('getUserStatus', 200, '상태 불러오기 성공', users, true);
+    const index = users.findIndex((element) => element.id === user.id);
+    users.splice(index, 1);
+    return this.returnMessage('getUsers', 200, '유저 리스트 불러오기 성공', users, true);
   }
 
   userJoinRoom(socketId: string, roomId: string) {
