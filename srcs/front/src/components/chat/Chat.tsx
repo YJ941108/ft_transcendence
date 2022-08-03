@@ -51,6 +51,7 @@ function Chat() {
 		}
 		socket.on('listeningUser', (user: IChatUser) => {
 			console.log(user);
+			console.log('test');
 		});
 		socket.on('chatError');
 		socket.on('listeningDMRoom');
