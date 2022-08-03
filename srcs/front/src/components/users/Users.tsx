@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
-import getUserData, { getUserListData } from '../../modules/api';
+import { getUserListData, getUserData } from '../../modules/api';
 
 interface IUsers {
 	id: number;

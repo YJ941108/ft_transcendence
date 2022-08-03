@@ -9,3 +9,8 @@ export const chatContentC = atom({
 	key: 'chatContentC',
 	default: 'UserList',
 });
+
+export const chatUserList = atom({
+	key: 'chatUserList',
+	default: [],
+});
