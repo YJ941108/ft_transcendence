@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { useRecoilValue } from 'recoil';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { chatContentC } from '../../modules/atoms';
 import SearchInput from './SearchInput';
 import { getUserData } from '../../modules/api';
@@ -13,8 +13,6 @@ import FriendsList from './FriendsList';
 import DirectMessageList from './DirectMessageList';
 import IUser from '../../modules/Interfaces/userInterface';
 import { IChatUser, IDM } from '../../modules/Interfaces/chatInterface';
-
-export const socketIo = io('http://3.39.20.24:3032/api/chat');
 
 const ChatC = styled.div`
 	width: 300px;
@@ -35,8 +33,10 @@ function Chat() {
 	const content = useRecoilValue(chatContentC);
 	const [socket, setSocket] = useState<any>(null);
 
+	const socketIo: Socket = io('http://3.39.20.24:3032/api/chat');
+
 	const selectComponent: ISelectComponent = {
-		UserList: <UserList />,
+		UserList: <UserList chatSocket={socket} />,
 		OpenChatList: <OpenChatList />,
 		FriendsList: <FriendsList />,
 		DirectMessageList: <DirectMessageList />,
@@ -46,7 +46,7 @@ function Chat() {
 		if (!socket || isLoading || error || !userData) return;
 		if (socket.connected === false) {
 			socket.on('connect', () => {
-				socket.emit('joinChat');
+				socket.emit('joinChat', { id: userData.id, nickname: userData.nickname });
 			});
 		}
 		socket.on('listeningUser', (user: IChatUser) => {
@@ -61,6 +61,7 @@ function Chat() {
 
 	useEffect(() => {
 		if (isLoading || error || !userData) return;
+
 		setSocket(socketIo);
 	}, [isLoading, error, userData, setSocket]);
 

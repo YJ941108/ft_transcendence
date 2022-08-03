@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
-// import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
-// import { useQuery } from 'react-query';
-import { io, Socket } from 'socket.io-client';
-import { getUserData } from '../../modules/api';
+import { useRecoilState } from 'recoil';
 import UserInfo from './UserInfo';
-
-let socket: Socket;
+import { chatUserList } from '../../modules/atoms';
+import IUser from '../../modules/Interfaces/userInterface';
 
 const UserListStyleC = styled.ul`
 	/* min-height: 600px; */
@@ -17,23 +14,36 @@ const UserListStyleC = styled.ul`
 	border-left: 2px solid white;
 `;
 
-function UserList() {
-	const [users, setUsers] = useState<string[]>([]);
+// interface IUser {
+// 	access_token: string;
+// 	created_at: string;
+// 	email: string;
+// 	nickname: string;
+// 	photo: string;
+// 	updated_at: string;
+// 	username: string;
+// 	friends: number[];
+// 	friends_blocked: number[];
+// 	friends_request: number[];
+// 	tfa: boolean;
+// 	id: number;
+// 	jwt: string;
+// 	refresh_token: string;
+// }
+
+function UserList({ chatSocket }: any) {
+	const [users, setUsers] = useRecoilState<IUser[]>(chatUserList);
 
 	useEffect(() => {
-		socket = io('http://3.39.20.24:3032/api/chat');
-		socket = socket.on('connect', async () => {
-			const userData = await getUserData();
-			socket.emit('joinChat', { id: userData.id, nickname: userData.nickname });
-			socket.emit('getUsers', (response: { data: Array<string> }) => {
+		if (chatSocket) {
+			chatSocket.on('listeningGetUsers', (response: { data: IUser[] }) => {
 				setUsers(response.data);
 			});
-		});
-	}, []);
-
+		}
+	}, [chatSocket]);
 	return (
 		<UserListStyleC>
-			{users?.map((element: any) => {
+			{users?.map((element: IUser) => {
 				return <UserInfo key={element.id} nickname={element.nickname} photo={element.photo} />;
 			})}
 		</UserListStyleC>
