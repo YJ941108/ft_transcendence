@@ -1,13 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { useRecoilValue } from 'recoil';
+import { io } from 'socket.io-client';
 import { chatContentC } from '../../modules/atoms';
 import SearchInput from './SearchInput';
+import { getUserData } from '../../modules/api';
 import ChatNav from './ChatNav';
 import UserList from './UserList';
 import OpenChatList from './OpenChatList';
 import FriendsList from './FriendsList';
 import DirectMessageList from './DirectMessageList';
+import IUser from '../../modules/Interfaces/userInterface';
+import { IChatUser, IDM } from '../../modules/Interfaces/chatInterface';
+
+export const socketIo = io('http://3.39.20.24:3032/api/chat');
 
 const ChatC = styled.div`
 	width: 300px;
@@ -24,7 +31,9 @@ interface ISelectComponent {
 }
 
 function Chat() {
+	const { isLoading, data: userData, error } = useQuery<IUser>('user', getUserData);
 	const content = useRecoilValue(chatContentC);
+	const [socket, setSocket] = useState<any>(null);
 
 	const selectComponent: ISelectComponent = {
 		UserList: <UserList />,
@@ -33,7 +42,29 @@ function Chat() {
 		DirectMessageList: <DirectMessageList />,
 	};
 
-	return (
+	useEffect(() => {
+		if (!socket || isLoading || error || !userData) return;
+		if (socket.connected === false) {
+			socket.on('connect', () => {
+				socket.emit('joinChat');
+			});
+		}
+		socket.on('listeningUser', (user: IChatUser) => {
+			console.log(user);
+		});
+		socket.on('chatError');
+		socket.on('listeningDMRoom');
+		socket.on('listeningDM', (directMessage: IDM) => {
+			console.log(directMessage);
+		});
+	}, [socket, isLoading, error, userData]);
+
+	useEffect(() => {
+		if (isLoading || error || !userData) return;
+		setSocket(socketIo);
+	}, [isLoading, error, userData, setSocket]);
+
+	return isLoading ? null : (
 		<ChatC>
 			<SearchInput />
 			{selectComponent[content]}
@@ -41,5 +72,4 @@ function Chat() {
 		</ChatC>
 	);
 }
-
 export default Chat;
