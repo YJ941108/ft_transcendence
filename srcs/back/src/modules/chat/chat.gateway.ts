@@ -190,8 +190,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
   @SubscribeMessage('getUsers')
   async handleGetUsers(@ConnectedSocket() client: Socket) {
-    const users = await this.usersService.getUsers();
+    /** 유저가 접속했는지 확인 */
+    let user = this.chatUsers.getUserBySocketId(client.id);
+    if (!user) {
+      return this.returnMessage('getUsers', 400, '채팅 소켓에 유저가 없습니다');
+    }
 
+    const users = await this.usersService.getUsers();
     return this.returnMessage('getUserStatus', 200, '상태 불러오기 성공', users, true);
   }
 
