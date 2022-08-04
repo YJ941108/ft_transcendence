@@ -95,6 +95,12 @@ export class Users extends BaseEntity {
   })
   isFriend: boolean;
 
+  @Column({
+    nullable: true,
+    default: false,
+  })
+  isOnline: boolean;
+
   /** games */
   @Column({
     nullable: true,
