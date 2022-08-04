@@ -1,4 +1,4 @@
-import IUser from './userInterface';
+import IUserData from './userInterface';
 
 export enum ChatState {
 	ONLINE,
@@ -7,7 +7,7 @@ export enum ChatState {
 }
 
 export interface IUserStatus {
-	func: () => void;
+	func: string;
 	code: number;
 	message: string;
 	data: {
@@ -17,48 +17,33 @@ export interface IUserStatus {
 }
 
 export interface IChatUser {
-	func: () => void;
+	func: string;
 	code: number;
 	message: string;
-	data: {
-		id: number;
-		username: string;
-		email: string;
-		nickname: string;
-		photo: string;
-		tfa: boolean;
-		tfaCode: boolean;
-		wins: number;
-		losses: number;
-		ratio: number;
-		socketId: string;
-		achievement: string;
-		createdAt: string;
-		updatedAt: string;
-	};
+	data: IUserData;
 }
 
 export interface IDMRoom {
-	func: () => void;
+	func: string;
 	code: number;
 	message: string;
 	data: {
 		id: number;
 		createdAt: string;
-		users: IUser[];
+		users: IUserData[];
 		messages: string[];
 	};
 }
 
 export interface IRoomStatus {
-	func: () => void;
+	func: string;
 	code: number;
 	message: string;
 	data: IDMRoom;
 }
 
 export interface IDM {
-	func: () => void;
+	func: string;
 	code: number;
 	message: string;
 	data: {
@@ -66,22 +51,7 @@ export interface IDM {
 		DM: {
 			id: number;
 		};
-		author: {
-			id: number;
-			username: string;
-			email: string;
-			nickname: string;
-			photo: string;
-			tfa: boolean;
-			tfaCode: boolean;
-			wins: number;
-			losses: number;
-			ratio: number;
-			socketId: null;
-			achievement: number;
-			createdAt: string;
-			updatedAt: string;
-		};
+		author: IUserData;
 		id: number;
 		createdAt: string;
 	};

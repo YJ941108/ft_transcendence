@@ -1,16 +1,17 @@
-export default interface IUser {
-	access_token: string;
-	created_at: string;
+export default interface IUserData {
+	id: number;
+	username: string;
 	email: string;
 	nickname: string;
 	photo: string;
-	updated_at: string;
-	username: string;
-	friends: number[];
-	friends_blocked: number[];
-	friends_request: number[];
 	tfa: boolean;
-	id: number;
-	jwt: string;
-	refresh_token: string;
+	tfaCode: boolean;
+	isFriend: boolean;
+	wins: number;
+	losses: number;
+	ratio: number;
+	socketId: string;
+	achievement: number;
+	createdAt: string;
+	updatedAt: string;
 }
