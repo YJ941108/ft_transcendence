@@ -3,7 +3,7 @@ import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { useRecoilValue } from 'recoil';
 import { io, Socket } from 'socket.io-client';
-import { chatContentC } from '../../modules/atoms';
+import { chatContent } from '../../modules/atoms';
 import SearchInput from './SearchInput';
 import { getUserData } from '../../modules/api';
 import ChatNav from './ChatNav';
@@ -14,12 +14,23 @@ import DirectMessageList from './DirectMessageList';
 import IUser from '../../modules/Interfaces/userInterface';
 import { IChatUser, IDM } from '../../modules/Interfaces/chatInterface';
 
+// interface IDebug {
+// 	func: string;
+// 	code: number;
+// 	message: string;
+// }
+
+// const getUsers = (chatSocket: Socket) => {
+// 	chatSocket.emit('getUsers', (response: IDebug) => {
+// 		console.log(response);
+// 	});
+// };
+
 const ChatC = styled.div`
 	width: 300px;
-	height: 100%;
+	height: 600px;
 	top: 3.5rem;
 `;
-
 interface ISelectComponent {
 	[index: string]: React.ReactNode;
 	UserList: React.ReactNode;
@@ -27,18 +38,15 @@ interface ISelectComponent {
 	FriendsList: React.ReactNode;
 	DirectMessageList: React.ReactNode;
 }
-
 function Chat() {
 	const { isLoading, data: userData, error } = useQuery<IUser>('user', getUserData);
-	const content = useRecoilValue(chatContentC);
+	const content = useRecoilValue(chatContent);
 	const [socket, setSocket] = useState<any>(null);
-
-	const socketIo: Socket = io('http://3.39.20.24:3032/api/chat');
 
 	const selectComponent: ISelectComponent = {
 		UserList: <UserList chatSocket={socket} />,
 		OpenChatList: <OpenChatList />,
-		FriendsList: <FriendsList />,
+		FriendsList: <FriendsList chatSocket={socket} />,
 		DirectMessageList: <DirectMessageList />,
 	};
 
@@ -50,20 +58,29 @@ function Chat() {
 			});
 		}
 		socket.on('listeningUser', (user: IChatUser) => {
-			console.log(user);
+			console.log(user, '접속유저');
 		});
 		socket.on('chatError');
 		socket.on('listeningDMRoom');
 		socket.on('listeningDM', (directMessage: IDM) => {
 			console.log(directMessage);
 		});
+
+		// return () => {
+		// 	socket.off('listeningUser');
+		// 	socket.off('chatError');
+		// 	socket.off('listeningDMRoom');
+		// 	socket.off('listeningDM');
+		// };
 	}, [socket, isLoading, error, userData]);
 
 	useEffect(() => {
 		if (isLoading || error || !userData) return;
-
+		const socketIo: Socket = io('http://3.39.20.24:3032/api/chat');
+		console.log('Chat 시작');
+		console.log(userData, '내정보');
 		setSocket(socketIo);
-	}, [isLoading, error, userData, setSocket]);
+	}, [isLoading, error, setSocket]);
 
 	return isLoading ? null : (
 		<ChatC>
@@ -73,4 +90,5 @@ function Chat() {
 		</ChatC>
 	);
 }
+
 export default Chat;

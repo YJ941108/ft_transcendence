@@ -10,7 +10,7 @@ export default interface IUserData {
 	wins: number;
 	losses: number;
 	ratio: number;
-	socketId: string;
+	isOnline: boolean;
 	achievement: number;
 	createdAt: string;
 	updatedAt: string;
