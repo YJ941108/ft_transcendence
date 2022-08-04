@@ -344,8 +344,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       loserScore = room.paddleOne.goal;
     }
 
-    const winner = await this.usersService.getUser(winnerId);
-    const loser = await this.usersService.getUser(loserId);
+    const winner = await this.usersService.getUserWithFriends(winnerId);
+    const loser = await this.usersService.getUserWithFriends(loserId);
 
     await this.usersService.updateStats(winner, true);
     await this.usersService.updateStats(loser, false);
@@ -546,7 +546,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.logger.log('Create new Invite room');
 
     const firstPlayer: User = this.createInvitedUser(sender.id, sender.nickname);
-    const receiverData = await this.usersService.getUser(receiverId);
+    const receiverData = await this.usersService.getUserWithFriends(receiverId);
     const secondPlayer: User = this.createInvitedUser(receiverData.id, receiverData.nickname);
 
     const roomId: string = `${Date.now()}${firstPlayer.nickname}&${secondPlayer.nickname}`;

@@ -111,14 +111,14 @@ export class ChatService {
     const message = await this.messageService.create(createMessageDto);
 
     if (createMessageDto.author) {
-      const user = await this.usersService.getUser(createMessageDto.author.id);
+      const user = await this.usersService.getUserWithFriends(createMessageDto.author.id);
       message.author = user;
     }
     return message;
   }
 
   async addUserToChannel(channel: Channel, userId: number) {
-    const user = await this.usersService.getUser(userId);
+    const user = await this.usersService.getUserWithFriends(userId);
 
     await this.channelService.update(channel.id, {
       users: [...channel.users, user],
@@ -131,7 +131,7 @@ export class ChatService {
       await this.removeAdminFromChannel(channel, userId);
     } catch (e) {}
 
-    const user = await this.usersService.getUser(userId);
+    const user = await this.usersService.getUserWithFriends(userId);
     const filteredUsers = channel.users.filter((chanUser) => {
       return chanUser.id !== user.id;
     });
@@ -149,7 +149,7 @@ export class ChatService {
     });
 
     if (!isAdmin) {
-      const newAdmin = await this.usersService.getUser(userId);
+      const newAdmin = await this.usersService.getUserWithFriends(userId);
 
       await this.channelService.update(channel.id, {
         admins: [...channel.admins, newAdmin],
@@ -165,7 +165,7 @@ export class ChatService {
     });
 
     if (isAdmin) {
-      const formerAdmin = await this.usersService.getUser(userId);
+      const formerAdmin = await this.usersService.getUserWithFriends(userId);
       const filteredAdmins = channel.admins.filter((chanAdmin) => {
         return chanAdmin.id !== formerAdmin.id;
       });
@@ -256,7 +256,7 @@ export class ChatService {
     const message = await this.messageService.create(createMessageDto);
 
     if (createMessageDto.author) {
-      const user = await this.usersService.getUser(createMessageDto.author.id);
+      const user = await this.usersService.getUserWithFriends(createMessageDto.author.id);
       message.author = user;
     }
     return message;

@@ -45,12 +45,12 @@ export class PunishmentService {
       throw new Error(`Could not punish user since there is no channel with id ${channelId}`);
     }
 
-    const punishedUser = await this.usersService.getUser(punishedUserId);
+    const punishedUser = await this.usersService.getUserWithFriends(punishedUserId);
     if (!punishedUser) {
       throw new Error(`Could not punish user: no user with id ${punishedUserId}`);
     }
 
-    const punisherUser = await this.usersService.getUser(punisherUserId);
+    const punisherUser = await this.usersService.getUserWithFriends(punisherUserId);
     if (!punisherUser) {
       throw new Error(`Could not punish user: no user with id ${punishedUserId}`);
     }
@@ -79,7 +79,7 @@ export class PunishmentService {
       throw new Error(`Could not check punishment: no channel with id ${channelId}`);
     }
 
-    const user = await this.usersService.getUser(userId);
+    const user = await this.usersService.getUserWithFriends(userId);
     if (!user) {
       throw new Error(`Could not check punishment: no user with id ${userId}`);
     }
@@ -122,7 +122,7 @@ export class PunishmentService {
       throw new Error(`Could check punishment: no channel with id ${channelId}`);
     }
 
-    const user = await this.usersService.getUser(userId);
+    const user = await this.usersService.getUserWithFriends(userId);
     if (!user) {
       throw new Error(`Could not check punishment: no user with id ${userId}`);
     }

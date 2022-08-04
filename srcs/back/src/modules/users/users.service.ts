@@ -51,11 +51,11 @@ export class UsersService {
    * @param id
    * @returns
    */
-  async getUser(id: number): Promise<Users> {
+  async getUserWithFriends(id: number): Promise<Users> {
     const user = await this.usersRepository.findOne(
       { id },
       {
-        relations: ['friendsRequest', 'friends', 'blockedUsers', 'games'],
+        relations: ['friendsRequest', 'friends'],
       },
     );
     if (!user) {
@@ -97,7 +97,7 @@ export class UsersService {
    * @returns
    */
   async setUser(id: number, file: Express.Multer.File, nickname: string | undefined): Promise<Object> {
-    const user = await this.getUser(id);
+    const user = await this.getUserWithFriends(id);
     if (!user) {
       throw new BadRequestException('유저가 없습니다');
     }
@@ -128,7 +128,7 @@ export class UsersService {
   }
 
   async setUserSocketId(id: number, socketId: string | null): Promise<Users> {
-    const user = await this.getUser(id);
+    const user = await this.getUserWithFriends(id);
     if (!user) {
       throw new Error('유저가 없습니다');
     }
@@ -194,7 +194,7 @@ export class UsersService {
    * @returns user object
    */
   async setTwoFactorAuthValid(id: number, tfa: boolean): Promise<Users> {
-    const user = await this.getUser(id);
+    const user = await this.getUserWithFriends(id);
     this.logger.log(`setTwoFactorAuthValid: user = ${user}`);
 
     this.logger.log(`setTwoFactorAuthValid: user.tfa Before = ${user.tfa}`);
@@ -210,7 +210,7 @@ export class UsersService {
    * @returns randomNumber
    */
   async getTwoFactorAuthCode(id: number): Promise<Object> {
-    const user = await this.getUser(id);
+    const user = await this.getUserWithFriends(id);
     this.logger.log(`setTwoFactorAuthValid: user = ${JSON.stringify(user)}`);
 
     const randomNumber: string = randomString(4, '#');
@@ -248,7 +248,7 @@ export class UsersService {
    * @returns randomNumber
    */
   async checkTwoFactorAuthCode(id: number, code: string): Promise<Object> {
-    const user = await this.getUser(id);
+    const user = await this.getUserWithFriends(id);
 
     this.logger.log(`checkTwoFactorAuthCode: user = ${JSON.stringify(user)}`);
 

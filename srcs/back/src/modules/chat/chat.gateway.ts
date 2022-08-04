@@ -125,16 +125,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     /** 유저가 접속했는지 확인 */
     let user = this.chatUsers.getUserById(newUser.id);
     if (user) {
-      return this.returnMessage(
-        'joinChat',
-        400,
-        '채팅 소켓에 이미 접속했습니다',
-        {
-          userId: user.id,
-          status: UserStatus[user.status],
-        },
-        true,
-      );
+      return this.returnMessage('joinChat', 400, '채팅 소켓에 이미 접속했습니다');
     }
 
     /** 유저 추가 */
@@ -180,7 +171,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
 
       /** 결과 반환 */
-      return this.returnMessage('joinChat', 200, '채팅 소켓에 접속했습니다', dbUser, true);
+      return this.returnMessage('joinChat', 200, 'listeningUser & listeningGetUsers');
     } catch (e) {
       this.chatUsers.removeUser(user);
     }
@@ -194,7 +185,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return this.returnMessage('getUser', 400, '채팅 소켓에 유저가 없습니다');
     }
 
-    let dbUser = await this.usersService.getUser(user.id);
+    let dbUser = await this.usersService.getUserWithFriends(user.id);
 
     /** 어떤 액션을 할 것이냐 */
     return this.returnMessage('getUser', 200, `${user.nickname}정보 불러오기 성공`, dbUser);
@@ -239,7 +230,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const users = await this.usersService.getUsers();
 
     /** db 내 데이터 불러오기 */
-    const dbUser = await this.usersService.getUser(user.id);
+    const dbUser = await this.usersService.getUserWithFriends(user.id);
 
     /** 자기 자신 삭제 */
     const index = users.findIndex((element) => element.id === user.id);
@@ -261,7 +252,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       data: users,
     });
 
-    return this.returnMessage('getUsers', 200, '유저 리스트 불러오기 성공', users, false);
+    return this.returnMessage('getUsers', 200, 'listeningGetUsers');
   }
 
   userJoinRoom(socketId: string, roomId: string) {
@@ -290,18 +281,32 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       const dbUser = await this.usersService.userAction({ id: user.id, nickname: data.who, action: data.action });
       if (dbUser.socketId) {
+        let friendsRequest = dbUser.friendsRequest;
+        let friends = dbUser.friends;
+
+        /** 액션을 한 사람에게 전달 */
         this.server.to(dbUser.socketId).emit('listeningFriends', {
           func: 'listeningFriends',
           code: 200,
           message: `${user.nickname}가 ${data.action}을 했습니다.`,
-          data: dbUser,
+          data: {
+            friendsRequest,
+            friends,
+          },
         });
+
+        /** who에게 전달 */
         const dbAnother = await this.usersService.getUserByNickname(data.who);
+        friendsRequest = dbAnother.friendsRequest;
+        friends = dbAnother.friends;
         this.server.to(dbAnother.socketId).emit('listeningFriends', {
           func: 'listeningFriends',
           code: 200,
           message: `${user.nickname}가 ${data.action}을 했습니다.`,
-          data: dbAnother,
+          data: {
+            friendsRequest,
+            friends,
+          },
         });
       }
 
@@ -320,19 +325,25 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return this.returnMessage('getFriends', 400, '채팅 소켓에 유저가 없습니다');
     }
 
-    let dbUser = await this.usersService.getUser(user.id);
+    let dbUser = await this.usersService.getUserWithFriends(user.id);
 
     if (dbUser.socketId) {
+      const friendsRequest = dbUser.friendsRequest;
+      const friends = dbUser.friends;
+
       this.server.to(dbUser.socketId).emit('listeningFriends', {
         func: 'listeningFriends',
         code: 200,
         message: `${user.nickname}의 정보를 보냈습니다. data.friends, data.friendsRequest를 활용하세요.`,
-        data: dbUser,
+        data: {
+          friendsRequest,
+          friends,
+        },
       });
     }
 
     /** 어떤 액션을 할 것이냐 */
-    return this.returnMessage('getFriends', 200, '친구 목록 불러오기 성공', dbUser);
+    return this.returnMessage('getFriends', 200, 'listeningFriends를 확인하세요');
   }
   /** DM */
   /**

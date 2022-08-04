@@ -135,7 +135,8 @@ export class UsersRepository extends Repository<Users> {
     }
 
     /** 데이터 삽입 */
-    user.friends.push(another);
+    const anotherWithoutFriends = await this.findOne({ id: another.id });
+    user.friends.push(anotherWithoutFriends);
     const index = user.friendsRequest.findIndex((e) => e.id === another.id);
     user.friendsRequest.splice(index, 1);
 
@@ -153,8 +154,11 @@ export class UsersRepository extends Repository<Users> {
     await user.save();
 
     /** 상대방도 저장 */
-    another.friends.push(user);
+    const userWithoutFriends = await this.findOne({ id: user.id });
+    another.friends.push(userWithoutFriends);
     await another.save();
+    console.log(user);
+    console.log(another);
     return user;
   }
 
