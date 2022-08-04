@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useRecoilState } from 'recoil';
+import { Socket } from 'socket.io-client';
 import UserInfo from './UserInfo';
 import { chatUserList } from '../../modules/atoms';
 import IUser from '../../modules/Interfaces/userInterface';
@@ -31,7 +32,11 @@ const UserListStyleC = styled.ul`
 // 	refresh_token: string;
 // }
 
-function UserList({ chatSocket }: any) {
+interface ISocket {
+	chatSocket: Socket;
+}
+
+function UserList({ chatSocket }: ISocket) {
 	const [users, setUsers] = useRecoilState<IUser[]>(chatUserList);
 
 	useEffect(() => {

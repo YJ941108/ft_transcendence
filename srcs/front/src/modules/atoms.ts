@@ -1,4 +1,5 @@
 import { atom } from 'recoil';
+import IUser from './Interfaces/userInterface';
 
 export const chatSocketState = atom({
 	key: 'chatSocket',
@@ -10,7 +11,7 @@ export const chatContentC = atom({
 	default: 'UserList',
 });
 
-export const chatUserList = atom({
+export const chatUserList = atom<IUser[]>({
 	key: 'chatUserList',
 	default: [],
 });

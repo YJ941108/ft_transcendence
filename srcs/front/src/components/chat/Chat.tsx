@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { useRecoilValue } from 'recoil';
@@ -31,9 +31,8 @@ interface ISelectComponent {
 function Chat() {
 	const { isLoading, data: userData, error } = useQuery<IUser>('user', getUserData);
 	const content = useRecoilValue(chatContentC);
-	const [socket, setSocket] = useState<any>(null);
 
-	const socketIo: Socket = io('http://3.39.20.24:3032/api/chat');
+	const socket: Socket = io('http://3.39.20.24:3032/api/chat');
 
 	const selectComponent: ISelectComponent = {
 		UserList: <UserList chatSocket={socket} />,
@@ -52,18 +51,12 @@ function Chat() {
 		socket.on('listeningUser', (user: IChatUser) => {
 			console.log(user);
 		});
-		socket.on('chatError');
-		socket.on('listeningDMRoom');
+		socket.on('chatError', () => {});
+		socket.on('listeningDMRoom', () => {});
 		socket.on('listeningDM', (directMessage: IDM) => {
 			console.log(directMessage);
 		});
 	}, [socket, isLoading, error, userData]);
-
-	useEffect(() => {
-		if (isLoading || error || !userData) return;
-
-		setSocket(socketIo);
-	}, [isLoading, error, userData, setSocket]);
 
 	return isLoading ? null : (
 		<ChatC>

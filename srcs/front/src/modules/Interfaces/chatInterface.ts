@@ -1,4 +1,4 @@
-import { IUser } from './../../components/game/GameInterfaces';
+import IUser from './userInterface';
 
 export enum ChatState {
 	ONLINE,
