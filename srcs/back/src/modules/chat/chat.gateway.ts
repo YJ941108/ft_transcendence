@@ -127,7 +127,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     /** 유저가 접속했는지 확인 */
     let user = this.chatUsers.getUserById(newUser.id);
     if (user) {
-      return this.returnMessage('joinChat', 400, '채팅 소켓에 이미 접속했습니다');
+      const nickname = user.nickname;
+      this.handleDisconnect(client);
+      return this.returnMessage(
+        'joinChat',
+        400,
+        `${nickname}:가 채팅 소켓에 이미 접속했습니다 ${client.id}의 연결을 끊습니다`,
+      );
     }
 
     /** 유저 추가 */
@@ -173,7 +179,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
 
       /** 결과 반환 */
-      return this.returnMessage('joinChat', 200, 'listeningUser & listeningGetUsers');
+      return this.returnMessage(
+        'joinChat',
+        200,
+        `${client.id}: ${user.nickname}이 joinChat 성공. listeningUser & listeningGetUsers emit함`,
+      );
     } catch (e) {
       this.chatUsers.removeUser(user);
     }
