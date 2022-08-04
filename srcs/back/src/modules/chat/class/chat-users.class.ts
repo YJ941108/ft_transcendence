@@ -24,6 +24,10 @@ export class ChatUsers {
     return user;
   }
 
+  getUsers(): ChatUser[] | undefined {
+    return this.users;
+  }
+
   getUserById(id: number): ChatUser | undefined {
     const user: ChatUser = this.users.find((user) => user.id === id);
     return user;

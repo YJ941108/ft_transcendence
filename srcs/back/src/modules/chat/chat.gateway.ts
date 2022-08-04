@@ -102,7 +102,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const dbUser = await this.usersService.setUserSocketId(user.id, null);
 
     /** 메모리에서 유저 제거 */
-    this.logger.log(`handleDisconnect: ${user.nickname}`);
+    this.logger.log(this.chatUsers.getUsers());
+    this.logger.log(`handleDisconnect: socketId - ${user.socketId} nickname - ${user.nickname}`);
+    this.logger.log(this.chatUsers.getUsers());
     this.chatUsers.removeUser(user);
 
     /** 모두에게 유저가 나갔다는 것을 알리기 */
@@ -486,7 +488,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     for (const channel of channels) {
       this.userJoinRoom(client.id, `channel_${channel.id}`);
     }
-    return this.returnMessage('getChannels', 200, '채널 리스트 정보', channels, false);
+
+    this.server.to(client.id).emit('listeningChannelList', {
+      func: 'listeningFriends',
+      code: 200,
+      message: `채팅 방 리스트를 보냈습니다.`,
+      data: channels,
+    });
+
+    return this.returnMessage('getChannels', 200, 'listeningChannelList 확인');
   }
 
   @SubscribeMessage('getChannel')
