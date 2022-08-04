@@ -98,9 +98,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return;
     }
 
-    /** DB유저의 소켓 정보를 null로 변경 */
-    const dbUser = await this.usersService.setUserSocketId(user.id, null);
-
     /** 메모리에서 유저 제거 */
     this.logger.log(this.chatUsers.getUsers());
     this.logger.log(`handleDisconnect: socketId - ${user.socketId} nickname - ${user.nickname}`);
@@ -112,7 +109,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       func: 'listeningUser',
       code: 200,
       message: `${user.nickname}가 채팅을 나갔습니다`,
-      data: dbUser,
     });
   }
 
@@ -147,7 +143,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     try {
       /** DB유저 소켓 아이디 추가 */
-      const dbUser = await this.usersService.setUserSocketId(newUser.id, client.id);
+      const dbUser = await this.usersService.getUserWithoutFriends(newUser.id);
 
       /** 유저 생성 알림 */
       this.server.emit('listeningUser', {
@@ -292,12 +288,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     /** 어떤 액션을 할 것이냐 */
     try {
       const dbUser = await this.usersService.userAction({ id: user.id, nickname: data.who, action: data.action });
-      if (dbUser.socketId) {
+      if (client.id) {
         let friendsRequest = dbUser.friendsRequest;
         let friends = dbUser.friends;
 
         /** 액션을 한 사람에게 전달 */
-        this.server.to(dbUser.socketId).emit('listeningFriends', {
+        this.server.to(client.id).emit('listeningFriends', {
           func: 'listeningFriends',
           code: 200,
           message: `${user.nickname}가 ${data.action}을 했습니다.`,
@@ -309,17 +305,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
         /** who에게 전달 */
         const dbAnother = await this.usersService.getUserByNickname(data.who);
-        friendsRequest = dbAnother.friendsRequest;
-        friends = dbAnother.friends;
-        this.server.to(dbAnother.socketId).emit('listeningFriends', {
-          func: 'listeningFriends',
-          code: 200,
-          message: `${user.nickname}가 ${data.action}을 했습니다.`,
-          data: {
-            friendsRequest,
-            friends,
-          },
-        });
+        const memoryAnother = this.chatUsers.getUserByNickname(data.who);
+        if (memoryAnother) {
+          friendsRequest = dbAnother.friendsRequest;
+          friends = dbAnother.friends;
+          this.server.to(memoryAnother.socketId).emit('listeningFriends', {
+            func: 'listeningFriends',
+            code: 200,
+            message: `${user.nickname}가 ${data.action}을 했습니다.`,
+            data: {
+              friendsRequest,
+              friends,
+            },
+          });
+        }
       }
 
       return this.returnMessage('userAction', 200, `${data.action} 성공`);
@@ -339,20 +338,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     let dbUser = await this.usersService.getUserWithFriends(user.id);
 
-    if (dbUser.socketId) {
-      const friendsRequest = dbUser.friendsRequest;
-      const friends = dbUser.friends;
+    const friendsRequest = dbUser.friendsRequest;
+    const friends = dbUser.friends;
 
-      this.server.to(dbUser.socketId).emit('listeningFriends', {
-        func: 'listeningFriends',
-        code: 200,
-        message: `${user.nickname}의 정보를 보냈습니다. data.friends, data.friendsRequest를 활용하세요.`,
-        data: {
-          friendsRequest,
-          friends,
-        },
-      });
-    }
+    this.server.to(client.id).emit('listeningFriends', {
+      func: 'listeningFriends',
+      code: 200,
+      message: `${user.nickname}의 정보를 보냈습니다. data.friends, data.friendsRequest를 활용하세요.`,
+      data: {
+        friendsRequest,
+        friends,
+      },
+    });
 
     /** 어떤 액션을 할 것이냐 */
     return this.returnMessage('getFriends', 200, 'listeningFriends를 확인하세요');

@@ -116,11 +116,6 @@ export class Users extends BaseEntity {
 
   @Column({
     nullable: true,
-  })
-  socketId: string;
-
-  @Column({
-    nullable: true,
     default: '100',
   })
   achievement: string;

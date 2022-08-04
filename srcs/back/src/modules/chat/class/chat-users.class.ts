@@ -33,6 +33,11 @@ export class ChatUsers {
     return user;
   }
 
+  getUserByNickname(nickname: string): ChatUser | undefined {
+    const user: ChatUser = this.users.find((user) => user.nickname === nickname);
+    return user;
+  }
+
   getUserBySocketId(socketId: string): ChatUser | undefined {
     const user: ChatUser = this.users.find((user) => user.socketId === socketId);
     return user;
