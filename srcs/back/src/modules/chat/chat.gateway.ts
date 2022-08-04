@@ -158,7 +158,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     let user = this.chatUsers.getUserById(newUser.id);
     if (user) {
       const nickname = user.nickname;
-      this.handleDisconnect(client);
       return this.returnMessage(
         'joinChat',
         400,
