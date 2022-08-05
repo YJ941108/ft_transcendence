@@ -18,6 +18,7 @@ import { CreateDirectMessageDto } from '../direct-message/dto/create-direct-mess
 import { User } from '../games/class/user.class';
 import { GamesGateway } from '../games/games.gateway';
 import { CreateMessageDto } from '../message/dto/create-message.dto';
+import { Users } from '../users/entities/users.entity';
 import { UsersService } from '../users/users.service';
 import { BadRequestTransformationFilter } from './chat.filter';
 import { ChatService } from './chat.service';
@@ -73,6 +74,68 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     };
   }
 
+  async listeningGetUsers(socketId: string, functionName: string, dbUser?: Users): Promise<void> {
+    const memoryUser = this.chatUsers.getUserBySocketId(socketId);
+    let nickname;
+    if (memoryUser) {
+      nickname = memoryUser.nickname;
+    }
+    const dbUsers = await this.usersService.getUsers();
+
+    if (!dbUser) {
+      dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
+    }
+
+    for (let j = 0; j < dbUsers.length; j++) {
+      /** 친구인지 아닌지 변환 */
+      for (let i = 0; i < dbUser.friends.length; i++) {
+        if (dbUser.friends[i].id === dbUsers[j].id) {
+          dbUsers[j].isFriend = true;
+        } else {
+          dbUsers[j].isFriend = false;
+        }
+      }
+      /** 온라인인지 오프라인인지 변환 */
+      if (this.chatUsers.getUserByNickname(dbUsers[j].nickname)) {
+        dbUsers[j].isOnline = true;
+      }
+    }
+
+    this.server.emit('listeningGetUsers', {
+      func: 'listeningGetUsers',
+      code: 200,
+      message: `[${socketId}][${nickname}]: ${functionName}->listeningGetUsers`,
+      data: dbUsers,
+    });
+  }
+
+  async listeningMe(socketId: string, functionName: string): Promise<void> {
+    const memoryUser = this.chatUsers.getUserBySocketId(socketId);
+    const dbUsers = await this.usersService.getUsers();
+    const dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
+
+    for (let j = 0; j < dbUser.friendsRequest.length; j++) {
+      /** 온라인인지 오프라인인지 변환 */
+      if (this.chatUsers.getUserByNickname(dbUser.friendsRequest[j].nickname)) {
+        dbUser.friendsRequest[j].isOnline = true;
+      }
+    }
+
+    for (let j = 0; j < dbUser.friends.length; j++) {
+      /** 온라인인지 오프라인인지 변환 */
+      if (this.chatUsers.getUserByNickname(dbUser.friends[j].nickname)) {
+        dbUser.friends[j].isOnline = true;
+      }
+    }
+
+    this.server.to(socketId).emit('listeningMe', {
+      func: 'listeningMe',
+      code: 200,
+      message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningMe`,
+      data: dbUser,
+    });
+  }
+
   afterInit(server: any) {
     this.logger.log(`afterInit: ${server.name} 초기화`);
   }
@@ -82,24 +145,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   async handleDisconnect(@ConnectedSocket() client: Socket): Promise<void> {
-    /** 메모리에 존재하는 유저인지 확인 */
     let memoryUser = this.chatUsers.getUser(client.id);
     if (!memoryUser) {
       return;
     }
 
-    /** 메모리에서 유저 제거 */
+    const dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
     this.chatUsers.removeUser(memoryUser);
-
-    /** 모두에게 유저가 나갔다는 것을 알리기 */
-    const dbUsers = await this.usersService.getUsers();
-
-    this.server.emit('listeningGetUsers', {
-      func: 'listeningGetUsers',
-      code: 200,
-      message: `${client.id}: ${memoryUser.nickname}가 채팅을 나갔습니다`,
-      data: dbUsers,
-    });
+    await this.listeningGetUsers(client.id, 'handleDiscoonection', dbUser);
   }
 
   /**
@@ -119,23 +172,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.chatUsers.addUser(memoryUser);
 
     try {
-      /** 누가 들어오든지 전체리스트를 보내줘야 함 */
-      const dbUsers = await this.usersService.getUsers();
-      this.server.emit('listeningGetUsers', {
-        func: 'listeningGetUsers',
-        code: 200,
-        message: `${client.id} joinChat -> listeningGetUsers`,
-        data: dbUsers,
-      });
-
-      /** client에게 client 정보를 보내야 친구 리스트를 그릴 수 있음 */
-      const dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
-      this.server.emit('listeningMe', {
-        func: 'joinChat',
-        code: 200,
-        message: `${client.id} joinChat -> listeningMe`,
-        data: dbUser,
-      });
+      await this.listeningGetUsers(client.id, 'handleDiscoonection');
+      await this.listeningMe(client.id, 'handleDiscoonection');
 
       /** 결과 반환 */
       return this.returnMessage(
@@ -151,100 +189,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         message: `${client.id}: 오류가 발생해서 joinChat 실행에 실패했습니다.`,
         data: e,
       });
+      this.logger.log('chatError', {
+        func: 'joinChat',
+        code: 400,
+        message: `${client.id}: 오류가 발생해서 joinChat 실행에 실패했습니다.`,
+        data: e,
+      });
     }
-  }
-
-  @SubscribeMessage('getUser')
-  async handleGetUser(@ConnectedSocket() client: Socket): Promise<Object> {
-    /** 메모리에 존재하는 유저인지 확인 */
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
-      return this.returnMessage('getUser', 400, '채팅 소켓에 유저가 없습니다');
-    }
-
-    let dbUser = await this.usersService.getUserWithFriends(user.id);
-
-    /** 어떤 액션을 할 것이냐 */
-    return this.returnMessage('getUser', 200, `${user.nickname}정보 불러오기 성공`, dbUser);
-  }
-
-  /**
-   * 유저 정보 반환
-   */
-  @SubscribeMessage('getUserStatus')
-  async handleGetUserStatus(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
-    const user = this.chatUsers.getUserById(userId);
-
-    let data = {};
-
-    if (!user) {
-      data = {
-        userId,
-        socketId: null,
-      };
-    } else {
-      data = {
-        userId,
-        socketId: user.socketId,
-      };
-    }
-
-    return this.returnMessage('getUserStatus', 200, '상태 불러오기 성공', data, true);
-  }
-
-  /**
-   * 유저 전체 정보 획득
-   */
-  @SubscribeMessage('getUsers')
-  async handleGetUsers(@ConnectedSocket() client: Socket) {
-    /** 유저가 접속했는지 확인 */
-    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
-    if (!memoryUser) {
-      return this.returnMessage('getUsers', 400, '채팅 소켓에 유저가 없습니다');
-    }
-
-    /** db유저 */
-    /** db유저 전체 불러오기 */
-    const dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
-    const dbUsers = await this.usersService.getUsers();
-
-    /** 자기 자신 삭제 */
-    const index = dbUsers.findIndex((element) => element.id === memoryUser.id);
-    dbUsers.splice(index, 1);
-
-    for (let j = 0; j < dbUsers.length; j++) {
-      /** 친구인지 아닌지 변환 */
-      for (let i = 0; i < dbUser.friends.length; i++) {
-        if (dbUser.friends[i].id === dbUsers[j].id) {
-          dbUsers[j].isFriend = true;
-        } else {
-          dbUsers[j].isFriend = false;
-        }
-      }
-
-      /** 온라인인지 오프라인인지 변환 */
-      if (this.chatUsers.getUserByNickname(dbUsers[j].nickname)) {
-        dbUsers[j].isOnline = true;
-      }
-    }
-    this.server.to(client.id).emit('listeningGetUsers', {
-      func: 'listeningGetUsers',
-      code: 200,
-      message: `자기 자신을 제외한 전체 유저를 불러왔습니다.`,
-      data: dbUsers,
-    });
-
-    return this.returnMessage('getUsers', 200, 'listeningGetUsers');
-  }
-
-  userJoinRoom(socketId: string, roomId: string) {
-    this.chatUsers.addRoomToUser(socketId, roomId);
-    this.server.in(socketId).socketsJoin(roomId);
-  }
-
-  userLeaveRoom(socketId: string, roomId: string) {
-    this.chatUsers.removeRoomFromUser(socketId, roomId);
-    this.server.in(socketId).socketsLeave(roomId);
   }
 
   /** 친구 */
@@ -261,26 +212,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     try {
       /** 어떤 액션을 할 것이냐 */
-      let dbUser = await this.usersService.userAction({ id: memoryUser.id, nickname: data.who, action: data.action });
+      await this.usersService.userAction({ id: memoryUser.id, nickname: data.who, action: data.action });
 
       /** 액션을 한 사람에게 전달 */
-      this.server.to(client.id).emit('listeningMe', {
-        func: 'userAction',
-        code: 200,
-        message: `${client.id} userAction -> listeningMe`,
-        data: dbUser,
-      });
+      await this.listeningMe(client.id, 'userAction');
 
       /** who에게 전달 */
-      const dbAnother = await this.usersService.getUserByNickname(data.who);
       const memoryAnother = this.chatUsers.getUserByNickname(data.who);
       if (memoryAnother) {
-        this.server.to(memoryAnother.socketId).emit('listeningMe', {
-          func: 'listeningMe',
-          code: 200,
-          message: `${client.id} userAction -> listeningMe`,
-          data: dbAnother,
-        });
+        await this.listeningMe(memoryAnother.socketId, 'userAction');
       }
 
       return this.returnMessage('userAction', 200, `${data.action} 성공`);
@@ -295,33 +235,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
-  @SubscribeMessage('getFriends')
-  async handleGetFriends(@ConnectedSocket() client: Socket): Promise<Object> {
-    /** 메모리에 존재하는 유저인지 확인 */
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
-      return this.returnMessage('getFriends', 400, '채팅 소켓에 유저가 없습니다');
-    }
-
-    let dbUser = await this.usersService.getUserWithFriends(user.id);
-
-    const friendsRequest = dbUser.friendsRequest;
-    const friends = dbUser.friends;
-
-    this.server.to(client.id).emit('listeningFriends', {
-      func: 'listeningFriends',
-      code: 200,
-      message: `${user.nickname}의 정보를 보냈습니다. data.friends, data.friendsRequest를 활용하세요.`,
-      data: {
-        friendsRequest,
-        friends,
-      },
-    });
-
-    /** 어떤 액션을 할 것이냐 */
-    return this.returnMessage('getFriends', 200, 'listeningFriends를 확인하세요');
-  }
   /** DM */
+
+  userJoinRoom(socketId: string, roomId: string) {
+    this.chatUsers.addRoomToUser(socketId, roomId);
+    this.server.in(socketId).socketsJoin(roomId);
+  }
+
+  userLeaveRoom(socketId: string, roomId: string) {
+    this.chatUsers.removeRoomFromUser(socketId, roomId);
+    this.server.in(socketId).socketsLeave(roomId);
+  }
+
   /**
    * DM을 한 번도 하지 않은 유저와 사용
    * 방이 없다면 방을 만들고 상대방에게 알림
