@@ -1,3 +1,5 @@
+import { Socket } from 'socket.io-client';
+
 export default interface IUserData {
 	id: number;
 	username: string;
@@ -6,7 +8,6 @@ export default interface IUserData {
 	photo: string;
 	tfa: boolean;
 	tfaCode: boolean;
-	isFriend: boolean;
 	wins: number;
 	losses: number;
 	ratio: number;
@@ -14,4 +15,11 @@ export default interface IUserData {
 	achievement: number;
 	createdAt: string;
 	updatedAt: string;
+}
+
+export interface IUserList {
+	nickname: string;
+	photo: string;
+	chatSocket: Socket;
+	isOnline: boolean;
 }

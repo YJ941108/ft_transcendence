@@ -68,7 +68,7 @@ export interface IFriendsList {
 	};
 }
 
-export interface IUserMe {
+export interface IMyData {
 	id: number;
 	username: string;
 	email: string;
@@ -86,4 +86,17 @@ export interface IUserMe {
 	updatedAt: string;
 	friendsRequest: IUserData[];
 	friends: IUserData[];
+}
+
+export interface IMyDataResponse {
+	func: string;
+	code: number;
+	message: string;
+	data: IMyData;
+}
+
+export interface IErr {
+	code: number;
+	data?: any;
+	message: string;
 }
