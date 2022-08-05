@@ -133,9 +133,7 @@ export class UsersService {
    * @returns
    */
   async getUsers(): Promise<Users[]> {
-    const users = await this.usersRepository.find({
-      relations: ['friendsRequest', 'friends'],
-    });
+    const users = await this.usersRepository.find({});
     return users;
   }
 

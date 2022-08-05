@@ -107,15 +107,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
   @SubscribeMessage('joinChat')
   async handleNewUser(@ConnectedSocket() client: Socket, @MessageBody() newUser: ChatUser) {
-    /** 유저가 접속했는지 확인 */
+    /** 유저가 메모리에 있는지 확인 */
     let memoryUser = this.chatUsers.getUserById(newUser.id);
     if (memoryUser) {
       const nickname = memoryUser.nickname;
-      return this.returnMessage(
-        'joinChat',
-        400,
-        `${nickname}:가 채팅 소켓에 이미 접속했습니다 ${client.id}의 연결을 끊습니다`,
-      );
+      return this.returnMessage('joinChat', 400, `${client.id}: ${nickname}:가 채팅 소켓에 이미 접속했습니다`);
     }
 
     /** 유저 메모리에 추가 */
@@ -123,19 +119,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.chatUsers.addUser(memoryUser);
 
     try {
-      const dbUser = await this.usersService.getUserWithoutFriends(newUser.id);
-
-      /** 유저 생성 알림 */
-      this.server.emit('listeningUser', {
-        func: 'listeningUser',
-        code: 200,
-        message: `${memoryUser.nickname}가 채팅 소켓에 접속했습니다`,
-        data: dbUser,
-      });
-
-      /** 모두에게 유저가 나갔다는 것을 알리기 */
+      /** 누가 들어오든지 전체리스트를 보내줘야 함 */
       const dbUsers = await this.usersService.getUsers();
-
       this.server.emit('listeningGetUsers', {
         func: 'listeningGetUsers',
         code: 200,
@@ -143,16 +128,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         data: dbUsers,
       });
 
-      this.handleGetUsers(client);
+      /** client에게 client 정보를 보내야 친구 리스트를 그릴 수 있음 */
+      const dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
+      this.server.emit('listeningMe', {
+        func: 'joinChat',
+        code: 200,
+        message: `${client.id} joinChat -> listeningMe`,
+        data: dbUser,
+      });
 
       /** 결과 반환 */
       return this.returnMessage(
         'joinChat',
         200,
-        `${client.id}: ${memoryUser.nickname}이 joinChat 성공. listeningUser & listeningGetUsers emit함`,
+        `${client.id}: ${memoryUser.nickname}이 joinChat 성공. 서버에서 listeningGetUsers && listeningMe를 emit함`,
       );
     } catch (e) {
       this.chatUsers.removeUser(memoryUser);
+      this.server.emit('chatError', {
+        func: 'joinChat',
+        code: 400,
+        message: `${client.id}: 오류발생해서 joinChat 실행에 실패했습니다.`,
+      });
     }
   }
 
