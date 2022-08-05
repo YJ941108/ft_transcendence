@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useSetRecoilState } from 'recoil';
-import { chatContentC } from '../../modules/atoms';
+import { chatContent } from '../../modules/atoms';
 
 const ChatNavButtonStyleC = styled.button`
 	width: 25%;
@@ -13,7 +13,7 @@ interface IChatNavButton {
 }
 
 function ChatNavButton({ name }: IChatNavButton) {
-	const setAllUserList = useSetRecoilState(chatContentC);
+	const setAllUserList = useSetRecoilState(chatContent);
 	return <ChatNavButtonStyleC onClick={() => setAllUserList(name)}>{name}</ChatNavButtonStyleC>;
 }
 
