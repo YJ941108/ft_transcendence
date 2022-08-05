@@ -17,6 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { UserActionDto } from './dto/user-action.dto';
 import { AchievementList } from 'src/enums/achievements.enum';
+import { DirectMessage } from '../direct-message/entities/direct-message.entity';
 
 /**
  *  @class UsersService
@@ -326,7 +327,7 @@ export class UsersService {
    * @param friendId - The id of the user's friend
    * @returns A Direct Message
    */
-  async getDirectMessage(id: string, friendId: string) {
+  async getDirectMessage(id: number, friendId: number) {
     const user = await this.usersRepository.findOne(id, {
       relations: [
         'directMessages',
@@ -340,10 +341,33 @@ export class UsersService {
       const directMessage = user.directMessages.find(
         (directMessage) =>
           !!directMessage.users.find((user) => {
-            return user.id === parseInt(friendId);
+            return user.id === friendId;
           }),
       );
       if (directMessage) return directMessage;
+    }
+    throw new Error('User sent no DM');
+  }
+
+  /**
+   * Get a Direct Message between two users
+   *
+   * @param id - The id of the user to which the result will be send back to
+   * @param friendId - The id of the user's friend
+   * @returns A Direct Message
+   */
+  async getUserWithDirectMessages(id: number): Promise<DirectMessage[]> {
+    const user = await this.usersRepository.findOne(id, {
+      relations: [
+        'directMessages',
+        'directMessages.users',
+        'directMessages.messages',
+        'directMessages.messages.author',
+      ],
+    });
+
+    if (user && user.directMessages) {
+      return user.directMessages;
     }
     throw new Error('User sent no DM');
   }

@@ -163,7 +163,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    */
   @SubscribeMessage('handleUserConnect')
   handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): User[] | Object {
-    if (!user.id) {
+    if (user && !user.id) {
       return this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
     }
 

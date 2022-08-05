@@ -236,7 +236,7 @@ export class ChatService {
     return dm.users[0].id === userId ? dm.users[1] : dm.users[0];
   }
 
-  async checkIfDmExists(userId1: string, userId2: string) {
+  async checkIfDmExists(userId1: number, userId2: number) {
     let existingDm: DirectMessage;
 
     try {

@@ -175,6 +175,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       await this.listeningGetUsers(client.id, 'handleDiscoonection');
       await this.listeningMe(client.id, 'handleDiscoonection');
 
+      const dmList = await this.usersService.getUserWithDirectMessages(memoryUser.id);
+      this.server.to(client.id).emit('listeningDMRoomList', {
+        func: 'listeningDMRoomList',
+        code: 200,
+        message: `${memoryUser.nickname}`,
+        data: dmList,
+      });
+
       /** 결과 반환 */
       return this.returnMessage(
         'joinChat',
@@ -257,20 +265,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
   @UseFilters(new BadRequestTransformationFilter())
   @SubscribeMessage('createDMRoom')
-  async handleCreateDm(@ConnectedSocket() client: Socket, @MessageBody() data: CreateDirectMessageDto) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
-      return this.returnMessage('joinChat', 400, '채팅 소켓에 유저가 없습니다');
+  async handleCreateDm(@ConnectedSocket() client: Socket, @MessageBody() data: { anotherId: number }) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
+      return this.returnMessage('createDMRoom', 400, '채팅 소켓에 유저가 없습니다');
     }
 
+    const dbUser = await this.usersService.getUserWithoutFriends(memoryUser.id);
+    const dbAnother = await this.usersService.getUserWithoutFriends(data.anotherId);
+    if (!dbAnother) {
+      return this.returnMessage('createDMRoom', 400, '채팅 소켓에 유저가 없습니다');
+    }
+    const dbUserAnother: CreateDirectMessageDto = {
+      users: [dbUser, dbAnother],
+    };
+
     try {
-      let dm = await this.chatService.checkIfDmExists(data.users[0].id.toString(), data.users[1].id.toString());
+      let dm = await this.chatService.checkIfDmExists(dbUserAnother.users[0].id, dbUserAnother.users[1].id);
 
       if (!dm) {
-        dm = await this.chatService.createDm(data);
+        dm = await this.chatService.createDm(dbUserAnother);
 
-        const user = this.chatUsers.getUser(client.id);
-        const friend = data.users.find((dmUser) => dmUser.id !== user.id);
+        const friend = dbUserAnother.users.find((dmUser) => dmUser.id !== memoryUser.id);
         const friendUser = this.chatUsers.getUserById(friend.id);
 
         /**
@@ -278,15 +294,24 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
          */
         if (friendUser) {
           this.userJoinRoom(friendUser.socketId, `dm_${dm.id}`);
-          this.server.to(friendUser.socketId).emit('listeningDMRoom', {
-            func: 'listeningUser',
-            code: 200,
-            message: `${user.nickname}가 dm_${dm.id} DM방을 만들었습니다.`,
-            data: dm,
-          });
         }
       }
       this.userJoinRoom(client.id, `dm_${dm.id}`);
+      this.server.to(client.id).emit('listeningDMRoomInfo', {
+        func: 'listeningDMRoomInfo',
+        code: 200,
+        message: `${memoryUser.nickname}가 dm_${dm.id} DM방을 만들었습니다.`,
+        data: dm,
+      });
+
+      const dmList = await this.usersService.getUserWithDirectMessages(memoryUser.id);
+      this.server.to(client.id).emit('listeningDMRoomList', {
+        func: 'listeningDMRoomList',
+        code: 200,
+        message: `${memoryUser.nickname}가 dm_${dm.id} DM방을 만들었습니다.`,
+        data: dmList,
+      });
+
       return this.returnMessage('createDMRoom', 200, '방 정보', dm);
     } catch (e) {
       console.log(e);
@@ -353,7 +378,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     try {
       const message = await this.chatService.addMessageToDm(data);
-      this.server.to(`dm_${message.DM.id}`).emit('listeningDM', {
+      this.server.to(`dm_${message.DM.id}`).emit('listeningDMMessage', {
         func: 'listeningUser',
         code: 200,
         message: `${message.DM.id}에서 메시지가 도착했습니다`,
@@ -867,7 +892,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       this.pongGateway.roomAlreadyExists(senderId, receiverId);
 
-      let DM = await this.chatService.checkIfDmExists(senderId.toString(), receiverId.toString());
+      let DM = await this.chatService.checkIfDmExists(senderId, receiverId);
       const sender = this.chatUsers.getUser(client.id);
       const receiver = this.chatUsers.getUserById(receiverId);
 
