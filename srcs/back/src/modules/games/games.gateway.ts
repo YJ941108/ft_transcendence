@@ -208,7 +208,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('joinQueue')
   handleJoinQueue(@ConnectedSocket() client: Socket, @MessageBody() mode: string): Object {
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
-    if (!user.id) {
+    if (!user) {
       return this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
     }
 
@@ -344,8 +344,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       loserScore = room.paddleOne.goal;
     }
 
-    const winner = await this.usersService.getUser(winnerId);
-    const loser = await this.usersService.getUser(loserId);
+    const winner = await this.usersService.getUserWithFriends(winnerId);
+    const loser = await this.usersService.getUserWithFriends(loserId);
 
     await this.usersService.updateStats(winner, true);
     await this.usersService.updateStats(loser, false);
@@ -423,7 +423,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       this.saveGame(room, currentTimestamp);
     } else if (
       (room.gameState === GameState.PLAYER_ONE_SCORED || room.gameState === GameState.PLAYER_TWO_SCORED) &&
-      currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(1)
+      currentTimestamp - room.goalTimestamp >= this.secondToTimestamp(1.5)
     ) {
       room.resetPosition();
       room.changeGameState(GameState.PLAYING);
@@ -436,7 +436,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       room.changeGameState(GameState.PLAYING);
     } else if (
       room.gameState === GameState.PAUSED &&
-      currentTimestamp - room.pauseTime[room.pauseTime.length - 1].pause >= this.secondToTimestamp(42)
+      currentTimestamp - room.pauseTime[room.pauseTime.length - 1].pause >= this.secondToTimestamp(42.5)
     ) {
       room.pauseForfait();
       room.pauseTime[room.pauseTime.length - 1].resume = Date.now();
@@ -530,5 +530,63 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       this.server.to(client.id).emit('newRoom', room);
       return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
     }
+  }
+
+  setInviteRoomToReady(roomId: string) {
+    const room = this.rooms.get(roomId);
+
+    if (!room) {
+      throw new Error('Game is over');
+    }
+    room.changeGameState(GameState.STARTING);
+  }
+
+  /* Create room when invite is sent by a User */
+  async createInviteRoom(sender: User, receiverId: number) {
+    this.logger.log('Create new Invite room');
+
+    const firstPlayer: User = this.createInvitedUser(sender.id, sender.nickname);
+    const receiverData = await this.usersService.getUserWithFriends(receiverId);
+    const secondPlayer: User = this.createInvitedUser(receiverData.id, receiverData.nickname);
+
+    const roomId: string = `${Date.now()}${firstPlayer.nickname}&${secondPlayer.nickname}`;
+
+    let room: Room = new Room(roomId, [firstPlayer, secondPlayer]);
+    room.gameState = GameState.WAITING;
+
+    this.rooms.set(roomId, room);
+    this.currentGames.push(room);
+
+    this.server.emit('updateCurrentGames', this.currentGames);
+
+    return roomId;
+  }
+
+  createInvitedUser(id: number, username: string) {
+    let newUser: User = this.connectedUsers.getUserById(id);
+
+    if (newUser) {
+      newUser.setNickname(username);
+    } else {
+      newUser = new User(id, username);
+    }
+    this.connectedUsers.addUser(newUser);
+    return newUser;
+  }
+
+  roomAlreadyExists(senderId: number, receiverId: number) {
+    const sender = this.connectedUsers.getUserById(senderId);
+    const receiver = this.connectedUsers.getUserById(receiverId);
+
+    if (!sender || !receiver) return;
+
+    this.rooms.forEach((room: Room) => {
+      if (room.isAPlayer(sender)) {
+        throw Error('You already have a pending game. Finish it or leave the room.');
+      }
+      if (room.isAPlayer(receiver)) {
+        throw Error('User already in a game.');
+      }
+    });
   }
 }
