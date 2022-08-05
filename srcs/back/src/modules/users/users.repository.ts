@@ -211,12 +211,12 @@ export class UsersRepository extends Repository<Users> {
     /** 삭제 */
     let index = user.friends.findIndex((e) => e.id === another.id);
     user.friends.splice(index, 1);
-    user.save();
+    await user.save();
 
     /** 상대방도 삭제 */
     index = another.friends.findIndex((e) => e.id === user.id);
     another.friends.splice(index, 1);
-    another.save();
+    await another.save();
 
     return user;
   }
