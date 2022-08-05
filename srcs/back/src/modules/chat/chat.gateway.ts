@@ -73,24 +73,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     };
   }
 
-  /** Socket.io */
-  /**
-   * 소켓이 만들어질 때 실행
-   */
   afterInit(server: any) {
     this.logger.log(`afterInit: ${server.name} 초기화`);
   }
 
-  /**
-   * 클라이언트가 서버 소켓에 접속할 때 실행
-   */
   handleConnection(@ConnectedSocket() client: Socket) {
-    this.logger.log(`handleConnection: 접속한 유저 ${client.id}`);
+    this.logger.log(`handleConnection: ${client.id}`);
   }
 
-  /**
-   * 클라이언트가 다른 페이지로 벗어나면 실행
-   */
   async handleDisconnect(@ConnectedSocket() client: Socket): Promise<void> {
     /** 메모리에 존재하는 유저인지 확인 */
     let memoryUser = this.chatUsers.getUser(client.id);
@@ -99,22 +89,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     /** 메모리에서 유저 제거 */
-    this.logger.log(this.chatUsers.getUsers());
-    this.logger.log(`handleDisconnect: socketId - ${memoryUser.socketId} nickname - ${memoryUser.nickname}`);
-    this.logger.log(this.chatUsers.getUsers());
     this.chatUsers.removeUser(memoryUser);
 
     /** 모두에게 유저가 나갔다는 것을 알리기 */
-    this.server.emit('listeningUser', {
-      func: 'listeningUser',
+    const dbUsers = await this.usersService.getUsers();
+
+    this.server.emit('listeningGetUsers', {
+      func: 'listeningGetUsers',
       code: 200,
-      message: `${memoryUser.nickname}가 채팅을 나갔습니다`,
+      message: `${client.id}: ${memoryUser.nickname}가 채팅을 나갔습니다`,
+      data: dbUsers,
     });
   }
 
-  /**
-   * 유저 관리
-   */
   /**
    * 채팅 소켓 접속시 실행되어 유저 정보를 메모리에 저장
    */
@@ -144,6 +131,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         code: 200,
         message: `${memoryUser.nickname}가 채팅 소켓에 접속했습니다`,
         data: dbUser,
+      });
+
+      /** 모두에게 유저가 나갔다는 것을 알리기 */
+      const dbUsers = await this.usersService.getUsers();
+
+      this.server.emit('listeningGetUsers', {
+        func: 'listeningGetUsers',
+        code: 200,
+        message: `${client.id} joinChat -> listeningGetUsers`,
+        data: dbUsers,
       });
 
       this.handleGetUsers(client);
@@ -210,7 +207,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     /** db유저 */
     /** db유저 전체 불러오기 */
-    const dbUser = await this.usersService.getUserWithoutFriends(memoryUser.id);
+    const dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
     const dbUsers = await this.usersService.getUsers();
 
     /** 자기 자신 삭제 */
@@ -298,6 +295,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             },
           });
         }
+
+        /** 모두에게 유저가 나갔다는 것을 알리기 */
+        const dbUsers = await this.usersService.getUsers();
+
+        this.server.emit('listeningGetUsers', {
+          func: 'listeningGetUsers',
+          code: 200,
+          message: `${client.id}:userAction -> listeningGetUsers`,
+          data: dbUsers,
+        });
 
         return this.returnMessage('userAction', 200, `${data.action} 성공`);
       }
