@@ -148,7 +148,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.server.emit('chatError', {
         func: 'joinChat',
         code: 400,
-        message: `${client.id}: 오류발생해서 joinChat 실행에 실패했습니다.`,
+        message: `${client.id}: 오류가 발생해서 joinChat 실행에 실패했습니다.`,
+        data: e,
       });
     }
   }
@@ -258,54 +259,38 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return this.returnMessage('userAction', 400, '채팅 소켓에 유저가 없습니다');
     }
 
-    /** 어떤 액션을 할 것이냐 */
     try {
+      /** 어떤 액션을 할 것이냐 */
       let dbUser = await this.usersService.userAction({ id: memoryUser.id, nickname: data.who, action: data.action });
-      if (client.id) {
-        let friendsRequest = dbUser.friendsRequest;
-        let friends = dbUser.friends;
 
-        /** 액션을 한 사람에게 전달 */
-        this.server.to(client.id).emit('listeningFriends', {
-          func: 'listeningFriends',
-          code: 200,
-          message: `${memoryUser.nickname}가 ${data.action}을 했습니다.`,
-          data: {
-            friendsRequest,
-            friends,
-          },
-        });
+      /** 액션을 한 사람에게 전달 */
+      this.server.to(client.id).emit('listeningMe', {
+        func: 'userAction',
+        code: 200,
+        message: `${client.id} userAction -> listeningMe`,
+        data: dbUser,
+      });
 
-        /** who에게 전달 */
-        const dbAnother = await this.usersService.getUserByNickname(data.who);
-        const memoryAnother = this.chatUsers.getUserByNickname(data.who);
-        if (memoryAnother) {
-          friendsRequest = dbAnother.friendsRequest;
-          friends = dbAnother.friends;
-          this.server.to(memoryAnother.socketId).emit('listeningFriends', {
-            func: 'listeningFriends',
-            code: 200,
-            message: `${memoryUser.nickname}가 ${data.action}을 했습니다.`,
-            data: {
-              friendsRequest,
-              friends,
-            },
-          });
-        }
-
-        /** client에게 client 정보를 보내야 친구 리스트를 그릴 수 있음 */
-        dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
-        this.server.emit('listeningMe', {
-          func: 'userAction',
+      /** who에게 전달 */
+      const dbAnother = await this.usersService.getUserByNickname(data.who);
+      const memoryAnother = this.chatUsers.getUserByNickname(data.who);
+      if (memoryAnother) {
+        this.server.to(memoryAnother.socketId).emit('listeningMe', {
+          func: 'listeningMe',
           code: 200,
           message: `${client.id} userAction -> listeningMe`,
-          data: dbUser,
+          data: dbAnother,
         });
-
-        return this.returnMessage('userAction', 200, `${data.action} 성공`);
       }
+
+      return this.returnMessage('userAction', 200, `${data.action} 성공`);
     } catch (e) {
-      console.log(e);
+      this.server.emit('chatError', {
+        func: 'userAction',
+        code: 400,
+        message: `${client.id}: 오류가 발생해서 userAction 실행에 실패했습니다.`,
+        data: e,
+      });
       return this.returnMessage('userAction', 400, `${data.action} 실패`);
     }
   }
