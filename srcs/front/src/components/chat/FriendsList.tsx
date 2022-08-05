@@ -2,21 +2,16 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useRecoilState } from 'recoil';
 import { Socket } from 'socket.io-client';
-import UserInfo from './UserInfo';
 import { friendsList, requestList } from '../../modules/atoms';
-import { IFriendsList } from '../../modules/Interfaces/chatInterface';
+import { IMyDataResponse } from '../../modules/Interfaces/chatInterface';
 import IUserData from '../../modules/Interfaces/userInterface';
-
-interface IDebug {
-	func: string;
-	code: number;
-	message: string;
-}
+import FriendUserInfo from './li-FriendUser';
+import RequestUserInfo from './li-RequestUser';
 
 const FriendsListStyleC = styled.ul`
 	/* min-height: 600px; */
 	/* max-height: 600px; */
-	height: 50%;
+	height: 70%;
 	overflow-y: scroll;
 	background-color: black;
 	border-left: 2px solid white;
@@ -27,32 +22,28 @@ interface ISocket {
 }
 
 function FriendsList({ chatSocket }: ISocket) {
-	const [users, setUsers] = useRecoilState<IUserData[]>(friendsList);
 	const [requestUser, setRequestUsers] = useRecoilState<IUserData[]>(requestList);
+	const [users, setUsers] = useRecoilState<IUserData[]>(friendsList);
 
 	useEffect(() => {
-		chatSocket.emit('getFriends', (response: IDebug) => {
-			console.log(response);
-		});
-	}, []);
-
-	useEffect(() => {
-		if (chatSocket)
-			chatSocket.on('listeningFriends', (response: IFriendsList) => {
-				setUsers(response.data.friends);
+		if (chatSocket) {
+			chatSocket.on('listeningMe', (response: IMyDataResponse) => {
 				setRequestUsers(response.data.friendsRequest);
+				setUsers(response.data.friends);
 				console.log(response, 'RESPONSE');
 			});
-		return () => {
-			chatSocket.off('listeningFriends');
-		};
+			return () => {
+				chatSocket.off('listeningMe');
+			};
+		}
+		return () => {};
 	}, [chatSocket]);
 
 	return (
 		<FriendsListStyleC>
 			{requestUser?.map((element: IUserData) => {
 				return (
-					<UserInfo
+					<RequestUserInfo
 						key={element.id}
 						nickname={element.nickname}
 						photo={element.photo}
@@ -63,7 +54,7 @@ function FriendsList({ chatSocket }: ISocket) {
 			})}
 			{users?.map((element: IUserData) => {
 				return (
-					<UserInfo
+					<FriendUserInfo
 						key={element.id}
 						nickname={element.nickname}
 						photo={element.photo}

@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useRecoilState } from 'recoil';
 import { Socket } from 'socket.io-client';
-import UserInfo from './UserInfo';
+import UserInfo from './li-AllUser';
 import { chatUserList } from '../../modules/atoms';
 import IUserData from '../../modules/Interfaces/userInterface';
 
 const UserListStyleC = styled.ul`
 	/* min-height: 600px; */
 	/* max-height: 600px; */
-	height: 92%;
+	height: 70%;
 	overflow-y: scroll;
 	background-color: black;
 	border-left: 2px solid white;
@@ -25,9 +25,14 @@ function UserList({ chatSocket }: ISocket) {
 	useEffect(() => {
 		if (chatSocket) {
 			chatSocket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
+				console.log(response, 'listeningGetUsers');
 				setUsers(response.data);
 			});
+			return () => {
+				chatSocket.off('listeningGetUsers');
+			};
 		}
+		return () => {};
 	}, [chatSocket]);
 
 	return (
