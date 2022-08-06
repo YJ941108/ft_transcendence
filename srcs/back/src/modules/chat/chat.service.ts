@@ -227,11 +227,11 @@ export class ChatService {
   }
 
   async getDmData(dmId: number) {
-    return await this.directMessageService.findOne(dmId.toString());
+    return await this.directMessageService.findOne(dmId);
   }
 
   async getFriendFromDm(dmId: number, userId: number) {
-    const dm = await this.directMessageService.findOne(dmId.toString());
+    const dm = await this.directMessageService.findOne(dmId);
 
     return dm.users[0].id === userId ? dm.users[1] : dm.users[0];
   }
@@ -249,7 +249,7 @@ export class ChatService {
   async createDm(createDirectMessageDto: CreateDirectMessageDto) {
     const res = await this.directMessageService.create(createDirectMessageDto);
 
-    return await this.directMessageService.findOne(res.id.toString());
+    return await this.directMessageService.findOne(res.id);
   }
 
   async addMessageToDm(createMessageDto: CreateMessageDto) {
