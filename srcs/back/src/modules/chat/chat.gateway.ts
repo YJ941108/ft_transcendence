@@ -82,7 +82,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (memoryUser) {
       nickname = memoryUser.nickname;
     }
-    const dbUsers = await this.usersService.getUsers();
+    const dbUsers = await this.usersService.getUsersWithFriendsRequest();
 
     if (!dbUser) {
       dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
@@ -97,6 +97,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           dbUsers[j].isFriend = false;
         }
       }
+
+      dbUsers[j].friendsRequest.forEach((value, index, array) => {
+        if (value.id === memoryUser.id) {
+          dbUsers[j].isRequest = true;
+        }
+      });
+
       /** 온라인인지 오프라인인지 변환 */
       if (this.chatUsers.getUserByNickname(dbUsers[j].nickname)) {
         dbUsers[j].isOnline = true;
@@ -269,6 +276,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
       data: dm,
     });
+    this.logger.log({
+      func: 'listeningDMRoomInfo',
+      code: 200,
+      message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
+      data: dm,
+    });
   }
 
   async listeningDMRoomList(socketId: string, functionName: string, memoryUser?: ChatUser): Promise<void> {
@@ -278,6 +291,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     this.server.to(socketId).emit('listeningDMRoomList', {
+      func: 'listeningDMRoomList',
+      code: 200,
+      message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
+      data: DMRooms,
+    });
+    this.logger.log({
       func: 'listeningDMRoomList',
       code: 200,
       message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
@@ -399,13 +418,21 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     try {
       const sendMessage = await this.chatService.addMessageToDm(message);
+      // const refactorMessage = {
+      //   content: sendMessage.content,
+      //   DMId: sendMessage.DM.id,
+      //   author: {
+
+      //   }
+      // }
       this.server.to(`dm_${message.DM.id}`).emit('listeningDMMessage', {
         func: 'sendDMMessage',
         code: 200,
         message: `${message.DM.id}에서 메시지가 도착했습니다`,
         data: sendMessage,
       });
-      this.listeningDMRoomList(client.id, 'listeningDMRoomList', memoryUser);
+      this.listeningDMRoomList(client.id, 'sendDMMessage', memoryUser);
+      this.listeningDMRoomInfo(`dm_${message.DM.id}`, 'sendDMMessage', memoryUser, DM);
 
       return this.returnMessage('sendDMMessage', 200, '메시지 보내기 성공', message, true);
     } catch (e) {
