@@ -431,8 +431,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         message: `${message.DM.id}에서 메시지가 도착했습니다`,
         data: sendMessage,
       });
+      const NewDM = await this.chatService.getDmData(data.DMId);
       this.listeningDMRoomList(client.id, 'sendDMMessage', memoryUser);
-      this.listeningDMRoomInfo(`dm_${message.DM.id}`, 'sendDMMessage', memoryUser, DM);
+      this.listeningDMRoomInfo(`dm_${message.DM.id}`, 'sendDMMessage', memoryUser, NewDM);
 
       return this.returnMessage('sendDMMessage', 200, '메시지 보내기 성공', message, true);
     } catch (e) {
