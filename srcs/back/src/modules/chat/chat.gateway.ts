@@ -741,9 +741,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     try {
+      /** 확인 */
       const channel = await this.chatService.getChannelData(channelId);
       const roomId = `channel_${channelId}`;
       if (await this.chatService.userIsInChannel(channelId, userId)) {
+        this.userJoinRoom(client.id, roomId);
         this.listeningChannelInfo(channel, roomId);
         return this.returnMessage('joinChannel', 200, '이미 채널에 들어왔습니다');
       }
