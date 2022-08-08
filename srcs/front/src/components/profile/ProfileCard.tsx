@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
-import getUserData from '../../modules/api';
 import Toggle from './Toggle';
+import getUserData from '../../modules/api';
+import ProfileModal from './ProfileModal';
 
 const RootStyled = styled.div`
 	grid-area: ProfileCard;
@@ -71,6 +72,7 @@ function ProfileCard() {
 			<ProfileCardBox>
 				<img src={data?.photo} alt="profile" />
 				<h1>{data?.nickname}</h1>
+				<ProfileModal />
 				<Link to="/ProfileEdit">USER EDIT</Link>
 			</ProfileCardBox>
 			<Toggle tfa={data?.tfa} />
