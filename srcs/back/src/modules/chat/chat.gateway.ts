@@ -412,7 +412,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const emitData = {
         message: sendMessage.content,
         author: sendMessage.author,
-        DMIdl: sendMessage.DM.id,
+        DMId: sendMessage.DM.id,
       };
       // const refactorMessage = {
       //   content: sendMessage.content,
