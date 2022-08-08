@@ -188,6 +188,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       const dmList = await this.usersService.getUserWithDirectMessages(memoryUser.id);
       this.listeningDMRoomList(client.id, 'joinChat', memoryUser);
+      await this.listeningChannelList(client, memoryUser.id);
 
       /** 결과 반환 */
       return this.returnMessage(
