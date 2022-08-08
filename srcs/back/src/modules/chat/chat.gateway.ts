@@ -188,7 +188,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       const dmList = await this.usersService.getUserWithDirectMessages(memoryUser.id);
       await this.listeningDMRoomList(client.id, 'joinChat', memoryUser);
-      await this.listeningChannelList(client, memoryUser.id);
+      await this.listeningChannelList(client.id, memoryUser.id);
 
       /** 결과 반환 */
       return this.returnMessage(
@@ -469,10 +469,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    *
    * Channels
    */
-  async listeningChannelList(client: Socket, dbId?: number) {
-    const channels = await this.chatService.getUserChannels(dbId);
+  async listeningChannelList(clientId: string, dbUserId?: number) {
+    const channels = await this.chatService.getUserChannels(dbUserId);
 
-    this.server.to(client.id).emit('listeningChannelList', {
+    this.server.to(clientId).emit('listeningChannelList', {
       func: 'listeningChannelList',
       code: 200,
       message: `채팅 방 리스트를 보냈습니다.`,
@@ -620,7 +620,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.userJoinRoom(client.id, roomId);
 
       /** 방 전체 정보 보내기 */
-      await this.listeningChannelList(client, memoryUser.id);
+      await this.listeningChannelList(client.id, memoryUser.id);
 
       /* 방이 비공개가 아니면 모두에게 알려야 함 */
       if (channel.privacy !== 'private') {
@@ -735,8 +735,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @ConnectedSocket() client: Socket,
     @MessageBody() { channelId, userId }: { channelId: number; userId: number },
   ) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
     }
 
@@ -746,18 +746,23 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         return this.returnMessage('joinChannel', 200, '이미 채널에 들어왔습니다');
       }
 
-      const user = await this.chatService.addUserToChannel(channel, userId);
+      const dbAnother = await this.chatService.addUserToChannel(channel, userId);
       const message = await this.chatService.addMessageToChannel({
-        content: `${user.username} joined group`,
+        content: `${dbAnother.username} joined group`,
         channel,
       });
       const roomId = `channel_${channelId}`;
 
+      this.userJoinRoom(client.id, roomId);
+
       /* If the channel is visible to everyone, inform every client */
       if (channel.privacy !== 'private') {
-        this.server.emit('listeningChannel', channel);
+        this.server.emit('listeningChannelInfo', channel);
       }
-      this.userJoinRoom(client.id, roomId);
+      const memoryAnother = this.chatUsers.getUserByNickname(dbAnother.nickname);
+      if (memoryAnother) {
+        this.listeningChannelList(memoryAnother.socketId, dbAnother.id);
+      }
       return this.returnMessage('joinChannel', 200, '채널에 들어왔습니다', channel);
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
