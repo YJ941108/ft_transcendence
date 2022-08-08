@@ -10,6 +10,7 @@ import {
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
+import { send } from 'process';
 import { Server, Socket } from 'socket.io';
 import { UserStatus } from 'src/enums/games.enum';
 import { CreateChannelDto } from '../channel/dto/create-channel.dto';
@@ -98,11 +99,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
       }
 
-      dbUsers[j].friendsRequest.forEach((value, index, array) => {
-        if (value.id === memoryUser.id) {
-          dbUsers[j].isRequest = true;
-        }
-      });
+      // dbUsers[j].friendsRequest.forEach((value, index, array) => {
+      //   if (value.id === memoryUser.id) {
+      //     dbUsers[j].isRequest = true;
+      //   }
+      // });
 
       /** 온라인인지 오프라인인지 변환 */
       if (this.chatUsers.getUserByNickname(dbUsers[j].nickname)) {
@@ -185,12 +186,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       await this.listeningMe(client.id, 'handleDiscoonection');
 
       const dmList = await this.usersService.getUserWithDirectMessages(memoryUser.id);
-      this.server.to(client.id).emit('listeningDMRoomList', {
-        func: 'listeningDMRoomList',
-        code: 200,
-        message: `${memoryUser.nickname}`,
-        data: dmList,
-      });
+      this.listeningDMRoomList(client.id, 'joinChat', memoryUser);
 
       /** 결과 반환 */
       return this.returnMessage(
@@ -296,12 +292,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
       data: DMRooms,
     });
-    this.logger.log({
-      func: 'listeningDMRoomList',
-      code: 200,
-      message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
-      data: DMRooms,
-    });
+    this.logger.log('listeningDMRoomList');
   }
 
   /**
@@ -418,6 +409,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     try {
       const sendMessage = await this.chatService.addMessageToDm(message);
+      const emitData = {
+        message: sendMessage.content,
+        author: sendMessage.author,
+        DMIdl: sendMessage.DM.id,
+      };
       // const refactorMessage = {
       //   content: sendMessage.content,
       //   DMId: sendMessage.DM.id,
@@ -429,13 +425,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         func: 'sendDMMessage',
         code: 200,
         message: `${message.DM.id}에서 메시지가 도착했습니다`,
-        data: sendMessage,
+        data: emitData,
       });
-      const NewDM = await this.chatService.getDmData(data.DMId);
+      // const NewDM = await this.chatService.getDmData(data.DMId);
+      // this.listeningDMRoomInfo(`dm_${message.DM.id}`, 'sendDMMessage', memoryUser, NewDM);
       this.listeningDMRoomList(client.id, 'sendDMMessage', memoryUser);
-      this.listeningDMRoomInfo(`dm_${message.DM.id}`, 'sendDMMessage', memoryUser, NewDM);
 
-      return this.returnMessage('sendDMMessage', 200, '메시지 보내기 성공', message, true);
+      return this.returnMessage('sendDMMessage', 200, '메시지 보내기 성공');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
@@ -444,6 +440,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   /**
    * Channels
    */
+  async listeningChannelList(client: Socket, dbId?: number) {
+    const channels = await this.chatService.getUserChannels(dbId);
+
+    this.server.to(client.id).emit('listeningChannelList', {
+      func: 'listeningChannelList',
+      code: 200,
+      message: `채팅 방 리스트를 보냈습니다.`,
+      data: channels,
+    });
+  }
 
   /**
    * 채널 데이터 획득
@@ -451,20 +457,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    * getChannel
    * getChannelWithUser
    */
-  @SubscribeMessage('getChannels')
-  async handleUserChannels(@ConnectedSocket() client: Socket, @MessageBody() { userId }: { userId: number }) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
-      return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
+  @SubscribeMessage('getChannelList')
+  async handleUserChannels(@ConnectedSocket() client: Socket) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
+      return this.returnMessage('getChannelList', 400, '채팅 소켓에 유저가 없습니다');
     }
 
-    const channels = await this.chatService.getUserChannels(userId);
+    const channels = await this.chatService.getUserChannels(memoryUser.id);
     for (const channel of channels) {
       this.userJoinRoom(client.id, `channel_${channel.id}`);
     }
 
     this.server.to(client.id).emit('listeningChannelList', {
-      func: 'listeningFriends',
+      func: 'getChannelList',
       code: 200,
       message: `채팅 방 리스트를 보냈습니다.`,
       data: channels,
@@ -478,6 +484,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       const channel = await this.chatService.getChannelData(channelId);
       this.userJoinRoom(client.id, `channel_${channel.id}`);
+      this.server.to(client.id).emit(``);
       return this.returnMessage('getChannel', 200, '채널 정보', channel, false);
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
@@ -501,25 +508,38 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
   @UseFilters(new BadRequestTransformationFilter())
   @SubscribeMessage('createChannel')
-  async handleCreateChannel(@ConnectedSocket() client: Socket, @MessageBody() data: CreateChannelDto) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
+  async handleCreateChannel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { name: string; privacy: string; userId: number },
+  ) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('createChannel', 400, '채팅 소켓에 유저가 없습니다');
     }
 
     try {
-      const channel = await this.chatService.createChannel(data);
+      const dbUser = await this.usersService.getUserWithoutFriends(data.userId);
+      const createChannelDto: CreateChannelDto = {
+        name: data.name,
+        privacy: data.privacy,
+        owner: dbUser,
+        users: [dbUser],
+      };
+      const channel = await this.chatService.createChannel(createChannelDto);
       const roomId = `channel_${channel.id}`;
       this.userJoinRoom(client.id, roomId);
+
+      await this.listeningChannelList(client, memoryUser.id);
 
       /* 방이 비공개가 아니면 모두에게 알려야 함 */
       if (channel.privacy !== 'private') {
         this.server.socketsJoin(roomId);
-        this.server.emit('listeningChannel', channel);
+        this.server.emit('listeningChannelInfo', channel);
       } else {
-        this.server.to(roomId).emit('listeningChannel', channel);
+        this.server.to(roomId).emit('listeningChannelInfo', channel);
       }
     } catch (e) {
+      console.log(e);
       this.server.to(client.id).emit('chatError', e.message);
     }
   }
@@ -527,8 +547,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @UseFilters(new BadRequestTransformationFilter())
   @SubscribeMessage('updateChannel')
   async handleUpdateChannel(@ConnectedSocket() client: Socket, @MessageBody() data: UpdateChannelDto) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('joinChat', 400, '채팅 소켓에 유저가 없습니다');
     }
 
@@ -538,9 +558,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       /* 방이 비공개가 아니면 모두에게 알려야 함 */
       if (channel.privacy !== 'private') {
-        this.server.emit('listeningChannelRoom', channel);
+        this.server.emit('listeningChannelInfo', channel);
       } else {
-        this.server.to(roomId).emit('listeningChannelRoom', channel);
+        this.server.to(roomId).emit('listeningChannelInfo', channel);
       }
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
@@ -549,9 +569,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('deleteChannel')
   async handleDeleteChannel(@ConnectedSocket() client: Socket, @MessageBody() { channelId }: { channelId: number }) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
-      return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
+      return this.returnMessage('deleteChannel', 400, '채팅 소켓에 유저가 없습니다');
     }
 
     try {
@@ -565,6 +585,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         this.server.to(roomId).emit('listeningChannelDeleted', channelId);
         this.server.socketsLeave(roomId);
       }
+
       return this.returnMessage('deleteChannel', 200, '채널이 삭제되었습니다.');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
