@@ -1,3 +1,4 @@
+import { IUser } from './../../components/game/GameInterfaces';
 import IUserData from './userInterface';
 
 export enum ChatState {
@@ -117,4 +118,47 @@ export interface IDMRoomInfo {
 		users: IUserData[];
 		messages: IMessages[];
 	};
+}
+
+export interface IFriendsList {
+	func: string;
+	code: number;
+	message: string;
+	data: {
+		friendsRequest: IUserData[];
+		friends: IUserData[];
+	};
+}
+
+export interface IMyData {
+	id: number;
+	username: string;
+	email: string;
+	nickname: string;
+	photo: string;
+	tfa: boolean;
+	tfaCode: boolean;
+	isFriend: boolean;
+	isOnline: boolean;
+	wins: number;
+	losses: number;
+	ratio: number;
+	achievement: number;
+	createdAt: string;
+	updatedAt: string;
+	friendsRequest: IUserData[];
+	friends: IUserData[];
+}
+
+export interface IMyDataResponse {
+	func: string;
+	code: number;
+	message: string;
+	data: IMyData;
+}
+
+export interface IErr {
+	code: number;
+	data?: any;
+	message: string;
 }

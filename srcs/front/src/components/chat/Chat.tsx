@@ -13,6 +13,7 @@ import {
 	// DMRoomInfo,
 } from '../../modules/atoms';
 // import SearchInput from './SearchInput';
+
 import { getUserData } from '../../modules/api';
 import ChatNav from './ChatNav';
 import DMRoom from './DMRoom';
@@ -73,7 +74,6 @@ function Chat() {
 		socket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
 			setUsers(response.data);
 		});
-
 		// socket.on('listeningDMRoomInfo', (response: IDMRoomInfo) => {
 		// 	console.log(response, 'listeningDMRoomInfo');
 		// 	setRoomInfo(response);
