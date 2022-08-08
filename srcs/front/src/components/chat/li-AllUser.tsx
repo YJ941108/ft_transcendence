@@ -1,7 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
-import { emitUserAction } from './Emit';
+import { useSetRecoilState } from 'recoil';
+import { emitCreateDMRoom, emitUserAction } from './Emit';
 import { IUserList } from '../../modules/Interfaces/userInterface';
+import { chatContent } from '../../modules/atoms';
 
 const UserPhotoDivStyleC = styled.div`
 	width: 70px;
@@ -46,7 +48,8 @@ const UserStyleC = styled.li`
 	}
 `;
 
-function UserInfo({ nickname, photo, chatSocket, isOnline }: IUserList) {
+function UserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
+	const createDMRoom = useSetRecoilState(chatContent);
 	return (
 		<UserStyleC>
 			<UserPhotoDivStyleC>
@@ -59,6 +62,15 @@ function UserInfo({ nickname, photo, chatSocket, isOnline }: IUserList) {
 					ADD
 				</UserInteractionStyleC>
 				<UserInteractionStyleC>PLAY</UserInteractionStyleC>
+				<UserInteractionStyleC
+					onClick={() => {
+						emitCreateDMRoom(chatSocket, id);
+						createDMRoom('DMRoom');
+					}}
+				>
+					MSG
+				</UserInteractionStyleC>
+				{/* <UserInteractionStyleC onClick={() => createDMRoom('DMRoom')}>DMROOM</UserInteractionStyleC> */}
 			</UserInfoDivStyleC>
 		</UserStyleC>
 	);
