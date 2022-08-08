@@ -268,17 +268,33 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     memoryUser?: ChatUser,
     dm?: DirectMessage,
   ): Promise<void> {
+    const user = await this.usersService.getUserWithoutFriends(memoryUser.id);
+    let another: Users;
+    if (user.nickname === dm.users[0].nickname) {
+      another = dm.users[1];
+    } else {
+      another = dm.users[0];
+    }
+
+    const response = {
+      id: dm.id,
+      me: user,
+      another: another,
+      createdAt: dm.createdAt,
+      message: dm.messages,
+    };
+
     this.server.to(socketId).emit('listeningDMRoomInfo', {
       func: 'listeningDMRoomInfo',
       code: 200,
       message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
-      data: dm,
+      data: response,
     });
     this.logger.log({
       func: 'listeningDMRoomInfo',
       code: 200,
       message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
-      data: dm,
+      data: response,
     });
   }
 
