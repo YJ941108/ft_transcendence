@@ -474,7 +474,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     this.server.to(client.id).emit('listeningChannelList', {
-      func: 'getChannelList',
+      func: 'listeningChannelList',
       code: 200,
       message: `채팅 방 리스트를 보냈습니다.`,
       data: channels,
@@ -538,9 +538,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       /* 방이 비공개가 아니면 모두에게 알려야 함 */
       if (channel.privacy !== 'private') {
         this.server.socketsJoin(roomId);
-        this.server.emit('listeningChannelInfo', channel);
+        this.server.emit('listeningChannelInfo', {
+          func: 'listeningChannelInfo',
+          code: 200,
+          message: `채팅 방 정보를 보냈습니다.`,
+          data: channel,
+        });
       } else {
-        this.server.to(roomId).emit('listeningChannelInfo', channel);
+        this.server.to(roomId).emit('listeningChannelInfo', {
+          func: 'listeningChannelInfo',
+          code: 200,
+          message: `채팅 방 정보를 보냈습니다.`,
+          data: channel,
+        });
       }
     } catch (e) {
       console.log(e);
