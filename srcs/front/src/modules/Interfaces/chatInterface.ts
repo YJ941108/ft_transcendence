@@ -1,4 +1,3 @@
-import { IUser } from './../../components/game/GameInterfaces';
 import IUserData from './userInterface';
 
 export enum ChatState {
@@ -99,4 +98,23 @@ export interface IErr {
 	code: number;
 	data?: any;
 	message: string;
+}
+
+export interface IMessages {
+	id: number;
+	content: string;
+	createdAt: string;
+	author: IUserData;
+}
+
+export interface IDMRoomInfo {
+	func: string;
+	code: number;
+	message: string;
+	data: {
+		id: number;
+		createdAt: string;
+		users: IUserData[];
+		messages: IMessages[];
+	};
 }
