@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Users } from './users.entity';
+import { Users } from './entities/users.entity';
 import { UsersRepository } from './users.repository';
 import { randomString } from 'src/utils/randomString';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -51,7 +51,25 @@ export class UsersService {
    * @param id
    * @returns
    */
-  async getUser(id: number): Promise<Users> {
+  async getUserWithFriends(id: number): Promise<Users> {
+    const user = await this.usersRepository.findOne(
+      { id },
+      {
+        relations: ['friendsRequest', 'friends'],
+      },
+    );
+    if (!user) {
+      throw new BadRequestException('유저가 없습니다.');
+    }
+    return user;
+  }
+
+  /**
+   * 유저 조회
+   * @param id
+   * @returns
+   */
+  async getUserWithoutFriends(id: number): Promise<Users> {
     const user = await this.usersRepository.findOne({ id });
     if (!user) {
       throw new BadRequestException('유저가 없습니다.');
@@ -79,7 +97,7 @@ export class UsersService {
    * @returns
    */
   async setUser(id: number, file: Express.Multer.File, nickname: string | undefined): Promise<Object> {
-    const user = await this.getUser(id);
+    const user = await this.getUserWithFriends(id);
     if (!user) {
       throw new BadRequestException('유저가 없습니다');
     }
@@ -128,7 +146,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne(
       { email },
       {
-        relations: ['friendsRequest', 'friends', 'blockedUsers', 'games'],
+        relations: ['friendsRequest', 'friends'],
       },
     );
 
@@ -145,7 +163,12 @@ export class UsersService {
    * @returns
    */
   async getUserByNickname(nickname: string): Promise<Users> {
-    const user = await this.usersRepository.findOne({ nickname });
+    const user = await this.usersRepository.findOne(
+      { nickname },
+      {
+        relations: ['friendsRequest', 'friends', 'blockedUsers', 'games'],
+      },
+    );
 
     if (!user) {
       throw new BadRequestException('유저가 없습니다.');
@@ -161,7 +184,7 @@ export class UsersService {
    * @returns user object
    */
   async setTwoFactorAuthValid(id: number, tfa: boolean): Promise<Users> {
-    const user = await this.getUser(id);
+    const user = await this.getUserWithFriends(id);
     this.logger.log(`setTwoFactorAuthValid: user = ${user}`);
 
     this.logger.log(`setTwoFactorAuthValid: user.tfa Before = ${user.tfa}`);
@@ -177,7 +200,7 @@ export class UsersService {
    * @returns randomNumber
    */
   async getTwoFactorAuthCode(id: number): Promise<Object> {
-    const user = await this.getUser(id);
+    const user = await this.getUserWithFriends(id);
     this.logger.log(`setTwoFactorAuthValid: user = ${JSON.stringify(user)}`);
 
     const randomNumber: string = randomString(4, '#');
@@ -215,7 +238,7 @@ export class UsersService {
    * @returns randomNumber
    */
   async checkTwoFactorAuthCode(id: number, code: string): Promise<Object> {
-    const user = await this.getUser(id);
+    const user = await this.getUserWithFriends(id);
 
     this.logger.log(`checkTwoFactorAuthCode: user = ${JSON.stringify(user)}`);
 
@@ -237,7 +260,7 @@ export class UsersService {
    * @returns
    */
   updateUserRatio = (user: Users) => {
-    const ratio = Math.round((user.wins / (user.wins + user.losses)) * 100) / 100;
+    const ratio = user.wins - user.losses;
 
     return ratio;
   };
@@ -294,5 +317,34 @@ export class UsersService {
     } else {
       throw new BadRequestException('없는 명령어입니다.');
     }
+  }
+
+  /**
+   * Get a Direct Message between two users
+   *
+   * @param id - The id of the user to which the result will be send back to
+   * @param friendId - The id of the user's friend
+   * @returns A Direct Message
+   */
+  async getDirectMessage(id: string, friendId: string) {
+    const user = await this.usersRepository.findOne(id, {
+      relations: [
+        'directMessages',
+        'directMessages.users',
+        'directMessages.messages',
+        'directMessages.messages.author',
+      ],
+    });
+
+    if (user && user.directMessages) {
+      const directMessage = user.directMessages.find(
+        (directMessage) =>
+          !!directMessage.users.find((user) => {
+            return user.id === parseInt(friendId);
+          }),
+      );
+      if (directMessage) return directMessage;
+    }
+    throw new Error('User sent no DM');
   }
 }

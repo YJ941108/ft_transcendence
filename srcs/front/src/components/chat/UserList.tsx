@@ -2,54 +2,51 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useRecoilState } from 'recoil';
 import { Socket } from 'socket.io-client';
-import UserInfo from './UserInfo';
+import UserInfo from './li-AllUser';
 import { chatUserList } from '../../modules/atoms';
-import IUser from '../../modules/Interfaces/userInterface';
+import IUserData from '../../modules/Interfaces/userInterface';
 
 const UserListStyleC = styled.ul`
 	/* min-height: 600px; */
 	/* max-height: 600px; */
-	height: 92%;
+	height: 70%;
 	overflow-y: scroll;
 	background-color: black;
 	border-left: 2px solid white;
 `;
-
-// interface IUser {
-// 	access_token: string;
-// 	created_at: string;
-// 	email: string;
-// 	nickname: string;
-// 	photo: string;
-// 	updated_at: string;
-// 	username: string;
-// 	friends: number[];
-// 	friends_blocked: number[];
-// 	friends_request: number[];
-// 	tfa: boolean;
-// 	id: number;
-// 	jwt: string;
-// 	refresh_token: string;
-// }
 
 interface ISocket {
 	chatSocket: Socket;
 }
 
 function UserList({ chatSocket }: ISocket) {
-	const [users, setUsers] = useRecoilState<IUser[]>(chatUserList);
+	const [users, setUsers] = useRecoilState<IUserData[]>(chatUserList);
 
 	useEffect(() => {
 		if (chatSocket) {
-			chatSocket.on('listeningGetUsers', (response: { data: IUser[] }) => {
+			chatSocket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
+				console.log(response, 'listeningGetUsers');
 				setUsers(response.data);
 			});
+			return () => {
+				chatSocket.off('listeningGetUsers');
+			};
 		}
+		return () => {};
 	}, [chatSocket]);
+
 	return (
 		<UserListStyleC>
-			{users?.map((element: IUser) => {
-				return <UserInfo key={element.id} nickname={element.nickname} photo={element.photo} />;
+			{users?.map((element: IUserData) => {
+				return (
+					<UserInfo
+						key={element.id}
+						nickname={element.nickname}
+						photo={element.photo}
+						chatSocket={chatSocket}
+						isOnline={element.isOnline}
+					/>
+				);
 			})}
 		</UserListStyleC>
 	);

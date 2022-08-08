@@ -11,7 +11,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Users } from './users.entity';
+import { Users } from './entities/users.entity';
 import { UsersRepository } from './users.repository';
 import { UsersService } from './users.service';
 
@@ -66,15 +66,6 @@ export class UsersGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    */
   async handleDisconnect(@ConnectedSocket() client: Socket): Promise<void> {
     this.logger.log(`handleDisconnect: client.id ${client.id}`);
-    const user = await this.usersRepository.findOne({ socketId: client.id });
-
-    if (!user) {
-      return;
-    } else {
-      user.socketId = null;
-      this.logger.log(`handleDisconnect: offline`);
-      user.save();
-    }
   }
 
   /**
@@ -90,7 +81,6 @@ export class UsersGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       this.handleDisconnect(client);
     }
     this.logger.log(`handleOnline: online`);
-    user.socketId = client.id;
     user.save();
     return user;
   }

@@ -7,7 +7,7 @@ import { GamesService } from './games.service';
 @Controller('games')
 @UseGuards(AuthGuard())
 export class GamesController {
-  constructor(private usersService: GamesService) {}
+  constructor(private gamesService: GamesService) {}
 
   /**
    * 유저 정보 반환
@@ -16,7 +16,7 @@ export class GamesController {
    */
   @Get()
   async findAll(): Promise<Games[]> {
-    const users = await this.usersService.findAll();
+    const users = await this.gamesService.findAll();
     return users;
   }
 
@@ -27,7 +27,7 @@ export class GamesController {
    */
   @Get(':id')
   async findbyUsers(@Param('id') id: number): Promise<Games[]> {
-    const users = await this.usersService.find(id);
+    const users = await this.gamesService.find(id);
     return users;
   }
 }

@@ -10,6 +10,10 @@ enum OpenChatVisibility {
 	protectedPassword = 'protectedPassword',
 }
 
+interface INewOpenChatRoomProps {
+	chatSocket: any;
+}
+
 interface IFormInput {
 	openChatName: string;
 	openChatVisibility: OpenChatVisibility;
@@ -21,11 +25,17 @@ const NewOpenChatRoomC = styled.div`
 	height: 100%;
 `;
 
-function NewOpenChatRoom() {
+function NewOpenChatRoom({ chatSocket }: INewOpenChatRoomProps) {
 	const { register, handleSubmit } = useForm<IFormInput>();
 	const [isPassword, setIsPassword] = useState(false);
 	const setContent = useSetRecoilState(chatContent);
-	const onSubmit = (data: IFormInput) => console.log(data);
+	const onSubmit = (data: IFormInput) => {
+		chatSocket.emit('createChannel', data);
+	};
+	const openChatVisibilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+		if (event.target.value === 'protected-password') setIsPassword(!isPassword);
+		else setIsPassword(!isPassword);
+	};
 	return (
 		<NewOpenChatRoomC>
 			<h1>Open Chat</h1>
@@ -34,12 +44,10 @@ function NewOpenChatRoom() {
 			</button>
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<input {...register('openChatName')} />
-				<select {...register('openChatVisibility')}>
+				<select {...register('openChatVisibility')} onChange={openChatVisibilityChange}>
 					<option value="private">private</option>
 					<option value="public">public</option>
-					<option value="protected-password" onClick={() => setIsPassword(!isPassword)}>
-						protected-password
-					</option>
+					<option value="protected-password">protected-password</option>
 				</select>
 				{isPassword ? (
 					<div>

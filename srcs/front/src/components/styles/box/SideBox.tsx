@@ -8,7 +8,7 @@ interface ISideBoxProps {
 
 const SideBoxC = styled.div`
 	width: 20rem;
-	height: 100vh;
+	height: 100%;
 `;
 
 const defaultProps = {
