@@ -10,6 +10,7 @@ import ChatNav from './ChatNav';
 import UserList from './UserList';
 import OpenChatList from './OpenChatList';
 import FriendsList from './FriendsList';
+import NewOpenChatRoom from './openchat/NewOpenChatRoom';
 import DirectMessageList from './DirectMessageList';
 import IUserData from '../../modules/Interfaces/userInterface';
 import { IMyData, IMyDataResponse, IErr } from '../../modules/Interfaces/chatInterface';
@@ -22,6 +23,7 @@ const ChatC = styled.div`
 `;
 interface ISelectComponent {
 	[index: string]: React.ReactNode;
+	NewOpenChatRoom: React.ReactNode;
 	UserList: React.ReactNode;
 	OpenChatList: React.ReactNode;
 	FriendsList: React.ReactNode;
@@ -40,6 +42,7 @@ function Chat() {
 		OpenChatList: <OpenChatList />,
 		FriendsList: <FriendsList chatSocket={socket} />,
 		DirectMessageList: <DirectMessageList />,
+		NewOpenChatRoom: <NewOpenChatRoom chatSocket={socket} />,
 	};
 
 	useEffect(() => {
