@@ -22,10 +22,12 @@ import UserList from './UserList';
 import OpenChatList from './openchat/OpenChatList';
 import FriendsList from './FriendsList';
 import NewOpenChatRoom from './openchat/NewOpenChatRoom';
+import OpenChatRoom from './openchat/OpenChatRoom';
 import DirectMessageList from './DirectMessageList';
 import IUserData from '../../modules/Interfaces/userInterface';
 import { IMyData, IMyDataResponse, IErr, IChannel } from '../../modules/Interfaces/chatInterface';
 import { emitJoinChat } from './Emit';
+import OpenChatInvite from './openchat/OpenChatInvite';
 
 const ChatC = styled.div`
 	width: 300px;
@@ -42,6 +44,8 @@ interface ISelectComponent {
 	FriendsList: React.ReactNode;
 	DirectMessageList: React.ReactNode;
 	DMRoom: React.ReactNode;
+	OpenChatRoom: React.ReactNode;
+	OpenChatInvite: React.ReactNode;
 }
 function Chat() {
 	const { isLoading, data: userData, error } = useQuery<IMyData>('user', getUserData);
@@ -62,6 +66,8 @@ function Chat() {
 		DirectMessageList: <DirectMessageList chatSocket={socket} />,
 		DMRoom: <DMRoom chatSocket={socket} />,
 		NewOpenChatRoom: <NewOpenChatRoom chatSocket={socket} />,
+		OpenChatRoom: <OpenChatRoom chatSocket={socket} />,
+		OpenChatInvite: <OpenChatInvite chatSocket={socket} />,
 	};
 
 	useEffect(() => {
@@ -101,6 +107,7 @@ function Chat() {
 			socket.off('listeningGetUsers');
 			socket.off('listeningDMRoomInfo');
 			socket.off('listeningDMRoomList');
+			socket.off('listeningChannelList');
 			socket.off('chatError');
 		};
 	}, [socket, isLoading, error, userData]);

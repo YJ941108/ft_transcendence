@@ -27,12 +27,14 @@ const OpenChatListC = styled.ul`
 function OpenChatList({ chatSocket }: any) {
 	const [channelList, setChannelList] = useRecoilState<IChannel[]>(channelListInfo);
 	useEffect(() => {
-		console.log(channelList, 'channelList');
 		chatSocket.on('listeningChannelInfo', (channel: IChannel) => {
 			setChannelList((curr: IChannel[]) => {
 				return [...curr, channel];
 			});
 		});
+		return () => {
+			chatSocket.off('listeningChannelInfo');
+		};
 	}, [chatSocket]);
 	return (
 		<OpenChatListStyleC>
