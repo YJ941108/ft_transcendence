@@ -480,7 +480,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
   }
 
-  async listeningChannelInfo(client: Socket, channel: Channel, roomId?: string) {
+  async listeningChannelInfo(channel: Channel, roomId?: string) {
     if (!roomId) {
       this.server.emit('listeningChannelInfo', {
         func: 'listeningChannelInfo',
@@ -625,9 +625,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       /* 방이 비공개가 아니면 모두에게 알려야 함 */
       if (channel.privacy !== 'private') {
         this.server.socketsJoin(roomId);
-        this.listeningChannelInfo(client, channel);
+        this.listeningChannelInfo(channel);
       } else {
-        this.listeningChannelInfo(client, channel, roomId);
+        this.listeningChannelInfo(channel, roomId);
       }
     } catch (e) {
       this.chatError(client, e);
@@ -741,29 +741,32 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     try {
-      const channel = await this.chatService.getChannelData(channelId);
       if (await this.chatService.userIsInChannel(channelId, userId)) {
         return this.returnMessage('joinChannel', 200, '이미 채널에 들어왔습니다');
       }
 
+      /** 채널 조인 */
+      const channel = await this.chatService.getChannelData(channelId);
       const dbAnother = await this.chatService.addUserToChannel(channel, userId);
       const message = await this.chatService.addMessageToChannel({
         content: `${dbAnother.username} joined group`,
         channel,
       });
       const roomId = `channel_${channelId}`;
-
       this.userJoinRoom(client.id, roomId);
 
-      /* If the channel is visible to everyone, inform every client */
+      /** 알리기 */
       if (channel.privacy !== 'private') {
-        this.server.emit('listeningChannelInfo', channel);
+        this.listeningChannelInfo(channel, roomId);
       }
+
+      /** 알리기 */
       const memoryAnother = this.chatUsers.getUserByNickname(dbAnother.nickname);
       if (memoryAnother) {
         this.listeningChannelList(memoryAnother.socketId, dbAnother.id);
       }
-      return this.returnMessage('joinChannel', 200, '채널에 들어왔습니다', channel);
+
+      return this.returnMessage('joinChannel', 200, '채널에 들어왔습니다');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
