@@ -41,6 +41,7 @@ function UserList({ chatSocket }: ISocket) {
 				return (
 					<UserInfo
 						key={element.id}
+						id={element.id}
 						nickname={element.nickname}
 						photo={element.photo}
 						chatSocket={chatSocket}

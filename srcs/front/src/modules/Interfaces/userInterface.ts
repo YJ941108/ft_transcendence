@@ -11,6 +11,7 @@ export default interface IUserData {
 	wins: number;
 	losses: number;
 	ratio: number;
+	isFriend: boolean;
 	isOnline: boolean;
 	achievement: number;
 	createdAt: string;
@@ -18,6 +19,7 @@ export default interface IUserData {
 }
 
 export interface IUserList {
+	id: number;
 	nickname: string;
 	photo: string;
 	chatSocket: Socket;

@@ -45,6 +45,7 @@ function FriendsList({ chatSocket }: ISocket) {
 				return (
 					<RequestUserInfo
 						key={element.id}
+						id={element.id}
 						nickname={element.nickname}
 						photo={element.photo}
 						chatSocket={chatSocket}
@@ -56,6 +57,7 @@ function FriendsList({ chatSocket }: ISocket) {
 				return (
 					<FriendUserInfo
 						key={element.id}
+						id={element.id}
 						nickname={element.nickname}
 						photo={element.photo}
 						chatSocket={chatSocket}

@@ -1,5 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
+import { useRecoilState } from 'recoil';
+import { Socket } from 'socket.io-client';
+import IUserData from '../../modules/Interfaces/userInterface';
+import { DMRoomList } from '../../modules/atoms';
+import DirectMessageInfo from './DirectMessage';
 
 const DirectMessageListC = styled.ul`
 	list-style: none;
@@ -12,10 +17,42 @@ const DirectMessageListC = styled.ul`
 	overflow-y: scroll;
 `;
 
-// interface IDirectMessageListProps {}
+interface ISocket {
+	chatSocket: Socket;
+}
 
-function DirectMessageList() {
-	return <DirectMessageListC />;
+function DirectMessageList({ chatSocket }: ISocket) {
+	const [rooms, setRooms] = useRecoilState<IUserData[]>(DMRoomList);
+
+	useEffect(() => {
+		if (chatSocket) {
+			chatSocket.on('listeningDMRoomList', (response: { data: IUserData[] }) => {
+				console.log(response, 'listeningDMRoomList');
+				setRooms(response.data);
+			});
+			return () => {
+				chatSocket.off('listeningDMRoomList');
+			};
+		}
+		return () => {};
+	}, [chatSocket]);
+
+	return (
+		<DirectMessageListC>
+			{rooms?.map((element: IUserData) => {
+				return (
+					<DirectMessageInfo
+						key={element.id}
+						id={element.id}
+						nickname={element.nickname}
+						photo={element.photo}
+						chatSocket={chatSocket}
+						isOnline={element.isOnline}
+					/>
+				);
+			})}
+		</DirectMessageListC>
+	);
 }
 
 export default DirectMessageList;
