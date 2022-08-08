@@ -46,7 +46,8 @@ const FriendUserStyleC = styled.li`
 	}
 `;
 
-function FriendUserInfo({ nickname, photo, chatSocket, isOnline }: IUserList) {
+function FriendUserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
+	console.log(id);
 	return (
 		<FriendUserStyleC>
 			<UserPhotoDivStyleC>

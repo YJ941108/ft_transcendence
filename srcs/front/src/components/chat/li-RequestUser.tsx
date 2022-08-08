@@ -46,7 +46,8 @@ const RequestUserStyleC = styled.li`
 	}
 `;
 
-function RequestUserInfo({ nickname, photo, chatSocket, isOnline }: IUserList) {
+function RequestUserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
+	console.log(id);
 	return (
 		<RequestUserStyleC>
 			<UserPhotoDivStyleC>
