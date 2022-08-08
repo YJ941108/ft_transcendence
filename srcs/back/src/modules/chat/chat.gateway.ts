@@ -15,6 +15,7 @@ import { Server, Socket } from 'socket.io';
 import { UserStatus } from 'src/enums/games.enum';
 import { CreateChannelDto } from '../channel/dto/create-channel.dto';
 import { UpdateChannelDto } from '../channel/dto/update-channel.dto';
+import { Channel } from '../channel/entities/channel.entity';
 import { CreateDirectMessageDto } from '../direct-message/dto/create-direct-message.dto';
 import { DirectMessage } from '../direct-message/entities/direct-message.entity';
 import { User } from '../games/class/user.class';
@@ -442,6 +443,29 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
    * Channels
    */
   async listeningChannelList(client: Socket, dbId?: number) {
@@ -453,6 +477,29 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       message: `채팅 방 리스트를 보냈습니다.`,
       data: channels,
     });
+  }
+
+  async listeningChannelInfo(client: Socket, channel: Channel, roomId?: string) {
+    if (!roomId) {
+      this.server.emit('listeningChannelInfo', {
+        func: 'listeningChannelInfo',
+        code: 200,
+        message: `채팅 방 정보를 보냈습니다.`,
+        data: channel,
+      });
+    } else {
+      this.server.to(roomId).emit('listeningChannelInfo', {
+        func: 'listeningChannelInfo',
+        code: 200,
+        message: `채팅 방 정보를 보냈습니다.`,
+        data: channel,
+      });
+    }
+  }
+
+  async chatError(client: Socket, error: any) {
+    this.logger.log(client.id, error);
+    this.server.to(client.id).emit('chatError', error.message);
   }
 
   /**
@@ -506,6 +553,41 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
    * createChannel 방 생성
    * updateChannel 방 업데이트
    * deleteChannel 방 삭제
@@ -522,6 +604,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     try {
+      /** 방 생성 */
       const dbUser = await this.usersService.getUserWithoutFriends(data.userId);
       const createChannelDto: CreateChannelDto = {
         name: data.name,
@@ -530,31 +613,23 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         users: [dbUser],
       };
       const channel = await this.chatService.createChannel(createChannelDto);
+
+      /** 방 조인 */
       const roomId = `channel_${channel.id}`;
       this.userJoinRoom(client.id, roomId);
 
+      /** 방 전체 정보 보내기 */
       await this.listeningChannelList(client, memoryUser.id);
 
       /* 방이 비공개가 아니면 모두에게 알려야 함 */
       if (channel.privacy !== 'private') {
         this.server.socketsJoin(roomId);
-        this.server.emit('listeningChannelInfo', {
-          func: 'listeningChannelInfo',
-          code: 200,
-          message: `채팅 방 정보를 보냈습니다.`,
-          data: channel,
-        });
+        this.listeningChannelInfo(client, channel);
       } else {
-        this.server.to(roomId).emit('listeningChannelInfo', {
-          func: 'listeningChannelInfo',
-          code: 200,
-          message: `채팅 방 정보를 보냈습니다.`,
-          data: channel,
-        });
+        this.listeningChannelInfo(client, channel, roomId);
       }
     } catch (e) {
-      console.log(e);
-      this.server.to(client.id).emit('chatError', e.message);
+      this.chatError(client, e);
     }
   }
 
@@ -607,6 +682,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
    * openChannel 방 열기
    * joinChannel 방 접속
    * leaveChannel 방 떠나기
@@ -734,6 +831,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
    * 채널에 메시지 보내기
    */
   @UseFilters(new BadRequestTransformationFilter())
@@ -760,6 +879,24 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
    * 채널에 규칙 설정
    */
   @SubscribeMessage('makeAdmin')
@@ -936,6 +1073,24 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
    * Game-related
    */
   @SubscribeMessage('userGameStatus')

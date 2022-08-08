@@ -94,7 +94,7 @@ export class ChannelService {
 
   findAll() {
     return this.channelsRepository.find({
-      relations: ['owner', 'users', 'messages', 'messages.author'],
+      relations: ['owner', 'users', 'admins', 'messages', 'messages.author'],
     });
   }
 
