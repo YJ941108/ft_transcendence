@@ -28,6 +28,7 @@ function NewOpenChatRoom({ chatSocket }: any) {
 	const onSubmit = (data: IFormInput) => {
 		console.log(chatSocket);
 		console.log(data);
+		console.log(data);
 	};
 	const openChatVisibilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
 		if (event.target.value === 'protected-password') setIsPassword(!isPassword);
