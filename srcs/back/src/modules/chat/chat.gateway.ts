@@ -339,7 +339,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       }
       this.userJoinRoom(client.id, `dm_${dm.id}`);
       this.listeningDMRoomInfo(client.id, 'createDMRoom', memoryUser, dm);
-      this.listeningDMRoomList(client.id, 'listeningDMRoomList', memoryUser);
+
+      const memoryUsers = this.chatUsers.getUsers();
+      for (let i = 0; i < memoryUsers.length; i++) {
+        this.listeningDMRoomList(memoryUsers[i].socketId, 'listeningDMRoomList', memoryUser);
+      }
       return this.returnMessage('createDMRoom', 200, 'listeningDMRoomInfo, listeningDMRoomList');
     } catch (e) {
       console.log(e);
