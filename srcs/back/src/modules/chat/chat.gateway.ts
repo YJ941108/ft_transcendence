@@ -185,6 +185,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       const dmList = await this.usersService.getUserWithDirectMessages(memoryUser.id);
       await this.listeningDMRoomList(client.id, 'joinChat', memoryUser);
+
       await this.listeningChannelList(client.id, memoryUser.id);
 
       /** 결과 반환 */
@@ -484,6 +485,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
   async listeningChannelList(clientId?: string, dbUserId?: number) {
     const channels = await this.chatService.getUserChannels(dbUserId);
+    for (let i = 0; i < channels.length; i++) {
+      const roomId = `channel_${channels[i].id}`;
+      this.userJoinRoom(clientId, roomId);
+    }
 
     if (!clientId) {
       this.server.emit('listeningChannelList', {
@@ -711,6 +716,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         for (let i = 0; i < memoryUsers.length; i++) {
           this.listeningChannelList(memoryUsers[i].socketId, memoryUsers[i].id);
         }
+      } else {
+        const memoryUsers = this.chatUsers.getUsers();
+        for (let i = 0; i < memoryUsers.length; i++) {
+          this.listeningChannelList(roomId, memoryUsers[i].id);
+        }
       }
     } catch (e) {
       this.chatError(client, e);
@@ -826,6 +836,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       let channel = await this.chatService.getChannelData(channelId);
       const roomId = `channel_${channelId}`;
       if (await this.chatService.userIsInChannel(channelId, userId)) {
+        if (memoryUser.id !== userId) {
+          throw Error('이미 초대했습니다.');
+        }
+
         this.userJoinRoom(client.id, roomId);
         this.listeningChannelInfo(channel, roomId);
         return this.returnMessage('joinChannel', 200, '이미 채널에 들어왔습니다');
@@ -884,10 +898,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       /* If password is wrong, raise an Error */
       await this.chatService.checkChannelPassword(channelId, password);
-      const isInChan = await this.chatService.userIsInChannel(channelId, userId);
-      if (!isInChan) {
-        this.handleJoinChannel(client, { channelId, userId });
-      }
+      this.handleJoinChannel(client, { channelId, userId });
     } catch (e) {
       this.chatError(client, e);
     }
@@ -898,8 +909,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @ConnectedSocket() client: Socket,
     @MessageBody() { channelId, userId }: { channelId: number; userId: number },
   ) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
     }
 
@@ -909,20 +920,31 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         return this.returnMessage('leaveChannel', 400, '채널에 유저가 없습니다');
       }
 
-      const user = await this.chatService.removeUserFromChannel(channel, userId);
+      const dbUser = await this.chatService.removeUserFromChannel(channel, userId);
       const message = await this.chatService.addMessageToChannel({
-        content: `${user.username} left group`,
+        content: `${dbUser.username} left group`,
         channel,
       });
       const roomId = `channel_${channelId}`;
 
       this.userLeaveRoom(client.id, roomId);
-      this.server.to(roomId).emit('leftChannel', { message, userId });
+      this.listeningChannelList(memoryUser.socketId, memoryUser.id);
 
       /* If the channel is visible to everyone, inform every client */
       if (channel.privacy !== 'private') {
-        this.server.emit('peopleCountChanged', channel);
+        this.server.socketsJoin(roomId);
+        const memoryUsers = this.chatUsers.getUsers();
+        for (let i = 0; i < memoryUsers.length; i++) {
+          this.listeningChannelList(memoryUsers[i].socketId, memoryUsers[i].id);
+        }
       }
+      // else {
+      //   const memoryAnother = this.chatUsers.getUserByNickname(dbAnother.nickname);
+      //   if (memoryAnother) {
+      //     this.listeningChannelList(memoryAnother.socketId, dbAnother.id);
+      //   }
+      // }
+
       return this.returnMessage('leaveChannel', 200, '채널에서 나왔습니다.');
     } catch (e) {
       this.chatError(client, e);
