@@ -671,6 +671,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       } else {
         this.listeningChannelList(memoryUser.socketId, memoryUser.id);
       }
+
+      return this.returnMessage('createChannel', 200, '채널에서 나왔습니다.', channel, true);
     } catch (e) {
       this.chatError(client, e);
     }
