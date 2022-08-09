@@ -891,7 +891,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
-  @SubscribeMessage('joinChannelProtected')
+  @SubscribeMessage('joinProtected')
   async handleJoinProtectedChannel(
     @ConnectedSocket() client: Socket,
     @MessageBody()
@@ -907,7 +907,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ) {
     let memoryUser = this.chatUsers.getUserBySocketId(client.id);
     if (!memoryUser) {
-      return this.returnMessage('joinChannelProtected', 400, '채팅 소켓에 유저가 없습니다');
+      return this.returnMessage('joinProtected', 400, '채팅 소켓에 유저가 없습니다');
     }
 
     try {
@@ -916,7 +916,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.handleJoinChannel(client, { channelId, userId });
     } catch (e) {
       this.chatError(client, e);
-      return this.returnMessage('joinChannelProtected', 400, '비밀번호가 틀립니다.');
+      return this.returnMessage('joinProtected', 400, '비밀번호가 틀립니다.');
     }
   }
 
