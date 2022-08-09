@@ -672,7 +672,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         this.listeningChannelList(memoryUser.socketId, memoryUser.id);
       }
 
-      return this.returnMessage('createChannel', 200, '채널에서 나왔습니다.', channel, true);
+      return this.returnMessage('createChannel', 200, '채널 생성되었습니다.', channel, true);
     } catch (e) {
       this.chatError(client, e);
     }
@@ -733,6 +733,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           this.listeningChannelList(roomId, memoryUsers[i].id);
         }
       }
+
+      return this.returnMessage('updateChannel', 200, '채널 수정되었습니다.', channel, true);
     } catch (e) {
       this.chatError(client, e);
     }
