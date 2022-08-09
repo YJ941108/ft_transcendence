@@ -4,6 +4,7 @@ import { useQuery } from 'react-query';
 import Toggle from './Toggle';
 import getUserData from '../../modules/api';
 import ProfileModal from './ProfileModal';
+import { IUser } from './UserInterface';
 
 const RootStyled = styled.div`
 	grid-area: ProfileCard;
@@ -21,7 +22,6 @@ const ProfileCardBox = styled.div`
 	display: inline-block;
 	color: white;
 	padding: 20px;
-	height: 250px;
 	width: 188px;
 	border-radius: 10px;
 	text-align: center;
@@ -40,26 +40,9 @@ const ProfileCardBox = styled.div`
 		width: 150px;
 		height: 150px;
 		margin-bottom: 0.4rem;
-		background-color: var(--white);
+		background-color: white;
 	}
 `;
-
-interface IUser {
-	access_token: string;
-	created_at: string;
-	email: string;
-	nickname: string;
-	photo: string;
-	updated_at: string;
-	username: string;
-	friends: number[];
-	friends_blocked: number[];
-	friends_request: number[];
-	tfa: boolean;
-	id: number;
-	jwt: string;
-	refresh_token: string;
-}
 
 function ProfileCard() {
 	const { isLoading, data, error } = useQuery<IUser>('user', getUserData);
