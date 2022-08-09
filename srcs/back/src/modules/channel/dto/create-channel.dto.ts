@@ -35,7 +35,7 @@ export class CreateChannelDto {
   @IsOptional()
   @IsNumber()
   @IsIn([1, 5, 15])
-  readonly restrictionDuration?: number;
+  restrictionDuration?: number;
 
   @IsNotEmpty()
   readonly owner: Users;
