@@ -104,7 +104,7 @@ export class ChatService {
   }
 
   async deleteChannel(channelId: number) {
-    return await this.channelService.remove(channelId.toString());
+    return await this.channelService.remove(channelId);
   }
 
   async addMessageToChannel(createMessageDto: CreateMessageDto) {

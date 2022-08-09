@@ -836,10 +836,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       let channel = await this.chatService.getChannelData(channelId);
       const roomId = `channel_${channelId}`;
       if (await this.chatService.userIsInChannel(channelId, userId)) {
+        /** 내가 다른 사람을 초대 했는데 이미 했다면 */
         if (memoryUser.id !== userId) {
           throw Error('이미 초대했습니다.');
         }
 
+        /** 이미 초대가 됐는데 리스트에서 접속한다면 */
         this.userJoinRoom(client.id, roomId);
         this.listeningChannelInfo(channel, roomId);
         return this.returnMessage('joinChannel', 200, '이미 채널에 들어왔습니다');
@@ -915,35 +917,37 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     try {
-      const channel = await this.chatService.getChannelData(channelId);
+      let channel = await this.chatService.getChannelData(channelId);
+
+      /** 채널에 이미 유저가 없는 경우 */
       if (!(await this.chatService.userIsInChannel(channelId, userId))) {
         return this.returnMessage('leaveChannel', 400, '채널에 유저가 없습니다');
       }
 
+      /** 채널에서 유저 삭제 */
       const dbUser = await this.chatService.removeUserFromChannel(channel, userId);
+      const roomId = `channel_${channelId}`;
+      this.userLeaveRoom(client.id, roomId);
+
+      /** 나간 유저에게 리스트 돌려주기 */
       const message = await this.chatService.addMessageToChannel({
         content: `${dbUser.username} left group`,
         channel,
       });
-      const roomId = `channel_${channelId}`;
-
-      this.userLeaveRoom(client.id, roomId);
       this.listeningChannelList(memoryUser.socketId, memoryUser.id);
 
-      /* If the channel is visible to everyone, inform every client */
+      /** 다른 사람에게 공개적으로 알려줄 때 */
       if (channel.privacy !== 'private') {
         this.server.socketsJoin(roomId);
-        const memoryUsers = this.chatUsers.getUsers();
-        for (let i = 0; i < memoryUsers.length; i++) {
-          this.listeningChannelList(memoryUsers[i].socketId, memoryUsers[i].id);
-        }
       }
-      // else {
-      //   const memoryAnother = this.chatUsers.getUserByNickname(dbAnother.nickname);
-      //   if (memoryAnother) {
-      //     this.listeningChannelList(memoryAnother.socketId, dbAnother.id);
-      //   }
-      // }
+
+      /** 방에 속한 사람에게 리스트 보내주기 */
+      const memoryUsers = this.chatUsers.getUsers();
+      channel = await this.chatService.getChannelData(channelId);
+      for (let i = 0; i < memoryUsers.length; i++) {
+        this.listeningChannelList(roomId, memoryUsers[i].id);
+        this.listeningChannelInfo(channel, roomId);
+      }
 
       return this.returnMessage('leaveChannel', 200, '채널에서 나왔습니다.');
     } catch (e) {

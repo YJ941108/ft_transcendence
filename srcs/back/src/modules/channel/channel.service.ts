@@ -154,7 +154,7 @@ export class ChannelService {
     return this.channelsRepository.save(channel);
   }
 
-  async remove(id: string) {
+  async remove(id: number) {
     const channel = await this.channelsRepository.findOne(id);
 
     if (!channel) {
