@@ -563,7 +563,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       const channel = await this.chatService.getChannelData(channelId);
       this.userJoinRoom(client.id, `channel_${channel.id}`);
-      this.server.to(client.id).emit(``);
+
+      this.server.to(client.id).emit('listeningChannelInfo', {
+        func: 'listeningChannelInfo',
+        code: 200,
+        message: `채팅 방 정보를 보냈습니다.`,
+        data: channel,
+      });
+
       return this.returnMessage('getChannel', 200, '채널 정보', channel, false);
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
@@ -746,6 +753,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         if (await this.chatService.userIsInChannel(channelId, memoryUsers[i].id))
           this.chatUsers.removeRoomFromUser(memoryUsers[i].socketId, roomId);
       }
+
+      /** 나간 것 알리기 */
       this.server.to(roomId).emit('listeningChannelDeleted', {
         func: 'listeningChannelDeleted',
         code: 200,
@@ -754,6 +763,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           deleteChannelId: channelId,
         },
       });
+
       this.server.socketsLeave(roomId);
       channel = await this.chatService.deleteChannel(channelId);
 
