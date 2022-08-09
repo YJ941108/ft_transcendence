@@ -29,8 +29,8 @@ const UserStyleC = styled.li`
 `;
 
 const UserPhotoStyleC = styled.img`
-	width: 100%;
-	height: 100%;
+	width: 20px;
+	height: 20px;
 	object-fit: cover;
 	object-position: center;
 `;
@@ -43,21 +43,20 @@ function OpenChatInvite({ chatSocket }: any) {
 	const userList = useRecoilValue<IUserData[]>(chatUserList);
 	const channelInfo = useRecoilValue<IChannel>(channelInfoData);
 	const setChatContent = useSetRecoilState(chatContent);
-	const onInviteUser = (userIdData: number) => {
-		console.log('here');
+	const onInviteUser = (userData: IUserData) => {
 		chatSocket.emit('joinChannel', {
 			channelId: channelInfo.id,
-			userId: userIdData,
+			userId: userData.id,
 		});
 		setChatContent('OpenChatRoom');
 	};
 	return (
 		<div>
-			<h1>OpenChatInvite</h1>
+			<h1>Invite</h1>
 			<UserListStyleC>
 				{userList?.map((user: IUserData) => {
 					return (
-						<UserStyleC key={user.id} onClick={() => onInviteUser(user.id)}>
+						<UserStyleC key={user.id} onClick={() => onInviteUser(user)}>
 							<UserPhotoStyleC src={user.photo} alt="user" />
 							<UserNickNameStyleC>{user.nickname}</UserNickNameStyleC>
 						</UserStyleC>

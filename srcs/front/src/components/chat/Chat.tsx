@@ -61,7 +61,7 @@ function Chat() {
 
 	const selectComponent: ISelectComponent = {
 		UserList: <UserList chatSocket={socket} />,
-		OpenChatList: <OpenChatList chatSocket={socket} />,
+		OpenChatList: <OpenChatList />,
 		FriendsList: <FriendsList chatSocket={socket} />,
 		DirectMessageList: <DirectMessageList chatSocket={socket} />,
 		DMRoom: <DMRoom chatSocket={socket} />,
@@ -95,11 +95,11 @@ function Chat() {
 			setRooms(response.data);
 		});
 		socket.on('listeningChannelList', (response: { data: IChannel[] }) => {
-			console.log(response, 'listeningChannelList');
+			console.log('listeningChannelList');
 			setChannelList(response.data);
 		});
-		socket.on('chatError', (response: IErr) => {
-			alert(response.message);
+		socket.on('chatError', (message: IErr) => {
+			alert(message);
 		});
 		return () => {
 			socket.off('connect');

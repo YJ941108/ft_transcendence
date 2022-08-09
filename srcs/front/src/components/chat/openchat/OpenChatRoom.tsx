@@ -1,14 +1,21 @@
 import React, { useEffect } from 'react';
-import { useRecoilState, useSetRecoilState } from 'recoil';
+import { useSetRecoilState } from 'recoil';
 import { channelInfoData, chatContent } from '../../../modules/atoms';
+import { IChannel } from '../../../modules/Interfaces/chatInterface';
 
 function OpenChatRoom({ chatSocket }: any) {
-	const [channelInfo, setChannelInfo] = useRecoilState(channelInfoData);
+	const setChannelInfo = useSetRecoilState(channelInfoData);
 	const setChatContent = useSetRecoilState(chatContent);
+
 	useEffect(() => {
-		console.log(chatSocket);
-		setChannelInfo(channelInfo);
-	}, []);
+		chatSocket.on('listeningChannelInfo', (channel: IChannel) => {
+			setChannelInfo(channel);
+			console.log(channel, 'listeningChannelInfo');
+		});
+		return () => {
+			chatSocket.off('listeningChannelInfo');
+		};
+	}, [chatSocket]);
 	const joinChat = () => {
 		setChatContent('OpenChatInvite');
 	};
