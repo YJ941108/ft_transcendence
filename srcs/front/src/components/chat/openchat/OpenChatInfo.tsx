@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useSetRecoilState } from 'recoil';
 import { IChannel } from '../../../modules/Interfaces/chatInterface';
+import { channelInfoData, chatContent } from '../../../modules/atoms';
 
 const OpenChatStyleC = styled.li`
 	display: flex;
@@ -29,8 +31,14 @@ interface IOpenChatInfoProps {
 }
 
 function OpenChatInfo({ channelInfo }: IOpenChatInfoProps) {
+	const setChannelInfo = useSetRecoilState(channelInfoData);
+	const setContent = useSetRecoilState(chatContent);
+	const onClick = () => {
+		setChannelInfo(channelInfo);
+		setContent('OpenChatRoom');
+	};
 	return (
-		<OpenChatStyleC>
+		<OpenChatStyleC onClick={onClick}>
 			<OpenChatDivStyleC>
 				<p>{channelInfo.name}</p>
 				<p>{channelInfo.privacy}</p>

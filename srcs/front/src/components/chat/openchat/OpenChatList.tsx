@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { channelListInfo } from '../../../modules/atoms';
 import OpenChatNewButton from './OpenChatNewButton';
 import { IChannel } from '../../../modules/Interfaces/chatInterface';
@@ -24,16 +24,8 @@ const OpenChatListC = styled.ul`
 	overflow-y: scroll;
 `;
 
-function OpenChatList({ chatSocket }: any) {
-	const [channelList, setChannelList] = useRecoilState<IChannel[]>(channelListInfo);
-	useEffect(() => {
-		console.log(channelList, 'channelList');
-		chatSocket.on('listeningChannelInfo', (channel: IChannel) => {
-			setChannelList((curr: IChannel[]) => {
-				return [...curr, channel];
-			});
-		});
-	}, [chatSocket]);
+function OpenChatList() {
+	const channelList = useRecoilValue<IChannel[]>(channelListInfo);
 	return (
 		<OpenChatListStyleC>
 			<OpenChatNewButton />

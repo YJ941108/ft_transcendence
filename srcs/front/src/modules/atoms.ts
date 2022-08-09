@@ -1,6 +1,6 @@
 import { atom } from 'recoil';
 import IUserData from './Interfaces/userInterface';
-import { IDMRoomInfo, IMyData } from './Interfaces/chatInterface';
+import { IDMRoomInfo, IMyData, IChannel } from './Interfaces/chatInterface';
 
 export const chatSocketState = atom({
 	key: 'chatSocket',
@@ -70,3 +70,38 @@ export const DMRoomInfo = atom<IDMRoomInfo>({
 	},
 });
 
+export const channelListInfo = atom<IChannel[]>({
+	key: 'channelListInfo',
+	default: [],
+});
+
+export const channelInfoData = atom<IChannel>({
+	key: 'channelInfoData',
+	default: {
+		id: 0,
+		name: '',
+		privacy: '',
+		restrictionDuration: 0,
+		createdAt: '',
+		owner: {
+			id: 0,
+			username: '',
+			email: '',
+			nickname: '',
+			photo: '',
+			tfa: false,
+			tfaCode: false,
+			wins: 0,
+			losses: 0,
+			ratio: 0,
+			isFriend: false,
+			isOnline: false,
+			achievement: 0,
+			createdAt: '',
+			updatedAt: '',
+		},
+		users: [],
+		admins: [],
+		messages: [],
+	},
+});
