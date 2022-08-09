@@ -756,11 +756,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       channel = await this.chatService.deleteChannel(channelId);
 
       /* 방이 비공개가 아니면 모두에게 알려야 함 */
-      if (channel.privacy !== 'private') {
-        const memoryUsers = this.chatUsers.getUsers();
-        for (let i = 0; i < memoryUsers.length; i++) {
-          this.listeningChannelList(memoryUsers[i].socketId, memoryUsers[i].id);
-        }
+      for (let i = 0; i < memoryUsers.length; i++) {
+        this.listeningChannelList(memoryUsers[i].socketId, memoryUsers[i].id);
       }
 
       return this.returnMessage('deleteChannel', 200, '채널이 삭제되었습니다.');
