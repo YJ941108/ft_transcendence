@@ -53,7 +53,7 @@ export class ChannelService {
   /**
    * Used whenever a user wants to join a password-protected channel
    */
-  async getChannelPassword(id: string) {
+  async getChannelPassword(id: number) {
     const channel = await this.channelsRepository
       .createQueryBuilder('channel')
       .select('channel.password')

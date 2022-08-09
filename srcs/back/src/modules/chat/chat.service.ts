@@ -41,7 +41,7 @@ export class ChatService {
     const channel = await this.channelService.findOne(channelId);
 
     if (channel && channel.privacy === 'protected') {
-      const chanPassword = await this.channelService.getChannelPassword(channelId.toString());
+      const chanPassword = await this.channelService.getChannelPassword(channelId);
       const passIsValid = await comparePassword(password, chanPassword);
 
       if (passIsValid) return;
