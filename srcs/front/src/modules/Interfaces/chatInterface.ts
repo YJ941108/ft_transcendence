@@ -45,6 +45,25 @@ export interface IDM {
 	};
 }
 
+export interface IMessages {
+	id: number;
+	content: string;
+	createdAt: string;
+	author: IUserData;
+}
+
+export interface IDMRoomInfo {
+	func: string;
+	code: number;
+	message: string;
+	data: {
+		id: number;
+		createdAt: string;
+		users: IUserData[];
+		messages: IMessages[];
+	};
+}
+
 export interface IFriendsList {
 	func: string;
 	code: number;
@@ -88,9 +107,11 @@ export interface IErr {
 	message: string;
 }
 
-export interface IMessages {
+export interface IChannel {
 	id: number;
-	content: string;
+	name: string;
+	privacy: string;
+	restrictionDuration: number;
 	createdAt: string;
 	author: IUserData;
 }

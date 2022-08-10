@@ -5,16 +5,20 @@ import { useRecoilValue, useRecoilState } from 'recoil';
 import { io, Socket } from 'socket.io-client';
 import { MyInfo, chatContent, chatUserList, DMRoomList, friendsList, requestList } from '../../modules/atoms';
 // import SearchInput from './SearchInput';
+
 import { getUserData } from '../../modules/api';
 import ChatNav from './ChatNav';
 import DMRoom from './DMRoom';
 import UserList from './UserList';
-import OpenChatList from './OpenChatList';
+import OpenChatList from './openchat/OpenChatList';
 import FriendsList from './FriendsList';
+import NewOpenChatRoom from './openchat/NewOpenChatRoom';
+import OpenChatRoom from './openchat/OpenChatRoom';
 import DirectMessageList from './DirectMessageList';
 import IUserData from '../../modules/Interfaces/userInterface';
 import { IMyData, IMyDataResponse, IErr, IDMRoom } from '../../modules/Interfaces/chatInterface';
 import { emitJoinChat } from './Emit';
+import OpenChatInvite from './openchat/OpenChatInvite';
 
 const ChatC = styled.div`
 	width: 300px;
@@ -25,11 +29,14 @@ const ChatC = styled.div`
 `;
 interface ISelectComponent {
 	[index: string]: React.ReactNode;
+	NewOpenChatRoom: React.ReactNode;
 	UserList: React.ReactNode;
 	OpenChatList: React.ReactNode;
 	FriendsList: React.ReactNode;
 	DirectMessageList: React.ReactNode;
 	DMRoom: React.ReactNode;
+	OpenChatRoom: React.ReactNode;
+	OpenChatInvite: React.ReactNode;
 }
 function Chat() {
 	const { isLoading, data: userData, error } = useQuery<IMyData>('user', getUserData);
@@ -40,6 +47,7 @@ function Chat() {
 	const [, setUsers] = useRecoilState<IUserData[]>(chatUserList);
 	const [, setRequestUsers] = useRecoilState<IUserData[]>(requestList);
 	const [, setFriendsUsers] = useRecoilState<IUserData[]>(friendsList);
+	const [, setChannelList] = useRecoilState<IChannel[]>(channelListInfo);
 
 	const selectComponent: ISelectComponent = {
 		UserList: <UserList chatSocket={socket} />,
@@ -47,6 +55,9 @@ function Chat() {
 		FriendsList: <FriendsList chatSocket={socket} />,
 		DirectMessageList: <DirectMessageList chatSocket={socket} />,
 		DMRoom: <DMRoom chatSocket={socket} />,
+		NewOpenChatRoom: <NewOpenChatRoom chatSocket={socket} />,
+		OpenChatRoom: <OpenChatRoom chatSocket={socket} />,
+		OpenChatInvite: <OpenChatInvite chatSocket={socket} />,
 	};
 
 	useEffect(() => {
@@ -77,6 +88,7 @@ function Chat() {
 			socket.off('listeningMe');
 			socket.off('listeningGetUsers');
 			socket.off('listeningDMRoomList');
+			socket.off('listeningChannelList');
 			socket.off('chatError');
 		};
 	}, [socket, isLoading, error, userData]);
