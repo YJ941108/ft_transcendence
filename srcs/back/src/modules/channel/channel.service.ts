@@ -110,16 +110,17 @@ export class ChannelService {
   }
 
   async create(createChannelDto: CreateChannelDto) {
+    /** 채널이 존재하는지 확인 */
     const existingChannel = await this.nameIsAvailable(createChannelDto.name);
-    const channel = this.channelsRepository.create(createChannelDto);
-
     if (existingChannel) {
       throw new Error(`Group '${createChannelDto.name}' already exists. Choose another name.`);
     }
 
+    /** 비밀번호가 있다면 해쉬적용 */
     if (createChannelDto.password) {
       createChannelDto.password = await hashPassword(createChannelDto.password, 10);
     }
+    const channel = this.channelsRepository.create(createChannelDto);
 
     this.logger.log(`Create new channel [${channel.name}]`);
 

@@ -10,6 +10,7 @@ import { DirectMessage } from '../direct-message/entities/direct-message.entity'
 import { CreateMessageDto } from '../message/dto/create-message.dto';
 import { MessageService } from '../message/message.service';
 import { UsersService } from '../users/users.service';
+import { hash as hashPassword } from 'bcryptjs';
 
 @Injectable()
 export class ChatService {
@@ -41,9 +42,9 @@ export class ChatService {
     const channel = await this.channelService.findOne(channelId);
 
     if (channel && channel.privacy === 'protected') {
-      const chanPassword = await this.channelService.getChannelPassword(channelId);
-      const passIsValid = await comparePassword(password, chanPassword);
+      const hash = await this.channelService.getChannelPassword(channelId);
 
+      const passIsValid = await comparePassword(password, hash);
       if (passIsValid) return;
       throw new Error('Invalid password');
     }
