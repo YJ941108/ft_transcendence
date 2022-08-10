@@ -3,16 +3,7 @@ import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { io, Socket } from 'socket.io-client';
-import {
-	MyInfo,
-	chatContent,
-	chatUserList,
-	DMRoomList,
-	friendsList,
-	requestList,
-	channelListInfo,
-	// DMRoomInfo,
-} from '../../modules/atoms';
+import { MyInfo, chatContent, chatUserList, DMRoomList, friendsList, requestList } from '../../modules/atoms';
 // import SearchInput from './SearchInput';
 
 import { getUserData } from '../../modules/api';
@@ -25,7 +16,7 @@ import NewOpenChatRoom from './openchat/NewOpenChatRoom';
 import OpenChatRoom from './openchat/OpenChatRoom';
 import DirectMessageList from './DirectMessageList';
 import IUserData from '../../modules/Interfaces/userInterface';
-import { IMyData, IMyDataResponse, IErr, IChannel } from '../../modules/Interfaces/chatInterface';
+import { IMyData, IMyDataResponse, IErr, IDMRoom } from '../../modules/Interfaces/chatInterface';
 import { emitJoinChat } from './Emit';
 import OpenChatInvite from './openchat/OpenChatInvite';
 
@@ -52,8 +43,7 @@ function Chat() {
 	const content = useRecoilValue(chatContent);
 	const [socket, setSocket] = useState<any>(null);
 	const [, setMyInfo] = useRecoilState<IMyData>(MyInfo);
-	const [, setRooms] = useRecoilState<IUserData[]>(DMRoomList);
-	// const [, setRoomInfo] = useRecoilState<IDMRoomInfo>(DMRoomInfo);
+	const [, setRooms] = useRecoilState<IDMRoom[]>(DMRoomList);
 	const [, setUsers] = useRecoilState<IUserData[]>(chatUserList);
 	const [, setRequestUsers] = useRecoilState<IUserData[]>(requestList);
 	const [, setFriendsUsers] = useRecoilState<IUserData[]>(friendsList);
@@ -85,27 +75,18 @@ function Chat() {
 		socket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
 			setUsers(response.data);
 		});
-		// socket.on('listeningDMRoomInfo', (response: IDMRoomInfo) => {
-		// 	console.log(response, 'listeningDMRoomInfo');
-		// 	setRoomInfo(response);
-		// });
 
-		socket.on('listeningDMRoomList', (response: { data: IUserData[] }) => {
-			console.log(response, 'listeningDMRoomList');
+		socket.on('listeningDMRoomList', (response: { data: IDMRoom[] }) => {
 			setRooms(response.data);
 		});
-		socket.on('listeningChannelList', (response: { data: IChannel[] }) => {
-			console.log('listeningChannelList');
-			setChannelList(response.data);
-		});
-		socket.on('chatError', (message: IErr) => {
-			alert(message);
+
+		socket.on('chatError', (response: IErr) => {
+			alert(response.message);
 		});
 		return () => {
 			socket.off('connect');
 			socket.off('listeningMe');
 			socket.off('listeningGetUsers');
-			socket.off('listeningDMRoomInfo');
 			socket.off('listeningDMRoomList');
 			socket.off('listeningChannelList');
 			socket.off('chatError');

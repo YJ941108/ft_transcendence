@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useRecoilState } from 'recoil';
 import { Socket } from 'socket.io-client';
-import IUserData from '../../modules/Interfaces/userInterface';
 import { DMRoomList } from '../../modules/atoms';
-import DirectMessageInfo from './DirectMessage';
+import DirectMessageInfo from './li-DirectMessage';
+import { IDMRoom } from '../../modules/Interfaces/chatInterface';
 
 const DirectMessageListC = styled.ul`
 	list-style: none;
@@ -22,14 +22,14 @@ interface ISocket {
 }
 
 function DirectMessageList({ chatSocket }: ISocket) {
-	const [rooms, setRooms] = useRecoilState<IUserData[]>(DMRoomList);
+	const [rooms, setRooms] = useRecoilState<IDMRoom[]>(DMRoomList);
 
 	useEffect(() => {
 		if (chatSocket) {
-			chatSocket.on('listeningDMRoomList', (response: { data: IUserData[] }) => {
-				console.log(response, 'listeningDMRoomList');
+			chatSocket.on('listeningDMRoomList', (response: { data: IDMRoom[] }) => {
 				setRooms(response.data);
 			});
+
 			return () => {
 				chatSocket.off('listeningDMRoomList');
 			};
@@ -39,15 +39,15 @@ function DirectMessageList({ chatSocket }: ISocket) {
 
 	return (
 		<DirectMessageListC>
-			{rooms?.map((element: IUserData) => {
+			{rooms?.map((element: IDMRoom) => {
 				return (
 					<DirectMessageInfo
 						key={element.id}
-						id={element.id}
-						nickname={element.nickname}
-						photo={element.photo}
+						nickname={element.another.nickname}
+						id={element.another.id}
+						photo={element.another.photo}
 						chatSocket={chatSocket}
-						isOnline={element.isOnline}
+						isOnline={element.another.isOnline}
 					/>
 				);
 			})}
