@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Socket } from 'socket.io-client';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { emitSendDMMessage } from './Emit';
-import { IDMRoomInfo, IMessages } from '../../modules/Interfaces/chatInterface';
+import { IDMlisten, IDMRoom, IMessages } from '../../modules/Interfaces/chatInterface';
 import { DMRoomInfo, MyInfo } from '../../modules/atoms';
 
 const DMRoomStyleC = styled.div`
@@ -39,13 +39,13 @@ interface ISocket {
 
 function DMRoom({ chatSocket }: ISocket) {
 	const [message, setMessage] = useState('');
-	const [roomInfo, setRoomInfo] = useRecoilState<IDMRoomInfo>(DMRoomInfo);
+	const [roomInfo, setRoomInfo] = useRecoilState<IDMRoom>(DMRoomInfo);
 	const [messageList, setMessageList] = useState<string[]>([]);
 	const Info = useRecoilValue(MyInfo);
 
 	const sendMessage = () => {
 		if (message) {
-			emitSendDMMessage(chatSocket, roomInfo.data.id, Info.id, message);
+			emitSendDMMessage(chatSocket, roomInfo.id, Info.id, message);
 			setMessage('');
 		}
 	};
@@ -57,21 +57,33 @@ function DMRoom({ chatSocket }: ISocket) {
 	};
 
 	useEffect(() => {
-		chatSocket.on('listeningDMRoomInfo', (response: IDMRoomInfo) => {
-			setRoomInfo(response);
-			const { messages } = response.data;
-			setMessageList([]);
-			messages.forEach((element: IMessages) => {
-				console.log(messageList);
+		chatSocket.on('listeningDMRoomInfo', (response: { data: IDMRoom }) => {
+			setRoomInfo(response.data);
+			console.log(response, '여긴오냐?');
+			console.log(response.data.message, 'messages');
+			response.data.message?.map((element: IMessages) => {
+				console.log(element, 'FUCK YOU');
 				setMessageList((msgList) => {
 					return [...msgList, element.content];
 				});
+				return () => {};
 			});
 		});
 		return () => {
 			chatSocket.off('listeningDMRoomInfo');
 		};
-	}, [chatSocket, messageList, roomInfo]);
+	}, [chatSocket]);
+
+	useEffect(() => {
+		chatSocket.on('listeningDMMessage', (response: IDMlisten) => {
+			setMessageList((msgList) => {
+				return [...msgList, response.data.message];
+			});
+		});
+		return () => {
+			chatSocket.off('listeningDMMessage');
+		};
+	}, [chatSocket]);
 
 	return (
 		<DMRoomStyleC>

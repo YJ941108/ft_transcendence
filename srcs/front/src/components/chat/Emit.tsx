@@ -1,6 +1,6 @@
 // import React from 'react';
 import { Socket } from 'socket.io-client';
-import { IDMRoomInfo } from '../../modules/Interfaces/chatInterface';
+import { IDMRoomList } from '../../modules/Interfaces/chatInterface';
 
 interface IDebug {
 	func: string;
@@ -9,11 +9,21 @@ interface IDebug {
 }
 
 export const emitCreateDMRoom = (chatSocket: Socket, anotherId: number) => {
-	chatSocket.emit('createDMRoom', { anotherId }, (response: IDMRoomInfo) => {
+	chatSocket.emit('createDMRoom', { anotherId }, (response: IDMRoomList) => {
 		if (response.code === 200) {
-			console.log('emitCreateDMRoom SUCCESS', response.data);
+			console.log('emitCreateDMRoom SUCCESS');
 		} else if (response.code === 400) {
-			console.log('emitCreateDMRoom FAIL', response);
+			console.log('emitCreateDMRoom FAIL');
+		}
+	});
+};
+
+export const emitJoinDMRoom = (chatSocket: Socket, DMId: number) => {
+	chatSocket.emit('createDMRoom', { DMId }, (response: IDMRoomList) => {
+		if (response.code === 200) {
+			console.log('emitJoinDMRoom SUCCESS');
+		} else if (response.code === 400) {
+			console.log('emitJoinDMRoom FAIL');
 		}
 	});
 };
@@ -21,7 +31,7 @@ export const emitCreateDMRoom = (chatSocket: Socket, anotherId: number) => {
 export const emitJoinChat = (chatSocket: Socket, id: number, nickname: string) => {
 	chatSocket.emit('joinChat', { id, nickname }, (response: IDebug) => {
 		if (response.code === 200) {
-			console.log(nickname, 'emitJoinChat SUCCESS', response);
+			console.log(nickname, 'emitJoinChat SUCCESS');
 		} else if (response.code === 400) {
 			console.log('emitJoinChat FAIL', nickname, response);
 		}
