@@ -27,12 +27,20 @@ function ProfileModal() {
 	const handleClose = () => setShow(false);
 	const handleShow = () => setShow(true);
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value);
-
 	const handleSubmit = async () => {
-		const response = await axios.post('/api/users/me', { nickname: inputValue });
-		if (response.status === 201) alert('닉네임 수정이 완료되었습니다.');
-		else console.log(response.status);
-		handleClose();
+		await axios
+			.post('/api/users/me', { nickname: inputValue })
+			.then((res) => {
+				alert('닉네임 수정이 완료되었습니다.');
+				handleClose();
+				return res;
+			})
+			.catch((err) => {
+				const errorStatus = err.response.data.statusCode;
+				if (errorStatus === 409) alert('아이디가 중복되었습니다.확인해주세요.');
+				else if (errorStatus === 400) alert('입력창에 입력을 해주세요.');
+				else console.log(err, 'err');
+			});
 	};
 	return (
 		<div>
@@ -56,9 +64,6 @@ function ProfileModal() {
 								<input placeholder={data?.nickname} onChange={(e) => handleChange(e)} />
 							</Form.Group>
 						</Form>
-						<div id="errorShow" hidden>
-							중복된 아이디 사용이 불가능합니다.
-						</div>
 						<Button onClick={handleClose}>image upload</Button>
 						<Button variant="success" onClick={handleSubmit}>
 							Save Change
