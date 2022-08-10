@@ -914,6 +914,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       /* If password is wrong, raise an Error */
       await this.chatService.checkChannelPassword(channelId, password);
       this.handleJoinChannel(client, { channelId, userId });
+      return this.returnMessage('joinProtected', 200, '비밀번호가 일치합니다.');
     } catch (e) {
       this.chatError(client, e);
       return this.returnMessage('joinProtected', 400, '비밀번호가 틀립니다.');

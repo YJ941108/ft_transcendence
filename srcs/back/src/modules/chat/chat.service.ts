@@ -28,10 +28,10 @@ export class ChatService {
   /* Helpers */
   async userIsInChannel(channelId: number, userId: number) {
     const channel = await this.channelService.findOne(channelId);
-
     if (!channel) {
       throw new Error('No channel found.');
     }
+
     const isInChan = !!channel.users.find((user) => {
       return user.id === userId;
     });
@@ -40,15 +40,21 @@ export class ChatService {
 
   async checkChannelPassword(channelId: number, password: string) {
     const channel = await this.channelService.findOne(channelId);
+    if (!channel) {
+      throw new Error('No channel found.');
+    }
+    if (!(channel.privacy === 'protected')) {
+      throw new Error('Protected가 아닙니다.');
+    }
 
-    if (channel && channel.privacy === 'protected') {
-      const hash = await this.channelService.getChannelPassword(channelId);
-
-      const passIsValid = await comparePassword(password, hash);
-      if (passIsValid) return;
+    const hash = await this.channelService.getChannelPassword(channelId);
+    const passIsValid = await comparePassword(password, hash);
+    console.log(hash);
+    console.log(password);
+    console.log(passIsValid);
+    if (!passIsValid) {
       throw new Error('Invalid password');
     }
-    throw new Error('Invalid operation');
   }
 
   async checkIfUserIsBanned(channelId: number, userId: number): Promise<boolean> {
