@@ -267,33 +267,33 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     memoryUser?: ChatUser,
     dm?: DirectMessage,
   ): Promise<void> {
-    // const user = await this.usersService.getUserWithoutFriends(memoryUser.id);
-    // let another: Users;
-    // if (user.nickname === dm.users[0].nickname) {
-    //   another = dm.users[1];
-    // } else {
-    //   another = dm.users[0];
-    // }
+    const user = await this.usersService.getUserWithoutFriends(memoryUser.id);
+    let another: Users;
+    if (user.nickname === dm.users[0].nickname) {
+      another = dm.users[1];
+    } else {
+      another = dm.users[0];
+    }
 
-    // const response = {
-    //   id: dm.id,
-    //   me: user,
-    //   another: another,
-    //   createdAt: dm.createdAt,
-    //   message: dm.messages,
-    // };
+    const response = {
+      id: dm.id,
+      me: user,
+      another: another,
+      createdAt: dm.createdAt,
+      message: dm.messages,
+    };
 
     this.server.to(socketId).emit('listeningDMRoomInfo', {
       func: 'listeningDMRoomInfo',
       code: 200,
       message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
-      data: dm,
+      data: response,
     });
     this.logger.log({
       func: 'listeningDMRoomInfo',
       code: 200,
       message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
-      data: dm,
+      data: response,
     });
   }
 
@@ -303,11 +303,31 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.userJoinRoom(socketId, `dm_${DMRoom.id}`);
     }
 
+    const user = await this.usersService.getUserWithoutFriends(memoryUser.id);
+
+    let response = [];
+    for (let i = 0; i < DMRooms.length; i++) {
+      let another: Users;
+      if (user.nickname === DMRooms[i].users[0].nickname) {
+        another = DMRooms[i].users[1];
+      } else {
+        another = DMRooms[i].users[0];
+      }
+
+      response.push({
+        id: DMRooms[i].id,
+        me: user,
+        another: another,
+        createdAt: DMRooms[i].createdAt,
+        message: DMRooms[i].messages,
+      });
+    }
+
     this.server.to(socketId).emit('listeningDMRoomList', {
       func: 'listeningDMRoomList',
       code: 200,
       message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
-      data: DMRooms,
+      data: response,
     });
     this.logger.log('listeningDMRoomList');
   }
