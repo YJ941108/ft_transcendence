@@ -31,11 +31,16 @@ interface IOpenChatInfoProps {
 }
 
 function OpenChatInfo({ channelInfo }: IOpenChatInfoProps) {
-	const setChannelInfo = useSetRecoilState(channelInfoData);
-	const setContent = useSetRecoilState(chatContent);
+	const setChannelInfo = useSetRecoilState<IChannel>(channelInfoData);
+	const setContent = useSetRecoilState<string>(chatContent);
 	const onClick = () => {
-		setChannelInfo(channelInfo);
-		setContent('OpenChatRoom');
+		if (channelInfo.privacy === 'protected') {
+			setChannelInfo(channelInfo);
+			setContent('ProtectedPassword');
+		} else {
+			setChannelInfo(channelInfo);
+			setContent('OpenChatRoom');
+		}
 	};
 	return (
 		<OpenChatStyleC onClick={onClick}>

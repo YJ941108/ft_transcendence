@@ -28,6 +28,9 @@ import IUserData from '../../modules/Interfaces/userInterface';
 import { IMyData, IMyDataResponse, IErr, IChannel } from '../../modules/Interfaces/chatInterface';
 import { emitJoinChat } from './Emit';
 import OpenChatInvite from './openchat/OpenChatInvite';
+import EditOpenChatRoom from './openchat/EditOpenChatRoom';
+import ProtectedPassword from './openchat/ProtectedPassword';
+import OpenChatUsers from './openchat/OpenChatUsers';
 
 const ChatC = styled.div`
 	width: 300px;
@@ -46,6 +49,9 @@ interface ISelectComponent {
 	DMRoom: React.ReactNode;
 	OpenChatRoom: React.ReactNode;
 	OpenChatInvite: React.ReactNode;
+	EditOpenChatRoom: React.ReactNode;
+	ProtectedPassword: React.ReactNode;
+	OpenChatUsers: React.ReactNode;
 }
 function Chat() {
 	const { isLoading, data: userData, error } = useQuery<IMyData>('user', getUserData);
@@ -68,6 +74,9 @@ function Chat() {
 		NewOpenChatRoom: <NewOpenChatRoom chatSocket={socket} />,
 		OpenChatRoom: <OpenChatRoom chatSocket={socket} />,
 		OpenChatInvite: <OpenChatInvite chatSocket={socket} />,
+		EditOpenChatRoom: <EditOpenChatRoom chatSocket={socket} />,
+		ProtectedPassword: <ProtectedPassword chatSocket={socket} />,
+		OpenChatUsers: <OpenChatUsers />,
 	};
 
 	useEffect(() => {
@@ -95,7 +104,6 @@ function Chat() {
 			setRooms(response.data);
 		});
 		socket.on('listeningChannelList', (response: { data: IChannel[] }) => {
-			console.log('listeningChannelList');
 			setChannelList(response.data);
 		});
 		socket.on('chatError', (message: IErr) => {
@@ -108,6 +116,7 @@ function Chat() {
 			socket.off('listeningDMRoomInfo');
 			socket.off('listeningDMRoomList');
 			socket.off('listeningChannelList');
+			socket.off('listeningChannelInfo');
 			socket.off('chatError');
 		};
 	}, [socket, isLoading, error, userData]);

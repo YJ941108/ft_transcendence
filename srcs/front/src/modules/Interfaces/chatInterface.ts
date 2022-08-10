@@ -64,6 +64,13 @@ export interface IMessages {
 	author: IUserData;
 }
 
+export interface IMessageResponse {
+	func: string;
+	code: number;
+	message: string;
+	data: IMessages;
+}
+
 export interface IDMRoomInfo {
 	func: string;
 	code: number;
@@ -128,5 +135,12 @@ export interface IChannel {
 	owner: IUserData;
 	users: IUserData[];
 	admins: IUserData[];
-	messages: string[];
+	messages: IMessages[];
+}
+
+export interface IChannelResponse {
+	func: string;
+	code: number;
+	message: string;
+	data: IChannel;
 }

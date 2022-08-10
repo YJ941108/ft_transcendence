@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import { useQuery } from 'react-query';
 import { useForm } from 'react-hook-form';
 import { useSetRecoilState } from 'recoil';
-import { chatContent } from '../../../modules/atoms';
-import { IMyData } from '../../../modules/Interfaces/chatInterface';
+import { channelInfoData, chatContent } from '../../../modules/atoms';
+import { IMyData, IChannel } from '../../../modules/Interfaces/chatInterface';
 import { getUserData } from '../../../modules/api';
 
 enum OpenChatVisibility {
@@ -33,17 +33,21 @@ function NewOpenChatRoom({ chatSocket }: INewOpenChatRoomProps) {
 	const { register, handleSubmit } = useForm<IFormInput>();
 	const [isPassword, setIsPassword] = useState(false);
 	const setContent = useSetRecoilState(chatContent);
+	const setChannelInfo = useSetRecoilState(channelInfoData);
 	const onSubmit = (data: IFormInput) => {
-		const newRoomData = {
+		const newChannelData = {
 			name: data.openChatName,
 			privacy: data.openChatVisibility,
 			password: data.password,
 			userId: userData?.id,
 		};
-		chatSocket.emit('createChannel', newRoomData);
+		chatSocket.emit('createChannel', newChannelData, (response: { data: IChannel }) => {
+			setChannelInfo(response.data);
+			setContent('OpenChatRoom');
+		});
 	};
 	const openChatVisibilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-		if (event.target.value === 'protected-password') setIsPassword(true);
+		if (event.target.value === 'protected') setIsPassword(true);
 		else setIsPassword(false);
 	};
 	return (
@@ -58,7 +62,7 @@ function NewOpenChatRoom({ chatSocket }: INewOpenChatRoomProps) {
 					<select {...register('openChatVisibility')} onChange={openChatVisibilityChange}>
 						<option value="private">private</option>
 						<option value="public">public</option>
-						<option value="protected-password">protected-password</option>
+						<option value="protected">protected-password</option>
 					</select>
 					{isPassword ? (
 						<div>
