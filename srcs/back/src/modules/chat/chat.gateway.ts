@@ -19,6 +19,7 @@ import { DirectMessage } from '../direct-message/entities/direct-message.entity'
 import { User } from '../games/class/user.class';
 import { GamesGateway } from '../games/games.gateway';
 import { CreateMessageDto } from '../message/dto/create-message.dto';
+import { Message } from '../message/entities/message.entity';
 import { Users } from '../users/entities/users.entity';
 import { UsersService } from '../users/users.service';
 import { BadRequestTransformationFilter } from './chat.filter';
@@ -525,6 +526,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  async listeningMessage(channelId: string, data: Object) {
+    this.server.to(channelId).emit('listeningBan', {
+      func: 'isBanFromChannel',
+      code: 200,
+      message: `채널 입장 가능 여부`,
+      data,
+    });
+  }
+
   async chatError(client: Socket, error: any) {
     this.logger.log(client.id, error);
     this.server.to(client.id).emit('chatError', error.message);
@@ -997,22 +1007,57 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
   @UseFilters(new BadRequestTransformationFilter())
   @SubscribeMessage('sendMessage')
-  async handleGmSubmit(@ConnectedSocket() client: Socket, @MessageBody() data: CreateMessageDto) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
-      return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
+  async handleGmSubmit(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { message: string; channelId: number; userId: number },
+  ) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
+      return this.returnMessage('sendMessage', 400, '채팅 소켓에 유저가 없습니다');
+    }
+    if (!data.userId) {
+      throw new WsException('Anonymous messages not allowed.');
     }
 
     try {
-      if (!data.author) {
-        throw new WsException('Anonymous messages not allowed.');
+      /** 데이터 생성 */
+      const dbchannel = await this.chatService.getChannelData(data.channelId);
+      if (!dbchannel) {
+        throw new WsException('채널이 없습니다');
       }
-      await this.chatService.checkIfUserIsMuted(data.channel.id, data.author.id);
-      const message = await this.chatService.addMessageToChannel(data);
-      const channel = message.channel;
+      const dbUser = await this.usersService.getUserWithoutFriends(data.userId);
+      if (!dbUser) {
+        throw new WsException('유저가 없습니다');
+      }
 
-      this.server.to(`channel_${channel.id}`).emit('listeningMessage', { message });
-      this.logger.log(`New message in Channel [${channel.id}]`);
+      console.log(dbchannel);
+      console.log(dbUser);
+      const createChannelDto: CreateMessageDto = {
+        content: data.message,
+        channel: dbchannel,
+        author: dbUser,
+      };
+
+      /** 뮤트 확인 */
+      await this.chatService.checkIfUserIsMuted(createChannelDto.channel.id, createChannelDto.author.id);
+
+      /** 메시지 생성 */
+      const message = await this.chatService.addMessageToChannel(createChannelDto);
+
+      /** 클라이언트 전송 */
+      this.server.to(`channel_${dbchannel.id}`).emit('listeningMessage', {
+        func: 'sendMessage',
+        code: 200,
+        message: `메시지를 보냈습니다.`,
+        data: {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          author: dbUser,
+        },
+      });
+
+      this.logger.log(`New message in Channel [${dbchannel.id}]: ${message.content}`);
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }

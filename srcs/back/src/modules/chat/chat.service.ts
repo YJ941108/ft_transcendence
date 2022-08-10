@@ -69,7 +69,6 @@ export class ChatService {
 
   async checkIfUserIsMuted(channelId: number, userId: number) {
     const isMuted = await this.channelService.findOutIfUserIsMuted(channelId, userId);
-
     if (isMuted) {
       throw new Error('Muted users are not allowed to post.');
     }
@@ -78,10 +77,10 @@ export class ChatService {
   /* Getters */
   async getUserChannels(userId: number) {
     const channels = await this.channelService.findAll();
-
     if (!channels) {
       throw new Error('No channel found.');
     }
+
     const userChannels = channels.filter(
       (channel) =>
         !!channel.users.find((user) => {
