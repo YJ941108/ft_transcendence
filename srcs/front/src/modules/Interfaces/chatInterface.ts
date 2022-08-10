@@ -23,18 +23,6 @@ export interface IChatUser {
 	data: IUserData[];
 }
 
-export interface IDMRoom {
-	func: string;
-	code: number;
-	message: string;
-	data: {
-		id: number;
-		createdAt: string;
-		users: IUserData[];
-		messages: string[];
-	};
-}
-
 export interface IRoomStatus {
 	func: string;
 	code: number;
@@ -107,14 +95,28 @@ export interface IMessages {
 	author: IUserData;
 }
 
-export interface IDMRoomInfo {
+export interface IDMlisten {
 	func: string;
 	code: number;
 	message: string;
 	data: {
-		id: number;
-		createdAt: string;
-		users: IUserData[];
-		messages: IMessages[];
+		message: string;
+		author: IUserData;
+		DMId: number;
 	};
+}
+
+export interface IDMRoom {
+	id: number;
+	createAt: string;
+	me: IUserData;
+	another: IUserData;
+	message: IMessages[];
+}
+
+export interface IDMRoomList {
+	func: string;
+	code: number;
+	message: string;
+	data: IDMRoom[];
 }
