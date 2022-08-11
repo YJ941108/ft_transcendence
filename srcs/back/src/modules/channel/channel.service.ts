@@ -30,10 +30,10 @@ export class ChannelService {
 
   async banUser(channelId: number, punishedId: number, punisherId: number) {
     const isBanned = await this.PunishmentService.isUserCurrentlyBanned(channelId, punishedId);
-
     if (isBanned) {
       throw new Error('User is already banned.');
     }
+
     return this.PunishmentService.punishUser(channelId, punishedId, punisherId, 'ban', {
       reason: "Un méchant garçon, à n'en point douter.",
     });
@@ -41,10 +41,10 @@ export class ChannelService {
 
   async muteUser(channelId: number, punishedId: number, punisherId: number) {
     const isMuted = await this.PunishmentService.isUserCurrentlyMuted(channelId, punishedId);
-
     if (isMuted) {
       throw new Error('User is already muted.');
     }
+
     return this.PunishmentService.punishUser(channelId, punishedId, punisherId, 'mute', {
       reason: "Un méchant garçon, à n'en point douter.",
     });

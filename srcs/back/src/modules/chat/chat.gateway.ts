@@ -1087,13 +1087,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    *
    *
    *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
+
    *
    *
    *
@@ -1118,27 +1112,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       userId: number;
     },
   ) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
     }
-
     if (ownerId === userId) {
-      return this.returnMessage('makeAdmin', 400, 'Owner and admin are separate roles.');
+      return this.returnMessage('makeAdmin', 400, 'Owner는 admin가 될 수 없습니다.');
     }
-
     try {
       const channel = await this.chatService.getChannelData(channelId);
-
       if (channel.owner.id != ownerId) {
-        throw new Error('Insufficient Privileges');
+        throw new Error('owner만 임명할 수 있습니다.');
       }
+
+      /** 어드민 추가하기 */
       await this.chatService.addAdminToChannel(channel, userId);
+
+      /** 어드민 추가 알리기 */
       this.server.to(client.id).emit('adminAdded');
       this.logger.log(`User [${userId}] is now admin in Channel [${channel.name}]`);
 
+      /** 어드민 추가 알리기 */
       const chatUser = this.chatUsers.getUserById(userId);
-
       if (chatUser) {
         this.server.to(chatUser.socketId).emit('chatInfo', `You are now admin in ${channel.name}.`);
       }
@@ -1161,26 +1156,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       userId: number;
     },
   ) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
     }
-
     if (ownerId === userId) {
       throw new WsException('Owner and admin are separate roles.');
     }
     try {
       const channel = await this.chatService.getChannelData(channelId);
-
       if (channel.owner.id != ownerId) {
         throw new Error('Insufficient Privileges');
       }
+
+      /** 유저 삭제 */
       await this.chatService.removeAdminFromChannel(channel, userId);
+
+      /** 알리기 */
       this.server.to(client.id).emit('adminRemoved');
       this.logger.log(`User [${userId}] no longer admin in Channel [${channel.name}]`);
 
+      /** 알리기 */
       const chatUser = this.chatUsers.getUserById(userId);
-
       if (chatUser) {
         this.server.to(chatUser.socketId).emit('chatInfo', `You are no longer admin in ${channel.name}.`);
       }
@@ -1203,15 +1200,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       userId: number;
     },
   ) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
     }
-
     if (adminId === userId) {
       throw new WsException('If you want to leave the channel, go to Channel settings.');
     }
-
     try {
       const admin = this.chatUsers.getUserById(adminId);
       const channel = await this.chatService.getChannelData(channelId);
@@ -1220,9 +1215,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         content: `${admin.nickname} kicked ${user.username}`,
         channel,
       });
+
       const roomId = `channel_${channelId}`;
       const chatUser = this.chatUsers.getUserById(userId);
-
       if (chatUser) {
         this.server.to(chatUser.socketId).emit('kickedFromChannel', `You have been kicked from ${channel.name}.`);
         this.userLeaveRoom(chatUser.socketId, roomId);
@@ -1255,14 +1250,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       type: string;
     },
   ) {
-    let user = this.chatUsers.getUserBySocketId(client.id);
-    if (!user) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
     }
-
     if (adminId === userId) {
       throw new WsException("Don't be so mean to yourself. :(");
     }
+
     try {
       const channel = await this.chatService.getChannelData(channelId);
       const message = await this.chatService.punishUser(channel, adminId, userId, type);

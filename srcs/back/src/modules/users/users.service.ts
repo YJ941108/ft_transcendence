@@ -107,7 +107,7 @@ export class UsersService {
     }
     if (file) {
       const serverOrigin = this.configService.get<string>('server.origin');
-      const fileLocation = serverOrigin + join('/api/users/profile', file.filename);
+      const fileLocation = serverOrigin + join('/api/profile', file.filename);
       user.photo = fileLocation;
     }
     if (nickname) {
