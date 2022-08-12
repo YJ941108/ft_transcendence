@@ -153,16 +153,16 @@ export class ChatService {
     const isAdmin = !!channel.admins.find((admin) => {
       return admin.id === userId;
     });
-
-    if (!isAdmin) {
-      const newAdmin = await this.usersService.getUserWithFriends(userId);
-
-      await this.channelService.update(channel.id, {
-        admins: [...channel.admins, newAdmin],
-      });
-      return newAdmin;
+    if (isAdmin) {
+      throw new Error('User is already administrator');
     }
-    throw new Error('User is already administrator');
+
+    const newAdmin = await this.usersService.getUserWithoutFriends(userId);
+
+    await this.channelService.update(channel.id, {
+      admins: [...channel.admins, newAdmin],
+    });
+    return newAdmin;
   }
 
   async removeAdminFromChannel(channel: Channel, userId: number) {

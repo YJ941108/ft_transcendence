@@ -185,7 +185,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       await this.listeningMe(client.id, 'handleDiscoonection');
 
       const dmList = await this.usersService.getUserWithDirectMessages(memoryUser.id);
-      await this.listeningDMRoomList(client.id, 'joinChat', memoryUser);
+      await this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'joinChat');
 
       await this.listeningChannelList(client.id, memoryUser.id);
 
@@ -297,18 +297,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
   }
 
-  async listeningDMRoomList(socketId: string, functionName: string, memoryUser?: ChatUser): Promise<void> {
-    const DMRooms = await this.chatService.getUserDMRooms(memoryUser.id);
+  async listeningDMRoomList(socketId: string, dbId: number, dbNickname: string, functionName: string): Promise<void> {
+    const DMRooms = await this.chatService.getUserDMRooms(dbId);
     for (const DMRoom of DMRooms) {
       this.userJoinRoom(socketId, `dm_${DMRoom.id}`);
     }
 
-    const user = await this.usersService.getUserWithoutFriends(memoryUser.id);
+    const dbUser = await this.usersService.getUserWithoutFriends(dbId);
 
     let response = [];
     for (let i = 0; i < DMRooms.length; i++) {
       let another: Users;
-      if (user.nickname === DMRooms[i].users[0].nickname) {
+      if (dbUser.nickname === DMRooms[i].users[0].nickname) {
         another = DMRooms[i].users[1];
       } else {
         another = DMRooms[i].users[0];
@@ -316,7 +316,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       response.push({
         id: DMRooms[i].id,
-        me: user,
+        me: dbUser,
         another: another,
         createdAt: DMRooms[i].createdAt,
         message: DMRooms[i].messages,
@@ -326,7 +326,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.to(socketId).emit('listeningDMRoomList', {
       func: 'listeningDMRoomList',
       code: 200,
-      message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
+      message: `[${socketId}][${dbNickname}]: ${functionName}->listeningGetUsers`,
       data: response,
     });
     this.logger.log('listeningDMRoomList');
@@ -347,40 +347,50 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (!memoryUser) {
       return this.returnMessage('createDMRoom', 400, '채팅 소켓에 유저가 없습니다');
     }
-
     const dbUser = await this.usersService.getUserWithoutFriends(memoryUser.id);
+
+    /** 상대방 확인 */
     const dbAnother = await this.usersService.getUserWithoutFriends(data.anotherId);
     if (!dbAnother) {
       return this.returnMessage('createDMRoom', 400, '상대방 계정이 틀렸습니다');
     }
-    const dbUserAnother: CreateDirectMessageDto = {
-      users: [dbUser, dbAnother],
-    };
 
     try {
+      /** 데이터 생성 */
+      const dbUserAnother: CreateDirectMessageDto = {
+        users: [dbUser, dbAnother],
+      };
+
+      /** DM 존재 확인 */
       let dm = await this.chatService.checkIfDmExists(dbUserAnother.users[0].id, dbUserAnother.users[1].id);
 
+      /** 없으면 만들기 */
       if (!dm) {
         dm = await this.chatService.createDm(dbUserAnother);
-
         const friend = dbUserAnother.users.find((dmUser) => dmUser.id !== memoryUser.id);
         const friendUser = this.chatUsers.getUserById(friend.id);
 
-        /**
-         * 상대방에게 방 만든걸 알려줘야함 그래서 상대방이 getUserDMs를 해야 함
-         */
+        /** 상대방에게 방 만든걸 알려줘야함 */
         if (friendUser) {
           this.userJoinRoom(friendUser.socketId, `dm_${dm.id}`);
-          this.listeningDMRoomInfo(friendUser.socketId, 'createDMRoom', memoryUser, dm);
+          this.listeningDMRoomList(friendUser.socketId, friendUser.id, friendUser.nickname, 'createDMRoom');
         }
       }
+
+      /** 나는 DM방에 들어가야 함 */
       this.userJoinRoom(client.id, `dm_${dm.id}`);
       this.listeningDMRoomInfo(client.id, 'createDMRoom', memoryUser, dm);
 
-      const memoryUsers = this.chatUsers.getUsers();
-      for (let i = 0; i < memoryUsers.length; i++) {
-        this.listeningDMRoomList(memoryUsers[i].socketId, 'listeningDMRoomList', memoryUser);
-      }
+      // /** 상대방에게 리스트 갱신하기 */
+      // const memoryUsers = this.chatUsers.getUsers();
+      // for (let i = 0; i < memoryUsers.length; i++) {
+      //   this.listeningDMRoomList(
+      //     memoryUsers[i].socketId,
+      //     memoryUsers[i].id,
+      //     memoryUsers[i].nickname,
+      //     'listeningDMRoomList',
+      //   );
+      // }
       return this.returnMessage('createDMRoom', 200, 'listeningDMRoomInfo, listeningDMRoomList');
     } catch (e) {
       console.log(e);
@@ -400,7 +410,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (!memoryUser) {
       return this.returnMessage('joinChat', 400, '채팅 소켓에 유저가 없습니다');
     }
-    this.listeningDMRoomList(client.id, 'listeningDMRoomList', memoryUser);
+    this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'joinDMRooms');
     return this.returnMessage('joinDMRooms', 200, 'DM 리스트');
   }
 
@@ -470,7 +480,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
       // const NewDM = await this.chatService.getDmData(data.DMId);
       // this.listeningDMRoomInfo(`dm_${message.DM.id}`, 'sendDMMessage', memoryUser, NewDM);
-      this.listeningDMRoomList(client.id, 'sendDMMessage', memoryUser);
+      this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'sendDMMessage');
 
       return this.returnMessage('sendDMMessage', 200, '메시지 보내기 성공');
     } catch (e) {
@@ -1120,23 +1130,39 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return this.returnMessage('makeAdmin', 400, 'Owner는 admin가 될 수 없습니다.');
     }
     try {
-      const channel = await this.chatService.getChannelData(channelId);
-      if (channel.owner.id != ownerId) {
+      let dbChannel = await this.chatService.getChannelData(channelId);
+      if (dbChannel.owner.id != ownerId) {
         throw new Error('owner만 임명할 수 있습니다.');
       }
 
       /** 어드민 추가하기 */
-      await this.chatService.addAdminToChannel(channel, userId);
+      const owner = await this.chatService.addAdminToChannel(dbChannel, userId);
 
-      /** 어드민 추가 알리기 */
-      this.server.to(client.id).emit('adminAdded');
-      this.logger.log(`User [${userId}] is now admin in Channel [${channel.name}]`);
+      /** 어드민 추가 메시지 보내기 */
+      const message = await this.chatService.addMessageToChannel({
+        content: `${owner.nickname}은 admin입니다`,
+        channel: dbChannel,
+      });
 
-      /** 어드민 추가 알리기 */
-      const chatUser = this.chatUsers.getUserById(userId);
-      if (chatUser) {
-        this.server.to(chatUser.socketId).emit('chatInfo', `You are now admin in ${channel.name}.`);
-      }
+      /** 방 정보 보내기 */
+      dbChannel = await this.chatService.getChannelData(channelId);
+      const roomId = `channel_${dbChannel.id}`;
+      this.listeningChannelInfo(dbChannel, roomId);
+
+      /** 메시지 보내기 */
+      const admin = await this.usersService.getUserWithoutFriends(ownerId);
+      this.server.to(`channel_${dbChannel.id}`).emit('listeningMessage', {
+        func: 'sendMessage',
+        code: 200,
+        message: `메시지를 보냈습니다.`,
+        data: {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          author: admin,
+        },
+      });
+      this.logger.log(`User [${owner.nickname}] is now admin in Channel [${dbChannel.name}]`);
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
@@ -1164,23 +1190,38 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       throw new WsException('Owner and admin are separate roles.');
     }
     try {
-      const channel = await this.chatService.getChannelData(channelId);
-      if (channel.owner.id != ownerId) {
+      let dbChannel = await this.chatService.getChannelData(channelId);
+      if (dbChannel.owner.id != ownerId) {
         throw new Error('Insufficient Privileges');
       }
 
       /** 유저 삭제 */
-      await this.chatService.removeAdminFromChannel(channel, userId);
+      const owner = await this.chatService.removeAdminFromChannel(dbChannel, userId);
 
-      /** 알리기 */
-      this.server.to(client.id).emit('adminRemoved');
-      this.logger.log(`User [${userId}] no longer admin in Channel [${channel.name}]`);
+      /** 어드민 추가 메시지 보내기 */
+      const message = await this.chatService.addMessageToChannel({
+        content: `${owner.nickname}은 admin입니다`,
+        channel: dbChannel,
+      });
 
-      /** 알리기 */
-      const chatUser = this.chatUsers.getUserById(userId);
-      if (chatUser) {
-        this.server.to(chatUser.socketId).emit('chatInfo', `You are no longer admin in ${channel.name}.`);
-      }
+      /** 방 정보 보내기 */
+      dbChannel = await this.chatService.getChannelData(channelId);
+      const roomId = `channel_${dbChannel.id}`;
+      this.listeningChannelInfo(dbChannel, roomId);
+
+      /** 메시지 보내기 */
+      const admin = await this.usersService.getUserWithoutFriends(ownerId);
+      this.server.to(`channel_${dbChannel.id}`).emit('listeningMessage', {
+        func: 'sendMessage',
+        code: 200,
+        message: `메시지를 보냈습니다.`,
+        data: {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          author: admin,
+        },
+      });
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
