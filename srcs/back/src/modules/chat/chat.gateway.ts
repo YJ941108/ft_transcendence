@@ -293,7 +293,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       func: 'listeningDMRoomInfo',
       code: 200,
       message: `[${socketId}][${memoryUser.nickname}]: ${functionName}->listeningGetUsers`,
-      data: response,
     });
   }
 
