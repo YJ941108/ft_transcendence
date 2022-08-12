@@ -1,59 +1,57 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
-import { useSetRecoilState, useRecoilValue } from 'recoil';
-import { channelInfoData, chatContent, MyInfo, channelIdData } from '../../../modules/atoms';
-import { IMyData, IChannel } from '../../../modules/Interfaces/chatInterface';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { chatContent, channelInfoData } from '../../../modules/atoms';
+import { IChannel } from '../../../modules/Interfaces/chatInterface';
 
-enum OpenChatVisibility {
-	private = 'private',
-	public = 'public',
-	protectedPassword = 'protectedPassword',
-}
-
-interface INewOpenChatRoomProps {
+interface IEditOpenChatRoomProps {
 	chatSocket: any;
 }
 
 interface IFormInput {
+	channelId: number;
 	openChatName: string;
-	openChatVisibility: OpenChatVisibility;
+	openChatVisibility: 'private' | 'public' | 'protected';
 	password?: string | number;
 }
 
-const NewOpenChatRoomC = styled.div`
+const EditOpenChatRoomC = styled.div`
 	width: 100%;
 	height: 100%;
 `;
 
-function NewOpenChatRoom({ chatSocket }: INewOpenChatRoomProps) {
-	const myInfo = useRecoilValue<IMyData>(MyInfo);
+function EditOpenChatRoom({ chatSocket }: IEditOpenChatRoomProps) {
 	const { register, handleSubmit } = useForm<IFormInput>();
 	const [isPassword, setIsPassword] = useState(false);
 	const setContent = useSetRecoilState(chatContent);
-	const setChannelInfo = useSetRecoilState(channelInfoData);
-	const setChannelId = useSetRecoilState(channelIdData);
+	const [channelData, setChannelData] = useRecoilState<IChannel>(channelInfoData);
 	const onSubmit = (data: IFormInput) => {
-		const newChannelData = {
+		const editRoomData = {
+			channelId: channelData.id,
 			name: data.openChatName,
 			privacy: data.openChatVisibility,
 			password: data.password,
-			userId: myInfo.id,
 		};
-		chatSocket.emit('createChannel', newChannelData, (response: { data: IChannel }) => {
-			setChannelId(response.data.id);
-			setChannelInfo(response.data);
-			setContent('OpenChatRoom');
+		chatSocket.emit('updateChannel', editRoomData, (response: { data: IChannel }) => {
+			setChannelData(response.data);
 		});
+		setContent('OpenChatRoom');
 	};
 	const openChatVisibilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
 		if (event.target.value === 'protected') setIsPassword(true);
 		else setIsPassword(false);
 	};
+	const deleteChatRoom = () => {
+		chatSocket.emit('deleteChannel', {
+			channelId: channelData.id,
+		});
+		setContent('OpenChatList');
+	};
 	return (
-		<NewOpenChatRoomC>
-			<h1>Open Chat</h1>
-			<button type="button" onClick={() => setContent('OpenChatList')}>
+		<EditOpenChatRoomC>
+			<h1>Edit Open Chat</h1>
+			<button type="button" onClick={() => setContent('OpenChatRoom')}>
 				exit
 			</button>
 			<form onSubmit={handleSubmit(onSubmit)}>
@@ -69,10 +67,13 @@ function NewOpenChatRoom({ chatSocket }: INewOpenChatRoomProps) {
 						<input {...register('password')} />
 					</div>
 				) : null}
-				<button type="submit">Create OpenChat</button>
+				<button type="submit">Edit OpenChat</button>
 			</form>
-		</NewOpenChatRoomC>
+			<button type="button" onClick={deleteChatRoom}>
+				DELETE
+			</button>
+		</EditOpenChatRoomC>
 	);
 }
 
-export default NewOpenChatRoom;
+export default EditOpenChatRoom;

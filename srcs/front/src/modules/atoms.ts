@@ -93,6 +93,11 @@ export const DMRoomInfo = atom<IDMRoom>({
 	},
 });
 
+export const channelIdData = atom<number>({
+	key: 'channelIdData',
+	default: 0,
+});
+
 export const DMRoomList = atom<IDMRoom[]>({
 	key: 'dmRoomList',
 	default: [],
