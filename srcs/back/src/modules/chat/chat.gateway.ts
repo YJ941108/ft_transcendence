@@ -390,7 +390,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       //     'listeningDMRoomList',
       //   );
       // }
-      return this.returnMessage('createDMRoom', 200, 'listeningDMRoomInfo, listeningDMRoomList');
+      return this.returnMessage('createDMRoom', 200, 'listeningDMRoomInfo, listeningDMRoomList', dm.id);
     } catch (e) {
       console.log(e);
       this.server.to(client.id).emit('chatError', e.message);
@@ -446,7 +446,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('sendDMMessage')
   async handleDmSubmit(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { DMId: number; authorId: number; message: string },
+    @MessageBody() data: { DMId: number; authorId: number; message: string; type?: string },
   ) {
     let memoryUser = this.chatUsers.getUserBySocketId(client.id);
     if (!memoryUser) {
@@ -1403,44 +1403,56 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @MessageBody() { senderId, receiverId }: { senderId: number; receiverId: number },
   ) {
     try {
+      const memorySender = this.chatUsers.getUser(client.id);
+      const memoryReceiver = this.chatUsers.getUserById(receiverId);
+
+      /** 게임 방이 존재하는지 확인 */
       this.pongGateway.roomAlreadyExists(senderId, receiverId);
 
-      let DM = await this.chatService.checkIfDmExists(senderId, receiverId);
-      const sender = this.chatUsers.getUser(client.id);
-      const receiver = this.chatUsers.getUserById(receiverId);
-
-      if (!DM) {
-        DM = await this.chatService.createDm({
-          users: [{ id: senderId }, { id: receiverId }],
-        } as CreateDirectMessageDto);
-
-        if (receiver) {
-          this.userJoinRoom(receiver.socketId, `dm_${DM.id}`);
-          this.server.to(receiver.socketId).emit('dmCreated');
-        }
-      }
-      if (receiver) {
-        this.server
-          .to(receiver.socketId)
-          .emit('chatInfo', `${sender.nickname} wants to play Pong! Open your DM and accept the challenge!`);
-      }
-
+      /** 초대방 만들기 */
       const roomId = await this.pongGateway.createInviteRoom(
-        { id: sender.id, nickname: sender.nickname } as User,
+        { id: memorySender.id, nickname: memorySender.nickname } as User,
         receiverId,
       );
 
-      const message = await this.chatService.addMessageToDm({
-        content: "Let's play!",
-        author: { id: senderId },
+      /** DM 보내기 */
+      const dm: any = await this.handleCreateDm(client, { anotherId: memoryReceiver.id });
+      await this.handleDmSubmit(client, {
+        DMId: dm.data,
+        authorId: memorySender.id,
+        message: '게임 한판 고고',
         type: 'invite',
-        roomId,
-        DM,
-      } as CreateMessageDto);
+      });
 
-      this.server.to(`dm_${DM.id}`).emit('newPongInvite', { message });
-      this.logger.log(`New Pong invite in DM [${message.DM.id}]`);
-      this.server.to(client.id).emit('launchInviteGame');
+      // /** DM방 생성 */
+      // let DM = await this.chatService.checkIfDmExists(senderId, receiverId);
+      // if (!DM) {
+      //   DM = await this.chatService.createDm({
+      //     users: [{ id: senderId }, { id: receiverId }],
+      //   } as CreateDirectMessageDto);
+
+      //   if (memoryReceiver) {
+      //     this.userJoinRoom(memoryReceiver.socketId, `dm_${DM.id}`);
+      //     this.server.to(memoryReceiver.socketId).emit('dmCreated');
+      //   }
+      // }
+      // if (memoryReceiver) {
+      //   this.server
+      //     .to(memoryReceiver.socketId)
+      //     .emit('chatInfo', `${memorySender.nickname} wants to play Pong! Open your DM and accept the challenge!`);
+      // }
+
+      // /** 메시지 보내기 */
+      // const message = await this.chatService.addMessageToDm({
+      //   content: "Let's play!",
+      //   author: { id: senderId },
+      //   type: 'invite',
+      //   roomId,
+      //   DM,
+      // } as CreateMessageDto);
+      // this.server.to(`dm_${DM.id}`).emit('newPongInvite', { message });
+
+      this.server.to(client.id).emit('listeningInviteGame');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
