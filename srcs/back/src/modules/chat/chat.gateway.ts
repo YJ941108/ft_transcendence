@@ -848,7 +848,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    * joinChannel 방 접속
    * leaveChannel 방 떠나기
    */
-  @SubscribeMessage('isBanFromChannel')
+  @SubscribeMessage('isJoinPossible')
   async handleOpenChannel(
     @ConnectedSocket() client: Socket,
     @MessageBody() { channelId, userId }: { channelId: number; userId: number },
@@ -860,13 +860,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     try {
       const isBanned = await this.chatService.checkIfUserIsBanned(channelId, userId);
-      this.server.to(client.id).emit('listeningBan', {
-        func: 'isBanFromChannel',
+      this.server.to(client.id).emit('listeningJoinPossible', {
+        func: 'isJoinPossible',
         code: 200,
-        message: `채널 입장 가능 여부`,
-        data: {
-          isBanned,
-        },
+        message: `입장 가능합니다`,
       });
     } catch (e) {
       this.chatError(client, e);
@@ -1059,8 +1056,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         throw new WsException('유저가 없습니다');
       }
 
-      console.log(dbchannel);
-      console.log(dbUser);
       const createChannelDto: CreateMessageDto = {
         content: data.message,
         channel: dbchannel,
@@ -1135,12 +1130,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       }
 
       /** 어드민 추가하기 */
-      const owner = await this.chatService.addAdminToChannel(dbChannel, userId);
+      const admin = await this.chatService.addAdminToChannel(dbChannel, userId);
+      const owner = await this.usersService.getUserWithoutFriends(ownerId);
 
       /** 어드민 추가 메시지 보내기 */
       const message = await this.chatService.addMessageToChannel({
         content: `${owner.nickname}은 admin입니다`,
         channel: dbChannel,
+        author: owner,
       });
 
       /** 방 정보 보내기 */
@@ -1149,7 +1146,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.listeningChannelInfo(dbChannel, roomId);
 
       /** 메시지 보내기 */
-      const admin = await this.usersService.getUserWithoutFriends(ownerId);
       this.server.to(`channel_${dbChannel.id}`).emit('listeningMessage', {
         func: 'sendMessage',
         code: 200,
@@ -1158,12 +1154,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           id: message.id,
           content: message.content,
           createdAt: message.createdAt,
-          author: admin,
+          author: owner,
         },
       });
       this.logger.log(`User [${owner.nickname}] is now admin in Channel [${dbChannel.name}]`);
     } catch (e) {
-      this.server.to(client.id).emit('chatError', e.message);
+      this.chatError(client, e);
     }
   }
 
@@ -1194,13 +1190,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         throw new Error('Insufficient Privileges');
       }
 
-      /** 유저 삭제 */
-      const owner = await this.chatService.removeAdminFromChannel(dbChannel, userId);
+      /** 어드민 제거 */
+      const owner = await this.usersService.getUserWithoutFriends(ownerId);
+      const admin = await this.chatService.removeAdminFromChannel(dbChannel, userId);
 
-      /** 어드민 추가 메시지 보내기 */
+      /** 어드민 제거 메시지 보내기 */
       const message = await this.chatService.addMessageToChannel({
-        content: `${owner.nickname}은 admin입니다`,
+        content: `${admin.nickname}은 더 이상 admin이 아닙니다`,
         channel: dbChannel,
+        author: owner,
       });
 
       /** 방 정보 보내기 */
@@ -1209,7 +1207,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.listeningChannelInfo(dbChannel, roomId);
 
       /** 메시지 보내기 */
-      const admin = await this.usersService.getUserWithoutFriends(ownerId);
       this.server.to(`channel_${dbChannel.id}`).emit('listeningMessage', {
         func: 'sendMessage',
         code: 200,
@@ -1218,11 +1215,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           id: message.id,
           content: message.content,
           createdAt: message.createdAt,
-          author: admin,
+          author: owner,
         },
       });
     } catch (e) {
-      this.server.to(client.id).emit('chatError', e.message);
+      this.chatError(client, e);
     }
   }
 
@@ -1250,6 +1247,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       const admin = this.chatUsers.getUserById(adminId);
       const channel = await this.chatService.getChannelData(channelId);
+
+      /** 추방 */
       const user = await this.chatService.kickUser(channel, adminId, userId);
       const message = await this.chatService.addMessageToChannel({
         content: `${admin.nickname} kicked ${user.username}`,
@@ -1299,14 +1298,47 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     try {
-      const channel = await this.chatService.getChannelData(channelId);
-      const message = await this.chatService.punishUser(channel, adminId, userId, type);
-      const chatUser = this.chatUsers.getUserById(userId);
+      let dbChannel = await this.chatService.getChannelData(channelId);
+      const admin = await this.usersService.getUserWithoutFriends(adminId);
 
-      this.server.to(client.id).emit('userPunished');
-      if (chatUser) {
-        this.server.to(chatUser.socketId).emit('punishedInChannel', message);
+      /** 처벌 주기 */
+      const content = await this.chatService.punishUser(dbChannel, adminId, userId, type);
+
+      const memoryAnother = this.chatUsers.getUserById(userId);
+      if (type == 'ban') {
+        this.server.to(memoryAnother.socketId).emit('listeningBan', {
+          func: 'punishUser',
+          code: 200,
+          message: `${dbChannel.name}에서 추방당했습니다.`,
+        });
       }
+
+      /** 알리기 */
+      // const chatUser = this.chatUsers.getUserById(userId);
+      // this.server.to(client.id).emit('userPunished');
+      // if (chatUser) {
+      //   this.server.to(chatUser.socketId).emit('punishedInChannel', content);
+      // }
+
+      /** 처벌 메시지 보내기 */
+      const message = await this.chatService.addMessageToChannel({
+        content: content,
+        channel: dbChannel,
+        author: admin,
+      });
+
+      /** 메시지 보내기 */
+      this.server.to(`channel_${dbChannel.id}`).emit('listeningMessage', {
+        func: 'sendMessage',
+        code: 200,
+        message: `메시지를 보냈습니다.`,
+        data: {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          author: admin,
+        },
+      });
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }

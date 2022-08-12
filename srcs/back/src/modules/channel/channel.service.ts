@@ -35,7 +35,7 @@ export class ChannelService {
     }
 
     return this.PunishmentService.punishUser(channelId, punishedId, punisherId, 'ban', {
-      reason: "Un méchant garçon, à n'en point douter.",
+      reason: '이유는 모르오',
     });
   }
 
@@ -46,7 +46,7 @@ export class ChannelService {
     }
 
     return this.PunishmentService.punishUser(channelId, punishedId, punisherId, 'mute', {
-      reason: "Un méchant garçon, à n'en point douter.",
+      reason: '이유는 모르오',
     });
   }
 

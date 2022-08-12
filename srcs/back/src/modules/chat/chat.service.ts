@@ -203,12 +203,15 @@ export class ChatService {
     if (channel.owner.id !== adminId && !isAdmin) {
       throw new Error('Insufficient Privileges');
     }
+
+    const user = await this.usersService.getUserWithoutFriends(userId);
+
     if (type === 'ban') {
       await this.channelService.banUser(channel.id, userId, adminId);
-      return `You have been banned from ${channel.name}.`;
+      return `${user.nickname}는 ${channel.name}에서 ban 되었습니다.`;
     } else if (type === 'mute') {
       await this.channelService.muteUser(channel.id, userId, adminId);
-      return `You have been muted in ${channel.name}.`;
+      return `${user.nickname}는 ${channel.name}에서 mute 되었습니다.`;
     }
   }
 
