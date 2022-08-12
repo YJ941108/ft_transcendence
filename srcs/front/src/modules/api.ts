@@ -55,3 +55,8 @@ export const getUserListData = async () => {
 	const response = await axios.get('/api/users/');
 	return response.data;
 };
+
+export const getChannelInfo = async (channelId: number) => {
+	const response = await axios.get(`/api/chat/channel/${channelId}`);
+	return response.data;
+};

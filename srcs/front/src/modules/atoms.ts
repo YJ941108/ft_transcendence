@@ -105,3 +105,8 @@ export const channelInfoData = atom<IChannel>({
 		messages: [],
 	},
 });
+
+export const channelIdData = atom<number>({
+	key: 'channelIdData',
+	default: 0,
+});

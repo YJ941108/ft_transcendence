@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useQuery } from 'react-query';
 import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
 import { IChannel, IMyData, IMessageResponse, IMessages } from '../../../modules/Interfaces/chatInterface';
+import { getChannelInfo } from '../../../modules/api';
 
 interface IFormInput {
 	message: string;
@@ -19,6 +21,11 @@ function OpenChatRoom({ chatSocket }: any) {
 	const [messageList, setMessageList] = useState<IMessages[]>([]);
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 	const [channelInfo, setChannelInfo] = useRecoilState<IChannel>(channelInfoData);
+	const {
+		isLoading,
+		data: basicChannelInfo,
+		error,
+	} = useQuery(['channel', channelInfo.id], () => getChannelInfo(channelInfo.id));
 	const setChatContent = useSetRecoilState<string>(chatContent);
 
 	const onSubmit = (data: IFormInput) => {
@@ -61,7 +68,6 @@ function OpenChatRoom({ chatSocket }: any) {
 			setChatContent('OpenChatList');
 		});
 		chatSocket.on('listeningChannelInfo', (response: { data: IChannel }) => {
-			console.log(response.data, 'channelInfo');
 			setChannelInfo(response.data);
 		});
 		return () => {
@@ -76,10 +82,21 @@ function OpenChatRoom({ chatSocket }: any) {
 			userId: myInfo.id,
 		});
 	}, []);
-
 	useEffect(() => {
-		setMessageList(channelInfo.messages);
-	}, []);
+		console.log(basicChannelInfo, 'messages');
+		if (!isLoading && !error && basicChannelInfo) {
+			console.log('here');
+			const newMessages = basicChannelInfo?.data.messages;
+			setMessageList((prevMessageList) => {
+				return [...prevMessageList, ...newMessages];
+			});
+		}
+		return () => {
+			setMessageList([]);
+		};
+	}, [basicChannelInfo]);
+	if (isLoading) return <h1>Loading</h1>;
+	if (error) return <h1>Error</h1>;
 	return (
 		<div>
 			<button type="button" onClick={joinChat}>
@@ -96,7 +113,7 @@ function OpenChatRoom({ chatSocket }: any) {
 			</button>
 			<ul>
 				{messageList?.map((message: IMessages) => {
-					return <li>{message.content}</li>;
+					return <li key={message.id}>{message.content}</li>;
 				})}
 			</ul>
 			<form onSubmit={handleSubmit(onSubmit)}>

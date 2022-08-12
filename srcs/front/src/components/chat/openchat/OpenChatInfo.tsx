@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useSetRecoilState } from 'recoil';
 import { IChannel } from '../../../modules/Interfaces/chatInterface';
-import { channelInfoData, chatContent } from '../../../modules/atoms';
+import { channelInfoData, chatContent, channelIdData } from '../../../modules/atoms';
 
 const OpenChatStyleC = styled.li`
 	display: flex;
@@ -33,12 +33,15 @@ interface IOpenChatInfoProps {
 function OpenChatInfo({ channelInfo }: IOpenChatInfoProps) {
 	const setChannelInfo = useSetRecoilState<IChannel>(channelInfoData);
 	const setContent = useSetRecoilState<string>(chatContent);
+	const setChannelId = useSetRecoilState<number>(channelIdData);
 	const onClick = () => {
 		if (channelInfo.privacy === 'protected') {
 			setChannelInfo(channelInfo);
+			setChannelId(channelInfo.id);
 			setContent('ProtectedPassword');
 		} else {
 			setChannelInfo(channelInfo);
+			setChannelId(channelInfo.id);
 			setContent('OpenChatRoom');
 		}
 	};
