@@ -3,7 +3,15 @@ import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { useRecoilValue, useRecoilState } from 'recoil';
 import { io, Socket } from 'socket.io-client';
-import { MyInfo, chatContent, chatUserList, DMRoomList, friendsList, requestList } from '../../modules/atoms';
+import {
+	MyInfo,
+	chatContent,
+	chatUserList,
+	DMRoomList,
+	friendsList,
+	requestList,
+	channelListInfo,
+} from '../../modules/atoms';
 // import SearchInput from './SearchInput';
 
 import { getUserData } from '../../modules/api';
@@ -16,7 +24,7 @@ import NewOpenChatRoom from './openchat/NewOpenChatRoom';
 import OpenChatRoom from './openchat/OpenChatRoom';
 import DirectMessageList from './DirectMessageList';
 import IUserData from '../../modules/Interfaces/userInterface';
-import { IMyData, IMyDataResponse, IErr, IDMRoom } from '../../modules/Interfaces/chatInterface';
+import { IMyData, IMyDataResponse, IErr, IDMRoom, IChannel } from '../../modules/Interfaces/chatInterface';
 import { emitJoinChat } from './Emit';
 import OpenChatInvite from './openchat/OpenChatInvite';
 import EditOpenChatRoom from './openchat/EditOpenChatRoom';

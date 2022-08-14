@@ -15,7 +15,12 @@ function OpenChatUsers() {
 			</button>
 			<ul>
 				{channelData.users?.map((user: IUserData) => {
-					return <li key={user.id}>{user.nickname}</li>;
+					return (
+						<li key={user.id}>
+							<span>{user.nickname}</span>
+							<button type="button">admin</button>
+						</li>
+					);
 				})}
 			</ul>
 		</div>
