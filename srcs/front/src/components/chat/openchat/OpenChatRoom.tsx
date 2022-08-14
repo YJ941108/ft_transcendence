@@ -10,7 +10,7 @@ interface IFormInput {
 	message: string;
 }
 
-interface IMessage {
+interface ISendMessage {
 	message: string;
 	channelId: number;
 	userId: number;
@@ -21,6 +21,7 @@ function OpenChatRoom({ chatSocket }: any) {
 	const [messageList, setMessageList] = useState<IMessages[]>([]);
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 	const [channelInfo, setChannelInfo] = useRecoilState<IChannel>(channelInfoData);
+	const [isOwner, setIsOwner] = useState(false);
 	const {
 		isLoading,
 		data: basicChannelInfo,
@@ -29,7 +30,7 @@ function OpenChatRoom({ chatSocket }: any) {
 	const setChatContent = useSetRecoilState<string>(chatContent);
 
 	const onSubmit = (data: IFormInput) => {
-		const message: IMessage = {
+		const message: ISendMessage = {
 			message: data.message,
 			channelId: channelInfo.id,
 			userId: myInfo.id,
@@ -88,12 +89,12 @@ function OpenChatRoom({ chatSocket }: any) {
 			setMessageList((prevMessageList) => {
 				return [...prevMessageList, ...newMessages];
 			});
+			if (myInfo.id === basicChannelInfo.id) setIsOwner(true);
 		}
 		return () => {
 			setMessageList([]);
 		};
 	}, [basicChannelInfo]);
-	console.log(basicChannelInfo, 'channelInfo');
 	if (isLoading) return <h1>Loading</h1>;
 	if (error) return <h1>Error</h1>;
 	return (
@@ -101,9 +102,11 @@ function OpenChatRoom({ chatSocket }: any) {
 			<button type="button" onClick={joinChat}>
 				joinChat
 			</button>
-			<button type="button" onClick={editChat}>
-				editChat
-			</button>
+			{isOwner ? (
+				<button type="button" onClick={editChat}>
+					editChat
+				</button>
+			) : null}
 			<button type="button" onClick={userList}>
 				users
 			</button>

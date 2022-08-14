@@ -74,7 +74,7 @@ function Chat() {
 		OpenChatInvite: <OpenChatInvite chatSocket={socket} />,
 		EditOpenChatRoom: <EditOpenChatRoom chatSocket={socket} />,
 		ProtectedPassword: <ProtectedPassword chatSocket={socket} />,
-		OpenChatUsers: <OpenChatUsers />,
+		OpenChatUsers: <OpenChatUsers chatSocket={socket} />,
 	};
 
 	useEffect(() => {
