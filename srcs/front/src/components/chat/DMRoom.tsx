@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Socket } from 'socket.io-client';
 import { useRecoilState, useRecoilValue } from 'recoil';
@@ -7,29 +7,34 @@ import { IDMlisten, IDMRoom, IMessages } from '../../modules/Interfaces/chatInte
 import { DMRoomInfo, MyInfo } from '../../modules/atoms';
 
 const DMRoomStyleC = styled.div`
-	height: 100%;
-	border-left: 1px solid white;
+	min-height: 600px;
+	max-height: 600px;
 `;
 
 const ChatLogStyleC = styled.ul`
-	height: 90%;
+	min-height: 400px;
+	max-height: 400px;
+	/* height: 100%; */
+	overflow-wrap: break-word;
 	overflow-y: scroll;
 `;
 
 const DMDivStyleC = styled.div`
 	width: 100%;
-	height: 10%;
+	height: 80px;
 	display: flex;
+	border: none;
+	margin: 0;
 `;
 
-const DMInputStyleC = styled.input`
-	height: 100%;
-	width: 100%;
-	vertical-align: top;
+const DMInputStyleC = styled.textarea`
+	width: 80%;
+	resize: none;
+	font-family: 'Galmuri7', 'sans-serif';
 `;
 
-const DMButtonStyleC = styled.button`
-	height: 100%;
+const DMButtonStyleC = styled.div`
+	background-color: red;
 	width: 20%;
 `;
 
@@ -42,15 +47,23 @@ function DMRoom({ chatSocket }: ISocket) {
 	const [roomInfo, setRoomInfo] = useRecoilState<IDMRoom>(DMRoomInfo);
 	const [messageList, setMessageList] = useState<string[]>([]);
 	const Info = useRecoilValue(MyInfo);
+	const messageBoxRef = useRef<HTMLUListElement>(null);
+
+	const scrollToBottom = () => {
+		if (messageBoxRef.current) {
+			messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
+		}
+	};
 
 	const sendMessage = () => {
 		if (message) {
 			emitSendDMMessage(chatSocket, roomInfo.id, Info.id, message);
 			setMessage('');
+			scrollToBottom();
 		}
 	};
 
-	const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+	const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (event.key === 'Enter') {
 			sendMessage();
 		}
@@ -59,13 +72,12 @@ function DMRoom({ chatSocket }: ISocket) {
 	useEffect(() => {
 		chatSocket.on('listeningDMRoomInfo', (response: { data: IDMRoom }) => {
 			setRoomInfo(response.data);
-			console.log(response, '여긴오냐?');
 			console.log(response.data.message, 'messages');
 			response.data.message?.map((element: IMessages) => {
-				console.log(element, 'FUCK YOU');
 				setMessageList((msgList) => {
 					return [...msgList, element.content];
 				});
+				scrollToBottom();
 				return () => {};
 			});
 		});
@@ -76,9 +88,10 @@ function DMRoom({ chatSocket }: ISocket) {
 
 	useEffect(() => {
 		chatSocket.on('listeningDMMessage', (response: IDMlisten) => {
-			setMessageList((msgList) => {
-				return [...msgList, response.data.message];
+			setMessageList((msg) => {
+				return [...msg, response.data.message];
 			});
+			scrollToBottom();
 		});
 		return () => {
 			chatSocket.off('listeningDMMessage');
@@ -87,7 +100,7 @@ function DMRoom({ chatSocket }: ISocket) {
 
 	return (
 		<DMRoomStyleC>
-			<ChatLogStyleC>
+			<ChatLogStyleC ref={messageBoxRef}>
 				{messageList?.map((msg: string) => {
 					return <li>{msg}</li>;
 				})}
@@ -101,7 +114,6 @@ function DMRoom({ chatSocket }: ISocket) {
 					}}
 				/>
 				<DMButtonStyleC
-					type="button"
 					onClick={() => {
 						sendMessage();
 					}}
