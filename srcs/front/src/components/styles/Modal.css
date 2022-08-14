@@ -1,0 +1,22 @@
+.custom_modal .modal-content {
+    background-color: #000;
+    color: #fff;
+    border: 1px solid white;
+}
+
+.custom_modal_form_body .modal-body {
+    grid-area: formBody;
+}
+
+.custom_modal_img_body .modal-body {
+    grid-area: imgBody;
+}
+
+.custom_modal_img {
+    object-fit: cover;
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 0.4rem;
+    background-color: white;
+}

@@ -8,7 +8,6 @@ import ProfilePage from './pages/ProfilePage';
 import UsersPage from './pages/UsersPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ErrorPage from './pages/ErrorPage';
-import ProfileEditPage from './pages/ProfileEditPage';
 
 function Router() {
 	return (
@@ -19,8 +18,7 @@ function Router() {
 				<Route path="/auth" element={<AuthPage />} />
 				<Route path="/game" element={<GamePage />} />
 				<Route path="/profile" element={<ProfilePage />} />
-				<Route path="/profileEdit" element={<ProfileEditPage />} />
-				<Route path="/users" element={<UsersPage />} />
+				<Route path="/users" element={<UsersPage/>} />
 				<Route path="/leaderboard" element={<LeaderboardPage />} />
 				<Route path="*" element={<ErrorPage />} />
 			</Routes>
