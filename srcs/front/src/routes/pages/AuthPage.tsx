@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { onLogin } from '../../modules/login/login';
-import getUserData from '../../modules/api';
+import { getUserData } from '../../modules/api';
 
 function AuthPage() {
 	const location = useLocation();

@@ -5,7 +5,7 @@ import LoginPage from './pages/LoginPage';
 import AuthPage from './pages/AuthPage';
 import GamePage from './pages/GamePage';
 import ProfilePage from './pages/ProfilePage';
-import FriendsPage from './pages/FriendsPage';
+import UsersPage from './pages/UsersPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ErrorPage from './pages/ErrorPage';
 
@@ -18,7 +18,7 @@ function Router() {
 				<Route path="/auth" element={<AuthPage />} />
 				<Route path="/game" element={<GamePage />} />
 				<Route path="/profile" element={<ProfilePage />} />
-				<Route path="/friends" element={<FriendsPage />} />
+				<Route path="/users" element={<UsersPage/>} />
 				<Route path="/leaderboard" element={<LeaderboardPage />} />
 				<Route path="*" element={<ErrorPage />} />
 			</Routes>

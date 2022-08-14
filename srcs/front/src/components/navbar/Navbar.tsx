@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import SideBox from '../styles/box/SideBox';
 
 interface INavbarListProps {
 	current: boolean;
@@ -26,22 +25,20 @@ function Navbar() {
 	const url = window.location.href.split('/').pop();
 
 	return (
-		<SideBox>
-			<NavbarC>
-				<NavbarListC current={url === 'game'}>
-					<Link to="/game">play</Link>
-				</NavbarListC>
-				<NavbarListC current={url === 'profile'}>
-					<Link to="/profile">profile</Link>
-				</NavbarListC>
-				<NavbarListC current={url === 'friends'}>
-					<Link to="/friends">friends</Link>
-				</NavbarListC>
-				<NavbarListC current={url === 'leaderboard'}>
-					<Link to="/leaderboard">leaderboard</Link>
-				</NavbarListC>
-			</NavbarC>
-		</SideBox>
+		<NavbarC>
+			<NavbarListC current={url === 'game'}>
+				<Link to="/game">play</Link>
+			</NavbarListC>
+			<NavbarListC current={url === 'profile'}>
+				<Link to="/profile">profile</Link>
+			</NavbarListC>
+			<NavbarListC current={url === 'friends'}>
+				<Link to="/friends">friends</Link>
+			</NavbarListC>
+			<NavbarListC current={url === 'leaderboard'}>
+				<Link to="/leaderboard">leaderboard</Link>
+			</NavbarListC>
+		</NavbarC>
 	);
 }
 

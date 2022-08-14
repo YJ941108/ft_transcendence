@@ -1,23 +1,22 @@
 import React from 'react';
 import styled from 'styled-components';
 import ChatNavButton from './ChatNavButton';
+import UserList from '../../img/alluser.png';
+import DirectMessageList from '../../img/directmessage.png';
+import FriendsList from '../../img/friends.png';
+import OpenChatList from '../../img/openchat.png';
 
 const ChatNavStyleC = styled.div`
 	width: 100%;
-	/* background-color: black; */
 `;
 
-interface IChatNav {
-	func: (event: React.MouseEvent<HTMLButtonElement>) => void;
-}
-
-function ChatNav({ func }: IChatNav) {
+function ChatNav() {
 	return (
 		<ChatNavStyleC>
-			<ChatNavButton func={func} name="AllUserList" />
-			<ChatNavButton func={func} name="OpenChatList" />
-			<ChatNavButton func={func} name="FriendsList" />
-			<ChatNavButton func={func} name="DirectMessageList" />
+			<ChatNavButton name="UserList" imgSrc={UserList} />
+			<ChatNavButton name="OpenChatList" imgSrc={OpenChatList} />
+			<ChatNavButton name="FriendsList" imgSrc={FriendsList} />
+			<ChatNavButton name="DirectMessageList" imgSrc={DirectMessageList} />
 		</ChatNavStyleC>
 	);
 }

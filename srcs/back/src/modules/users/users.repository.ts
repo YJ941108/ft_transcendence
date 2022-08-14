@@ -8,7 +8,7 @@ import {
 import { EntityRepository, Repository } from 'typeorm';
 import { UserActionDto } from './dto/user-action.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Users } from './users.entity';
+import { Users } from './entities/users.entity';
 import { AchievementList } from 'src/enums/achievements.enum';
 
 /**
@@ -57,7 +57,12 @@ export class UsersRepository extends Repository<Users> {
         relations: relations,
       },
     );
-    const another = await this.findOne({ nickname });
+    const another = await this.findOne(
+      { nickname },
+      {
+        relations: relations,
+      },
+    );
 
     /** 예외 처리 */
     if (!another) {
@@ -83,8 +88,8 @@ export class UsersRepository extends Repository<Users> {
     let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
 
     /** 중복 처리 */
-    user.friendsRequest.map((e: { id: number }) => {
-      if (e.id === another.id) {
+    another.friendsRequest.map((e: { id: number }) => {
+      if (e.id === user.id) {
         throw new BadRequestException('이미 요청을 했습니다');
       }
     });
@@ -95,8 +100,8 @@ export class UsersRepository extends Repository<Users> {
     });
 
     /** 데이터 삽입 */
-    user.friendsRequest.push(another);
-    user.save();
+    another.friendsRequest.push(user);
+    another.save();
     return user;
   }
 
@@ -130,18 +135,30 @@ export class UsersRepository extends Repository<Users> {
     }
 
     /** 데이터 삽입 */
-    user.friends.push(another);
+    const anotherWithoutFriends = await this.findOne({ id: another.id });
+    user.friends.push(anotherWithoutFriends);
     const index = user.friendsRequest.findIndex((e) => e.id === another.id);
     user.friendsRequest.splice(index, 1);
 
     /** 업적 추가 */
-    const array = user.achievement.split('').map((e) => +e);
+    let array = user.achievement.split('').map((e) => +e);
     if (array[AchievementList.FRIENDS_FIRST_MAKE] === 0) {
       array[AchievementList.FRIENDS_FIRST_MAKE] = 1;
       user.achievement = array.join('');
     }
+    array = another.achievement.split('').map((e) => +e);
+    if (array[AchievementList.FRIENDS_FIRST_MAKE] === 0) {
+      array[AchievementList.FRIENDS_FIRST_MAKE] = 1;
+      user.achievement = array.join('');
+    }
+    await user.save();
 
-    user.save();
+    /** 상대방도 저장 */
+    const userWithoutFriends = await this.findOne({ id: user.id });
+    another.friends.push(userWithoutFriends);
+    await another.save();
+    console.log(user);
+    console.log(another);
     return user;
   }
 
@@ -191,9 +208,16 @@ export class UsersRepository extends Repository<Users> {
       throw new BadRequestException('친구가 아닙니다');
     }
 
-    const index = user.friends.findIndex((e) => e.id === another.id);
+    /** 삭제 */
+    let index = user.friends.findIndex((e) => e.id === another.id);
     user.friends.splice(index, 1);
-    user.save();
+    await user.save();
+
+    /** 상대방도 삭제 */
+    index = another.friends.findIndex((e) => e.id === user.id);
+    another.friends.splice(index, 1);
+    await another.save();
+
     return user;
   }
 

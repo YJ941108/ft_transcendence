@@ -11,7 +11,6 @@ export enum GameState {
 	PLAYER_TWO_SCORED,
 	PLAYER_ONE_WIN,
 	PLAYER_TWO_WIN,
-	END_GAME,
 }
 
 export interface IKey {
@@ -22,7 +21,7 @@ export interface IKey {
 
 export interface IUser {
 	id: number;
-	username: string;
+	nickname: string;
 }
 
 export interface IPlayer {

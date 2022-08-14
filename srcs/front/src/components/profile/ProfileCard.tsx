@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
 import Toggle from './Toggle';
-import getUserData from '../../modules/api';
+import { getUserData } from '../../modules/api';
 import ProfileModal from './ProfileModal';
 import { IUser } from './UserInterface';
 
@@ -22,6 +22,7 @@ const ProfileCardBox = styled.div`
 	display: inline-block;
 	color: white;
 	padding: 20px;
+	height: 250px;
 	width: 188px;
 	border-radius: 10px;
 	text-align: center;

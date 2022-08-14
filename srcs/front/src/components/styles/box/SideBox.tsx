@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import ChatButton from '../../chat/ChatButton';
+import Chat from '../../chat/Chat';
 
 interface ISideBoxProps {
 	children?: React.ReactNode;
@@ -8,7 +8,7 @@ interface ISideBoxProps {
 
 const SideBoxC = styled.div`
 	width: 20rem;
-	height: 100vh;
+	height: 100%;
 `;
 
 const defaultProps = {
@@ -19,7 +19,7 @@ export default function SideBox({ children }: ISideBoxProps) {
 	return (
 		<SideBoxC>
 			{children}
-			<ChatButton />
+			<Chat />
 		</SideBoxC>
 	);
 }

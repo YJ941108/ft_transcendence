@@ -1,6 +1,10 @@
 /**
  * @see https://github.com/typeorm/typeorm/blob/master/test/functional/database-schema/column-types/postgres/entity/Post.ts
  */
+
+import { Channel } from 'src/modules/channel/entities/channel.entity';
+import { DirectMessage } from 'src/modules/direct-message/entities/direct-message.entity';
+import { Punishment } from 'src/modules/punishment/entities/punishment.entity';
 import {
   BaseEntity,
   Column,
@@ -8,11 +12,12 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { Games } from '../games/games.entity';
+import { Games } from '../../games/games.entity';
 
 /**
  *
@@ -63,17 +68,38 @@ export class Users extends BaseEntity {
   tfaCode: string;
 
   /** friends */
-  @ManyToMany((type) => Users)
-  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  @ManyToMany((type) => Users, (user) => user.friendsRequest)
+  friendsRequestParents: Users[];
+
+  @ManyToMany((type) => Users, (user) => user.friendsRequestParents)
+  @JoinTable()
   friendsRequest: Users[];
 
-  @ManyToMany((type) => Users)
-  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  @ManyToMany((type) => Users, (user) => user.friends)
+  friendsParents: Users[];
+
+  @ManyToMany((type) => Users, (user) => user.friendsParents)
+  @JoinTable()
   friends: Users[];
 
-  @ManyToMany((type) => Users)
-  @JoinTable({ joinColumn: { name: 'users_id_1' } })
+  @ManyToMany((type) => Users, (user) => user.blockedUsers)
+  blockedUsersParents: Users[];
+
+  @ManyToMany((type) => Users, (user) => user.blockedUsersParents)
+  @JoinTable()
   blockedUsers: Users[];
+
+  @Column({
+    nullable: true,
+    default: false,
+  })
+  isFriend: boolean;
+
+  @Column({
+    nullable: true,
+    default: false,
+  })
+  isOnline: boolean;
 
   /** games */
   @Column({
@@ -96,11 +122,6 @@ export class Users extends BaseEntity {
 
   @Column({
     nullable: true,
-  })
-  socketId: string;
-
-  @Column({
-    nullable: true,
     default: '100',
   })
   achievement: string;
@@ -111,6 +132,23 @@ export class Users extends BaseEntity {
    */
   @ManyToMany(() => Games, (game) => game.players)
   games: Games[];
+
+  @ManyToMany(() => DirectMessage, (directMessages) => directMessages.users)
+  directMessages: DirectMessage[];
+
+  @OneToMany(() => Channel, (channel) => channel.owner, {
+    cascade: true,
+  })
+  ownedChannels: Channel[];
+
+  @ManyToMany(() => Channel, (joinedChannels) => joinedChannels.users)
+  joinedChannels: Channel[];
+
+  @OneToMany(() => Punishment, (punishment) => punishment.punishedUser)
+  receivedChannelPunishments: Punishment[];
+
+  @OneToMany(() => Punishment, (punishment) => punishment.punishedByUser)
+  givenChannelPunishments: Punishment[];
 
   /**
    * @see https://typeorm.io/decorator-reference#createdatecolumn
