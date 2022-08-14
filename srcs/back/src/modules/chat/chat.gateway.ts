@@ -300,6 +300,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   async listeningDMRoomList(socketId: string, dbId: number, dbNickname: string, functionName: string): Promise<void> {
+    /** 유저의 DM List */
     const DMRooms = await this.chatService.getUserDMRooms(dbId);
     for (const DMRoom of DMRooms) {
       this.userJoinRoom(socketId, `dm_${DMRoom.id}`);
@@ -307,7 +308,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     const dbUser = await this.usersService.getUserWithoutFriends(dbId);
 
-    let response = [];
+    let response: Array<{ id: number; me: Users; another: Users; createdAt: Date; message: Message[] }> = [];
     for (let i = 0; i < DMRooms.length; i++) {
       let another: Users;
       if (dbUser.nickname === DMRooms[i].users[0].nickname) {
@@ -323,6 +324,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         createdAt: DMRooms[i].createdAt,
         message: DMRooms[i].messages,
       });
+    }
+
+    /** 블락 유저 제거 용 */
+    const dbUserWithBlockedUsers = await this.usersService.getUserWithFriends(dbId);
+    for (let i = 0; i < dbUserWithBlockedUsers.blockedUsers.length; i++) {
+      const roomIndex: number = response.findIndex(
+        (DMRoom) => DMRoom.another.id === dbUserWithBlockedUsers.blockedUsers[i].id,
+      );
+      if (roomIndex !== -1) {
+        response.splice(roomIndex, 1);
+      }
     }
 
     this.server.to(socketId).emit('listeningDMRoomList', {
