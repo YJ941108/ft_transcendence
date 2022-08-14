@@ -27,6 +27,11 @@ export const requestList = atom<IUserData[]>({
 	default: [],
 });
 
+export const blockedList = atom<IUserData[]>({
+	key: 'blockedList',
+	default: [],
+});
+
 export const MyInfo = atom<IMyData>({
 	key: 'myInfo',
 	default: {
@@ -47,6 +52,7 @@ export const MyInfo = atom<IMyData>({
 		updatedAt: '',
 		friendsRequest: [],
 		friends: [],
+		blockedUsers: [],
 	},
 });
 
