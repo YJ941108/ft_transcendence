@@ -56,7 +56,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne(
       { id },
       {
-        relations: ['friendsRequest', 'friends'],
+        relations: ['friendsRequest', 'friends', 'blockedUsers'],
       },
     );
     if (!user) {

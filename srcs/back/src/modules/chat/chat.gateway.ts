@@ -444,7 +444,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('sendDMMessage')
   async handleDmSubmit(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { DMId: number; authorId: number; message: string; type?: string },
+    @MessageBody() data: { DMId: number; authorId: number; message: string; type?: string; roomId?: string },
   ) {
     let memoryUser = this.chatUsers.getUserBySocketId(client.id);
     if (!memoryUser) {
@@ -1387,7 +1387,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @MessageBody() { roomId, userId }: { roomId: string; userId: number },
   ) {
     try {
-      this.pongGateway.setInviteRoomToReady(roomId, userId);
+      this.pongGateway.setInviteRoomToReady(client, userId, roomId);
       this.server.to(client.id).emit('redirectToGame');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
@@ -1419,6 +1419,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         authorId: memorySender.id,
         message: '게임 한판 고고',
         type: 'invite',
+        roomId: roomId,
       });
 
       // /** DM방 생성 */

@@ -533,13 +533,13 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   }
 
   /** 게임 초대 */
-  setInviteRoomToReady(roomId: string, userId: number) {
+  setInviteRoomToReady(client: Socket, userId: number, roomId: string) {
     const room = this.rooms.get(roomId);
     if (!room) {
       throw new Error('Game is over');
     }
 
-    // this.createNewRoom();
+    this.handleJoinRoom(client, roomId);
     room.changeGameState(GameState.STARTING);
   }
 
