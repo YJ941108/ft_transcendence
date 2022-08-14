@@ -171,22 +171,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleNewUser(@ConnectedSocket() client: Socket, @MessageBody() newUser: ChatUser) {
     /** 유저가 메모리에 있는지 확인 */
     let memoryUser = this.chatUsers.getUserById(newUser.id);
-    if (memoryUser) {
-      const nickname = memoryUser.nickname;
-      return this.returnMessage('joinChat', 400, `${client.id}: ${nickname}:가 채팅 소켓에 이미 접속했습니다`);
+    if (!memoryUser) {
+      /** 유저 메모리에 추가 */
+      memoryUser = new ChatUser(newUser.id, newUser.nickname, client.id);
+      this.chatUsers.addUser(memoryUser);
+    } else {
+      memoryUser.setSocketId(client.id);
+      // const nickname = memoryUser.nickname;
+      // return this.returnMessage('joinChat', 400, `${client.id}: ${nickname}:가 채팅 소켓에 이미 접속했습니다`);
     }
 
-    /** 유저 메모리에 추가 */
-    memoryUser = new ChatUser(newUser.id, newUser.nickname, client.id);
-    this.chatUsers.addUser(memoryUser);
-
     try {
-      await this.listeningGetUsers(client.id, 'handleDiscoonection');
-      await this.listeningMe(client.id, 'handleDiscoonection');
-
-      const dmList = await this.usersService.getUserWithDirectMessages(memoryUser.id);
+      await this.listeningGetUsers(client.id, 'joinChat');
+      await this.listeningMe(client.id, 'joinChat');
       await this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'joinChat');
-
       await this.listeningChannelList(client.id, memoryUser.id);
 
       /** 결과 반환 */
@@ -460,9 +458,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       const sendMessage = await this.chatService.addMessageToDm(message);
       const emitData = {
-        message: sendMessage.content,
-        author: sendMessage.author,
-        DMId: sendMessage.DM.id,
+        id: sendMessage.id,
+        content: sendMessage.content,
+        createdAt: sendMessage.createdAt,
+        author: author,
       };
       // const refactorMessage = {
       //   content: sendMessage.content,
@@ -1388,9 +1387,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @MessageBody() { roomId, userId }: { roomId: string; userId: number },
   ) {
     try {
-      this.pongGateway.setInviteRoomToReady(roomId);
-      this.logger.log(`Pong invite accepted by User [${userId}]`);
-
+      this.pongGateway.setInviteRoomToReady(roomId, userId);
       this.server.to(client.id).emit('redirectToGame');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);

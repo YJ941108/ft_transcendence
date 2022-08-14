@@ -532,45 +532,27 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     }
   }
 
-  setInviteRoomToReady(roomId: string) {
+  /** 게임 초대 */
+  setInviteRoomToReady(roomId: string, userId: number) {
     const room = this.rooms.get(roomId);
-
     if (!room) {
       throw new Error('Game is over');
     }
+
+    // this.createNewRoom();
     room.changeGameState(GameState.STARTING);
   }
 
-  /* Create room when invite is sent by a User */
-  async createInviteRoom(sender: User, receiverId: number) {
-    this.logger.log('Create new Invite room');
-
-    const firstPlayer: User = this.createInvitedUser(sender.id, sender.nickname);
-    const receiverData = await this.usersService.getUserWithFriends(receiverId);
-    const secondPlayer: User = this.createInvitedUser(receiverData.id, receiverData.nickname);
-
-    const roomId: string = `${Date.now()}${firstPlayer.nickname}&${secondPlayer.nickname}`;
-
-    let room: Room = new Room(roomId, [firstPlayer, secondPlayer]);
-    room.gameState = GameState.WAITING;
-
-    this.rooms.set(roomId, room);
-    this.currentGames.push(room);
-
-    this.server.emit('updateCurrentGames', this.currentGames);
-
-    return roomId;
-  }
-
   createInvitedUser(id: number, username: string) {
+    /**
+     * 게임 메모리에 유저가 존재하는지 확인
+     * 없으면 만들기
+     */
     let newUser: User = this.connectedUsers.getUserById(id);
-
-    if (newUser) {
-      newUser.setNickname(username);
-    } else {
+    if (!newUser) {
       newUser = new User(id, username);
+      this.connectedUsers.addUser(newUser);
     }
-    this.connectedUsers.addUser(newUser);
     return newUser;
   }
 
@@ -588,5 +570,23 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw Error('User already in a game.');
       }
     });
+  }
+
+  async createInviteRoom(sender: User, receiverId: number) {
+    /** 유저 관리 */
+    const firstPlayer: User = this.createInvitedUser(sender.id, sender.nickname);
+    const receiverData = await this.usersService.getUserWithFriends(receiverId);
+    const secondPlayer: User = this.createInvitedUser(receiverData.id, receiverData.nickname);
+
+    /** 게임방 만들기 */
+    const roomId: string = `${Date.now()}${firstPlayer.nickname}&${secondPlayer.nickname}`;
+    let room: Room = new Room(roomId, [firstPlayer, secondPlayer]);
+    room.gameState = GameState.WAITING;
+    this.rooms.set(roomId, room);
+    this.currentGames.push(room);
+
+    /** 게임 알리기 */
+    this.server.emit('updateCurrentGames', this.currentGames);
+    return roomId;
   }
 }
