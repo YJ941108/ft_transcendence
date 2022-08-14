@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Socket } from 'socket.io-client';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { emitSendDMMessage } from './Emit';
-import { IDMlisten, IDMRoom, IMessages } from '../../modules/Interfaces/chatInterface';
+import { IDMRoom, IMessageResponse, IMessages } from '../../modules/Interfaces/chatInterface';
 import { DMRoomInfo, MyInfo } from '../../modules/atoms';
 
 const DMRoomStyleC = styled.div`
@@ -38,6 +38,10 @@ const DMButtonStyleC = styled.div`
 	width: 20%;
 `;
 
+const ChatMessageStyleC = styled.li`
+	margin: 3px;
+`;
+
 interface ISocket {
 	chatSocket: Socket;
 }
@@ -45,22 +49,41 @@ interface ISocket {
 function DMRoom({ chatSocket }: ISocket) {
 	const [message, setMessage] = useState('');
 	const [roomInfo, setRoomInfo] = useRecoilState<IDMRoom>(DMRoomInfo);
-	const [messageList, setMessageList] = useState<string[]>([]);
+	const [messageList, setMessageList] = useState<IMessages[]>([]);
 	const Info = useRecoilValue(MyInfo);
 	const messageBoxRef = useRef<HTMLUListElement>(null);
 
-	const scrollToBottom = () => {
+	useEffect(() => {
+		const scrollToBottom = (e: Event) => {
+			e.stopPropagation();
+			e.preventDefault();
+			const target = e.currentTarget as HTMLUListElement;
+
+			target.scroll({
+				top: target.scrollHeight,
+				// behavior: 'smooth',
+			});
+		};
 		if (messageBoxRef.current) {
-			messageBoxRef.current.scrollTop = messageBoxRef.current.scrollHeight;
+			messageBoxRef.current.addEventListener('DOMNodeInserted', scrollToBottom);
 		}
-	};
+
+		return () => {
+			if (messageBoxRef.current) {
+				messageBoxRef.current.removeEventListener('DOMNodeInserted', scrollToBottom);
+			}
+		};
+	}, []);
 
 	const sendMessage = () => {
-		if (message) {
+		if (message.trim() !== '') {
 			emitSendDMMessage(chatSocket, roomInfo.id, Info.id, message);
-			setMessage('');
-			scrollToBottom();
+			// scrollToBottom();
 		}
+		const timer = setTimeout(() => {
+			setMessage('');
+			clearTimeout(timer);
+		}, 0);
 	};
 
 	const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -70,39 +93,48 @@ function DMRoom({ chatSocket }: ISocket) {
 	};
 
 	useEffect(() => {
-		chatSocket.on('listeningDMRoomInfo', (response: { data: IDMRoom }) => {
-			setRoomInfo(response.data);
-			console.log(response.data.message, 'messages');
-			response.data.message?.map((element: IMessages) => {
-				setMessageList((msgList) => {
-					return [...msgList, element.content];
+		if (chatSocket) {
+			chatSocket.on('listeningDMRoomInfo', (response: { data: IDMRoom }) => {
+				setRoomInfo(response.data);
+				response.data.message?.map((element: IMessages) => {
+					setMessageList((msgList) => {
+						return [...msgList, element];
+					});
+					// scrollToBottom();
+					return () => {};
 				});
-				scrollToBottom();
-				return () => {};
 			});
-		});
-		return () => {
-			chatSocket.off('listeningDMRoomInfo');
-		};
+			return () => {
+				chatSocket.off('listeningDMRoomInfo');
+			};
+		}
+		return () => {};
 	}, [chatSocket]);
 
 	useEffect(() => {
-		chatSocket.on('listeningDMMessage', (response: IDMlisten) => {
-			setMessageList((msg) => {
-				return [...msg, response.data.message];
+		if (chatSocket) {
+			chatSocket.on('listeningDMMessage', (response: IMessageResponse) => {
+				setMessageList((msg) => {
+					return [...msg, response.data];
+				});
+				// scrollToBottom();
 			});
-			scrollToBottom();
-		});
-		return () => {
-			chatSocket.off('listeningDMMessage');
-		};
+			return () => {
+				chatSocket.off('listeningDMMessage');
+			};
+		}
+		return () => {};
 	}, [chatSocket]);
 
 	return (
 		<DMRoomStyleC>
 			<ChatLogStyleC ref={messageBoxRef}>
-				{messageList?.map((msg: string) => {
-					return <li>{msg}</li>;
+				{messageList?.map((msg: IMessages) => {
+					return (
+						<ChatMessageStyleC key={msg.id}>
+							{msg.author.nickname} : {msg.content}
+						</ChatMessageStyleC>
+					);
 				})}
 			</ChatLogStyleC>
 			<DMDivStyleC>
@@ -122,4 +154,5 @@ function DMRoom({ chatSocket }: ISocket) {
 		</DMRoomStyleC>
 	);
 }
+
 export default DMRoom;

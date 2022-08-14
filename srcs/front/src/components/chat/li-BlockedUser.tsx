@@ -1,9 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useSetRecoilState } from 'recoil';
-import { emitCreateDMRoom, emitUserAction } from './Emit';
+import { emitUserAction } from './Emit';
 import { IUserList } from '../../modules/Interfaces/userInterface';
-import { chatContent } from '../../modules/atoms';
 
 const UserPhotoDivStyleC = styled.div`
 	width: 70px;
@@ -34,7 +32,7 @@ const UserInteractionStyleC = styled.span`
 	cursor: pointer;
 `;
 
-const UserStyleC = styled.li`
+const BlockedUserStyleC = styled.li`
 	display: flex;
 	align-items: center;
 	height: 85px;
@@ -48,35 +46,23 @@ const UserStyleC = styled.li`
 	}
 `;
 
-function UserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
-	const createDMRoom = useSetRecoilState(chatContent);
+function BlockedUserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
+	console.log(id);
 	return (
-		<UserStyleC>
+		<BlockedUserStyleC>
 			<UserPhotoDivStyleC>
 				<UserPhotoStyleC src={photo} alt={nickname} />
 			</UserPhotoDivStyleC>
 			<UserInfoDivStyleC>
 				<UserNickNameStyleC>{nickname}</UserNickNameStyleC>
 				{isOnline ? <UserNickNameStyleC>ONLINE</UserNickNameStyleC> : <UserNickNameStyleC>OFFLINE</UserNickNameStyleC>}
-				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'request')}>
-					ADD
-				</UserInteractionStyleC>
-				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'block')}>
-					BLOCK
+				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'release')}>
+					UNBLOCK
 				</UserInteractionStyleC>
 				<UserInteractionStyleC>PLAY</UserInteractionStyleC>
-				<UserInteractionStyleC
-					onClick={() => {
-						emitCreateDMRoom(chatSocket, id);
-						createDMRoom('DMRoom');
-					}}
-				>
-					MSG
-				</UserInteractionStyleC>
-				{/* <UserInteractionStyleC onClick={() => createDMRoom('DMRoom')}>DMROOM</UserInteractionStyleC> */}
 			</UserInfoDivStyleC>
-		</UserStyleC>
+		</BlockedUserStyleC>
 	);
 }
 
-export default UserInfo;
+export default BlockedUserInfo;

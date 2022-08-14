@@ -11,6 +11,7 @@ import {
 	friendsList,
 	requestList,
 	channelListInfo,
+	blockedList,
 } from '../../modules/atoms';
 // import SearchInput from './SearchInput';
 
@@ -61,6 +62,7 @@ function Chat() {
 	const [, setUsers] = useRecoilState<IUserData[]>(chatUserList);
 	const [, setRequestUsers] = useRecoilState<IUserData[]>(requestList);
 	const [, setFriendsUsers] = useRecoilState<IUserData[]>(friendsList);
+	const [, setBlockedUsers] = useRecoilState<IUserData[]>(blockedList);
 	const [, setChannelList] = useRecoilState<IChannel[]>(channelListInfo);
 
 	const selectComponent: ISelectComponent = {
@@ -86,8 +88,11 @@ function Chat() {
 		}
 		socket.on('listeningMe', (response: IMyDataResponse) => {
 			setMyInfo(response.data);
+			console.log(response.data);
 			setRequestUsers(response.data.friendsRequest);
 			setFriendsUsers(response.data.friends);
+			setBlockedUsers(response.data.blockedUsers);
+			console.log(response.data.blockedUsers);
 		});
 		socket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
 			setUsers(response.data);
@@ -114,6 +119,7 @@ function Chat() {
 	}, [socket, isLoading, error, userData]);
 
 	useEffect(() => {
+		console.log('여기 들어오면 안되는데');
 		if (isLoading || error || !userData) return;
 		const socketIo: Socket = io('http://3.39.20.24:3032/api/chat');
 		setSocket(socketIo);
