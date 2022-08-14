@@ -1,21 +1,5 @@
 import IUserData from './userInterface';
 
-export enum ChatState {
-	ONLINE,
-	OFFLINE,
-	GAMING,
-}
-
-export interface IUserStatus {
-	func: string;
-	code: number;
-	message: string;
-	data: {
-		userId: number;
-		status: ChatState;
-	};
-}
-
 export interface IChatUser {
 	func: string;
 	code: number;
@@ -99,6 +83,7 @@ export interface IMyData {
 	updatedAt: string;
 	friendsRequest: IUserData[];
 	friends: IUserData[];
+	blockedUsers: IUserData[];
 }
 
 export interface IMyDataResponse {
@@ -132,17 +117,6 @@ export interface IChannelResponse {
 	message: string;
 	data: IChannel;
 	author: IUserData;
-}
-
-export interface IDMlisten {
-	func: string;
-	code: number;
-	message: string;
-	data: {
-		message: string;
-		author: IUserData;
-		DMId: number;
-	};
 }
 
 export interface IDMRoom {
