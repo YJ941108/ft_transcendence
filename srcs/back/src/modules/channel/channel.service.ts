@@ -30,30 +30,30 @@ export class ChannelService {
 
   async banUser(channelId: number, punishedId: number, punisherId: number) {
     const isBanned = await this.PunishmentService.isUserCurrentlyBanned(channelId, punishedId);
-
     if (isBanned) {
       throw new Error('User is already banned.');
     }
+
     return this.PunishmentService.punishUser(channelId, punishedId, punisherId, 'ban', {
-      reason: "Un méchant garçon, à n'en point douter.",
+      reason: '이유는 모르오',
     });
   }
 
   async muteUser(channelId: number, punishedId: number, punisherId: number) {
     const isMuted = await this.PunishmentService.isUserCurrentlyMuted(channelId, punishedId);
-
     if (isMuted) {
       throw new Error('User is already muted.');
     }
+
     return this.PunishmentService.punishUser(channelId, punishedId, punisherId, 'mute', {
-      reason: "Un méchant garçon, à n'en point douter.",
+      reason: '이유는 모르오',
     });
   }
 
   /**
    * Used whenever a user wants to join a password-protected channel
    */
-  async getChannelPassword(id: string) {
+  async getChannelPassword(id: number) {
     const channel = await this.channelsRepository
       .createQueryBuilder('channel')
       .select('channel.password')
@@ -94,7 +94,7 @@ export class ChannelService {
 
   findAll() {
     return this.channelsRepository.find({
-      relations: ['owner', 'users', 'messages', 'messages.author'],
+      relations: ['owner', 'users', 'admins', 'messages', 'messages.author'],
     });
   }
 
@@ -110,16 +110,17 @@ export class ChannelService {
   }
 
   async create(createChannelDto: CreateChannelDto) {
+    /** 채널이 존재하는지 확인 */
     const existingChannel = await this.nameIsAvailable(createChannelDto.name);
-    const channel = this.channelsRepository.create(createChannelDto);
-
     if (existingChannel) {
       throw new Error(`Group '${createChannelDto.name}' already exists. Choose another name.`);
     }
 
+    /** 비밀번호가 있다면 해쉬적용 */
     if (createChannelDto.password) {
       createChannelDto.password = await hashPassword(createChannelDto.password, 10);
     }
+    const channel = this.channelsRepository.create(createChannelDto);
 
     this.logger.log(`Create new channel [${channel.name}]`);
 
@@ -154,7 +155,7 @@ export class ChannelService {
     return this.channelsRepository.save(channel);
   }
 
-  async remove(id: string) {
+  async remove(id: number) {
     const channel = await this.channelsRepository.findOne(id);
 
     if (!channel) {

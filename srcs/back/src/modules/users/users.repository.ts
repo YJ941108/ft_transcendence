@@ -101,7 +101,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 데이터 삽입 */
     another.friendsRequest.push(user);
-    another.save();
+    await another.save();
     return user;
   }
 
@@ -188,7 +188,7 @@ export class UsersRepository extends Repository<Users> {
     /** 데이터 삭제 */
     const index = user.friendsRequest.findIndex((e) => e.id === another.id);
     user.friendsRequest.splice(index, 1);
-    user.save();
+    await user.save();
     return user;
   }
 
@@ -238,7 +238,7 @@ export class UsersRepository extends Repository<Users> {
     }
 
     user.blockedUsers.push(another);
-    user.save();
+    await user.save();
     return user;
   }
 
@@ -260,7 +260,7 @@ export class UsersRepository extends Repository<Users> {
 
     const index = user.blockedUsers.findIndex((e) => e.id === another.id);
     user.blockedUsers.splice(index, 1);
-    user.save();
+    await user.save();
     return user;
   }
 }

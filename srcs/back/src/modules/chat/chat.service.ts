@@ -10,6 +10,7 @@ import { DirectMessage } from '../direct-message/entities/direct-message.entity'
 import { CreateMessageDto } from '../message/dto/create-message.dto';
 import { MessageService } from '../message/message.service';
 import { UsersService } from '../users/users.service';
+import { hash as hashPassword } from 'bcryptjs';
 
 @Injectable()
 export class ChatService {
@@ -27,10 +28,10 @@ export class ChatService {
   /* Helpers */
   async userIsInChannel(channelId: number, userId: number) {
     const channel = await this.channelService.findOne(channelId);
-
     if (!channel) {
       throw new Error('No channel found.');
     }
+
     const isInChan = !!channel.users.find((user) => {
       return user.id === userId;
     });
@@ -39,15 +40,21 @@ export class ChatService {
 
   async checkChannelPassword(channelId: number, password: string) {
     const channel = await this.channelService.findOne(channelId);
+    if (!channel) {
+      throw new Error('No channel found.');
+    }
+    if (!(channel.privacy === 'protected')) {
+      throw new Error('Protected가 아닙니다.');
+    }
 
-    if (channel && channel.privacy === 'protected') {
-      const chanPassword = await this.channelService.getChannelPassword(channelId.toString());
-      const passIsValid = await comparePassword(password, chanPassword);
-
-      if (passIsValid) return;
+    const hash = await this.channelService.getChannelPassword(channelId);
+    const passIsValid = await comparePassword(password, hash);
+    console.log(hash);
+    console.log(password);
+    console.log(passIsValid);
+    if (!passIsValid) {
       throw new Error('Invalid password');
     }
-    throw new Error('Invalid operation');
   }
 
   async checkIfUserIsBanned(channelId: number, userId: number): Promise<boolean> {
@@ -62,7 +69,6 @@ export class ChatService {
 
   async checkIfUserIsMuted(channelId: number, userId: number) {
     const isMuted = await this.channelService.findOutIfUserIsMuted(channelId, userId);
-
     if (isMuted) {
       throw new Error('Muted users are not allowed to post.');
     }
@@ -71,10 +77,10 @@ export class ChatService {
   /* Getters */
   async getUserChannels(userId: number) {
     const channels = await this.channelService.findAll();
-
     if (!channels) {
       throw new Error('No channel found.');
     }
+
     const userChannels = channels.filter(
       (channel) =>
         !!channel.users.find((user) => {
@@ -104,7 +110,7 @@ export class ChatService {
   }
 
   async deleteChannel(channelId: number) {
-    return await this.channelService.remove(channelId.toString());
+    return await this.channelService.remove(channelId);
   }
 
   async addMessageToChannel(createMessageDto: CreateMessageDto) {
@@ -147,16 +153,16 @@ export class ChatService {
     const isAdmin = !!channel.admins.find((admin) => {
       return admin.id === userId;
     });
-
-    if (!isAdmin) {
-      const newAdmin = await this.usersService.getUserWithFriends(userId);
-
-      await this.channelService.update(channel.id, {
-        admins: [...channel.admins, newAdmin],
-      });
-      return newAdmin;
+    if (isAdmin) {
+      throw new Error('User is already administrator');
     }
-    throw new Error('User is already administrator');
+
+    const newAdmin = await this.usersService.getUserWithoutFriends(userId);
+
+    await this.channelService.update(channel.id, {
+      admins: [...channel.admins, newAdmin],
+    });
+    return newAdmin;
   }
 
   async removeAdminFromChannel(channel: Channel, userId: number) {
@@ -197,12 +203,15 @@ export class ChatService {
     if (channel.owner.id !== adminId && !isAdmin) {
       throw new Error('Insufficient Privileges');
     }
+
+    const user = await this.usersService.getUserWithoutFriends(userId);
+
     if (type === 'ban') {
       await this.channelService.banUser(channel.id, userId, adminId);
-      return `You have been banned from ${channel.name}.`;
+      return `${user.nickname}는 ${channel.name}에서 ban 되었습니다.`;
     } else if (type === 'mute') {
       await this.channelService.muteUser(channel.id, userId, adminId);
-      return `You have been muted in ${channel.name}.`;
+      return `${user.nickname}는 ${channel.name}에서 mute 되었습니다.`;
     }
   }
 
@@ -227,16 +236,16 @@ export class ChatService {
   }
 
   async getDmData(dmId: number) {
-    return await this.directMessageService.findOne(dmId.toString());
+    return await this.directMessageService.findOne(dmId);
   }
 
   async getFriendFromDm(dmId: number, userId: number) {
-    const dm = await this.directMessageService.findOne(dmId.toString());
+    const dm = await this.directMessageService.findOne(dmId);
 
     return dm.users[0].id === userId ? dm.users[1] : dm.users[0];
   }
 
-  async checkIfDmExists(userId1: string, userId2: string) {
+  async checkIfDmExists(userId1: number, userId2: number) {
     let existingDm: DirectMessage;
 
     try {
@@ -249,7 +258,7 @@ export class ChatService {
   async createDm(createDirectMessageDto: CreateDirectMessageDto) {
     const res = await this.directMessageService.create(createDirectMessageDto);
 
-    return await this.directMessageService.findOne(res.id.toString());
+    return await this.directMessageService.findOne(res.id);
   }
 
   async addMessageToDm(createMessageDto: CreateMessageDto) {

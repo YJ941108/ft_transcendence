@@ -20,7 +20,7 @@ export class DirectMessageService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: number) {
     const directMessage = await this.directMessagesRepository.findOne(id, {
       relations: ['users', 'messages', 'messages.author'],
     });
