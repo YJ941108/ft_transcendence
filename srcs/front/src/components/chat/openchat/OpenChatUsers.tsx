@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
-import { IChannel, IMyData } from '../../../modules/Interfaces/chatInterface';
+import { IChannel, IMyData, IUserBanned } from '../../../modules/Interfaces/chatInterface';
 import IUserData from '../../../modules/Interfaces/userInterface';
 
 interface IAdminButton {
@@ -27,9 +27,13 @@ function OpenChatUsers({ chatSocket }: any) {
 		chatSocket.on('listeningChannelInfo', (response: { data: IChannel }) => {
 			setChannelInfo(response.data);
 		});
+		chatSocket.on('listeningBan', (response: IUserBanned) => {
+			if (myInfo.id === response.data.id) setContent('OpenChatList');
+		});
 
 		return () => {
 			chatSocket.off('listeningChannelInfo');
+			chatSocket.off('listeningBan');
 		};
 	}, [chatSocket]);
 
@@ -49,6 +53,15 @@ function OpenChatUsers({ chatSocket }: any) {
 		}
 	};
 
+	const setPunishUser = (userId: number, type: 'ban' | 'mute') => {
+		chatSocket.emit('punishUser', {
+			channelId: channelInfo.id,
+			adminId: myInfo.id,
+			userId,
+			type,
+		});
+	};
+
 	return (
 		<div>
 			<h1>OpenChatUsers</h1>
@@ -62,10 +75,18 @@ function OpenChatUsers({ chatSocket }: any) {
 					return (
 						<li key={user.id}>
 							<span>{user.nickname}</span>
-							{isOwner ? (
-								<AdminButton isAdmin={isAdmin} type="button" onClick={() => setAdmin(user.id)}>
-									admin
-								</AdminButton>
+							{isOwner || isAdmin ? (
+								<>
+									<AdminButton isAdmin={isAdmin} type="button" onClick={() => setAdmin(user.id)}>
+										admin
+									</AdminButton>
+									<button type="button" onClick={() => setPunishUser(user.id, 'ban')}>
+										ban
+									</button>
+									<button type="button" onClick={() => setPunishUser(user.id, 'mute')}>
+										mute
+									</button>
+								</>
 							) : null}
 						</li>
 					);

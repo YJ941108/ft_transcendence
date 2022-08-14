@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useQuery } from 'react-query';
 import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
-import { IChannel, IMyData, IMessageResponse, IMessages } from '../../../modules/Interfaces/chatInterface';
+import { IChannel, IMyData, IMessageResponse, IMessages, IUserBanned } from '../../../modules/Interfaces/chatInterface';
 import { getChannelInfo } from '../../../modules/api';
 
 interface IFormInput {
@@ -71,10 +71,14 @@ function OpenChatRoom({ chatSocket }: any) {
 		chatSocket.on('listeningChannelInfo', (response: { data: IChannel }) => {
 			setChannelInfo(response.data);
 		});
+		chatSocket.on('listeningBan', (response: IUserBanned) => {
+			if (myInfo.id === response.data.id) setChatContent('OpenChatList');
+		});
 		return () => {
 			chatSocket.off('listeningChannelInfo');
 			chatSocket.off('listeningChannelDeleted');
 			chatSocket.off('listeningMessage');
+			chatSocket.off('listeningBan');
 		};
 	}, [chatSocket]);
 	useEffect(() => {

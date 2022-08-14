@@ -65,7 +65,7 @@ function Chat() {
 
 	const selectComponent: ISelectComponent = {
 		UserList: <UserList chatSocket={socket} />,
-		OpenChatList: <OpenChatList />,
+		OpenChatList: <OpenChatList chatSocket={socket} />,
 		FriendsList: <FriendsList chatSocket={socket} />,
 		DirectMessageList: <DirectMessageList chatSocket={socket} />,
 		DMRoom: <DMRoom chatSocket={socket} />,
