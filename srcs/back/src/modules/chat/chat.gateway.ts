@@ -247,6 +247,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  @SubscribeMessage('test')
+  async handleGetUsers(@ConnectedSocket() client: Socket) {
+    await this.listeningMe(client.id, 'test');
+  }
+
   /** DM */
 
   userJoinRoom(socketId: string, roomId: string) {
