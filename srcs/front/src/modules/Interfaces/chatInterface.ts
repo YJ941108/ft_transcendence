@@ -52,6 +52,13 @@ export interface IMessages {
 	author: IUserData;
 }
 
+export interface IMessageResponse {
+	func: string;
+	code: number;
+	message: string;
+	data: IMessages;
+}
+
 export interface IDMRoomInfo {
 	func: string;
 	code: number;
@@ -113,6 +120,17 @@ export interface IChannel {
 	privacy: string;
 	restrictionDuration: number;
 	createdAt: string;
+	owner: IUserData;
+	users: IUserData[];
+	admins: IUserData[];
+	messages: IMessages[];
+}
+
+export interface IChannelResponse {
+	func: string;
+	code: number;
+	message: string;
+	data: IChannel;
 	author: IUserData;
 }
 
