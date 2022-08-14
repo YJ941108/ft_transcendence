@@ -83,9 +83,7 @@ function OpenChatRoom({ chatSocket }: any) {
 		});
 	}, []);
 	useEffect(() => {
-		console.log(basicChannelInfo, 'messages');
 		if (!isLoading && !error && basicChannelInfo) {
-			console.log('here');
 			const newMessages = basicChannelInfo?.data.messages;
 			setMessageList((prevMessageList) => {
 				return [...prevMessageList, ...newMessages];
@@ -95,6 +93,7 @@ function OpenChatRoom({ chatSocket }: any) {
 			setMessageList([]);
 		};
 	}, [basicChannelInfo]);
+	console.log(basicChannelInfo, 'channelInfo');
 	if (isLoading) return <h1>Loading</h1>;
 	if (error) return <h1>Error</h1>;
 	return (
