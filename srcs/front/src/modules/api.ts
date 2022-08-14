@@ -56,6 +56,12 @@ export const getUserListData = async () => {
 	return response.data;
 };
 
+export const postUserData = async (inputValue: string) => {
+	const response = await axios.post('/api/users/me', { nickname: inputValue });
+	return response.data;
+};
+
+export default getUserData;
 export const getChannelInfo = async (channelId: number) => {
 	const response = await axios.get(`/api/chat/channel/${channelId}`);
 	return response.data;
