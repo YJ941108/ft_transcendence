@@ -28,4 +28,9 @@ export const getFriendsListData = async () => {
 	return response.data;
 };
 
+export const postUserData = async (inputValue: string) => {
+	const response = await axios.post('/api/users/me', { nickname: inputValue });
+	return response.data;
+};
+
 export default getUserData;

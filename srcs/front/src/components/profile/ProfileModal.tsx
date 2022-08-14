@@ -1,5 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
-import Form from 'react-bootstrap/Form';
+import React, { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -24,23 +23,34 @@ function ProfileModal() {
 	const { data } = useQuery<IUser>('user', getUserData);
 	const [show, setShow] = useState(false);
 	const [inputValue, setInputValue] = useState('');
+	const [inputPhoto, setInputPhoto] = useState('');
+	const handleFile = (e: any) => {
+		setInputPhoto(e.target.files[0]);
+		console.log(inputPhoto);
+	};
 	const handleClose = () => setShow(false);
 	const handleShow = () => setShow(true);
-	const handleChange = (e: ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value);
-	const handleSubmit = async () => {
-		await axios
-			.post('/api/users/me', { nickname: inputValue })
-			.then((res) => {
-				alert('닉네임 수정이 완료되었습니다.');
-				handleClose();
-				return res;
-			})
-			.catch((err) => {
-				const errorStatus = err.response.data.statusCode;
-				if (errorStatus === 409) alert('아이디가 중복되었습니다.확인해주세요.');
-				else if (errorStatus === 400) alert('입력창에 입력을 해주세요.');
-				else console.log(err, 'err');
-			});
+	const handleSubmit = async (event: any) => {
+		event.preventDefault();
+		console.log(inputPhoto);
+		const formData = new FormData();
+		formData.append('nickname', inputValue);
+		formData.append('file', inputPhoto);
+		if (inputValue || inputPhoto)
+			await axios
+				.post('/api/users/me', formData)
+				.then((res) => {
+					alert(res.data.message);
+					handleClose();
+					setInputValue('');
+					return res;
+				})
+				.catch((err) => {
+					const errorMsg = err.response.data.message;
+					alert(errorMsg);
+					console.clear();
+				});
+		else alert('수정을 위해 입력을 해주세요.');
 	};
 	return (
 		<div>
@@ -54,17 +64,35 @@ function ProfileModal() {
 				</Modal.Header>
 				<ModalStyledDiv>
 					<Modal.Body className="custom_modal_img_body">
-						<img src={data?.photo} alt="profile_photo" className="custom_modal_img" />
+						<img src={inputPhoto} alt="profile_photo" className="custom_modal_img" />
 						<div id="result" />
 					</Modal.Body>
 					<Modal.Body className="custom_modal_form_body">
-						<Form onSubmit={handleSubmit}>
-							<Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-								<Form.Label>Nick Name</Form.Label>
-								<input placeholder={data?.nickname} onChange={(e) => handleChange(e)} />
-							</Form.Group>
-						</Form>
-						<Button onClick={handleClose}>image upload</Button>
+						<form onSubmit={handleSubmit}>
+							<div>
+								<label htmlFor="nickName">
+									Nick Name:
+									<input
+										type="text"
+										id="nickName"
+										placeholder={data?.nickname}
+										onChange={(e) => setInputValue(e.target.value)}
+									/>
+								</label>
+							</div>
+							<div>
+								<label htmlFor="file">
+									Default file input example
+									<input
+										type="file"
+										id="file"
+										onChange={(e) => {
+											handleFile(e);
+										}}
+									/>
+								</label>
+							</div>
+						</form>
 						<Button variant="success" onClick={handleSubmit}>
 							Save Change
 						</Button>
