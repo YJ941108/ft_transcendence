@@ -1341,6 +1341,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           func: 'punishUser',
           code: 200,
           message: `${dbChannel.name}에서 추방당했습니다.`,
+          data: memoryAnother,
         });
       }
 
