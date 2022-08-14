@@ -26,6 +26,12 @@ function DirectMessageList({ chatSocket }: ISocket) {
 
 	useEffect(() => {
 		if (chatSocket) {
+			chatSocket.emit('requestMyDMList');
+		}
+	}, []);
+
+	useEffect(() => {
+		if (chatSocket) {
 			chatSocket.on('listeningDMRoomList', (response: { data: IDMRoom[] }) => {
 				setRooms(response.data);
 			});
