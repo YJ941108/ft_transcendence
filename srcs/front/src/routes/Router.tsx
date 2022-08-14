@@ -18,7 +18,7 @@ function Router() {
 				<Route path="/auth" element={<AuthPage />} />
 				<Route path="/game" element={<GamePage />} />
 				<Route path="/profile" element={<ProfilePage />} />
-				<Route path="/users" element={<UsersPage/>} />
+				<Route path="/users" element={<UsersPage />} />
 				<Route path="/leaderboard" element={<LeaderboardPage />} />
 				<Route path="*" element={<ErrorPage />} />
 			</Routes>

@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
 import axios from 'axios';
-import getUserData from '../../modules/api';
+import { getUserData } from '../../modules/api';
 import { IUser } from './UserInterface';
 
 const ModalStyledDiv = styled.div`
