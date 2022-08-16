@@ -31,6 +31,12 @@ interface IOpenChatInfoProps {
 	chatSocket: any;
 }
 
+interface IJoinPossible {
+	func: string;
+	code: number;
+	message: string;
+}
+
 function OpenChatInfo({ channelInfo, chatSocket }: IOpenChatInfoProps) {
 	const setChannelInfo = useSetRecoilState<IChannel>(channelInfoData);
 	const setContent = useSetRecoilState<string>(chatContent);
@@ -38,8 +44,18 @@ function OpenChatInfo({ channelInfo, chatSocket }: IOpenChatInfoProps) {
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 
 	useEffect(() => {
-		chatSocket.on('listeningJoinPossible', (response: any) => {
-			console.log(response);
+		chatSocket.on('listeningJoinPossible', (response: IJoinPossible) => {
+			if (response.code === 200) {
+				if (channelInfo.privacy === 'protected') {
+					setChannelInfo(channelInfo);
+					setChannelId(channelInfo.id);
+					setContent('ProtectedPassword');
+				} else {
+					setChannelInfo(channelInfo);
+					setChannelId(channelInfo.id);
+					setContent('OpenChatRoom');
+				}
+			}
 		});
 	}, [chatSocket]);
 	const onClick = () => {
@@ -47,15 +63,6 @@ function OpenChatInfo({ channelInfo, chatSocket }: IOpenChatInfoProps) {
 			channelId: channelInfo.id,
 			userId: myInfo.id,
 		});
-		if (channelInfo.privacy === 'protected') {
-			setChannelInfo(channelInfo);
-			setChannelId(channelInfo.id);
-			setContent('ProtectedPassword');
-		} else {
-			setChannelInfo(channelInfo);
-			setChannelId(channelInfo.id);
-			setContent('OpenChatRoom');
-		}
 	};
 	return (
 		<OpenChatStyleC onClick={onClick}>
