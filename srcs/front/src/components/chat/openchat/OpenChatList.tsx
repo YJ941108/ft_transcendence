@@ -24,14 +24,14 @@ const OpenChatListC = styled.ul`
 	overflow-y: scroll;
 `;
 
-function OpenChatList() {
+function OpenChatList({ chatSocket }: any) {
 	const channelList = useRecoilValue<IChannel[]>(channelListInfo);
 	return (
 		<OpenChatListStyleC>
 			<OpenChatNewButton />
 			<OpenChatListC>
 				{channelList.map((channel: IChannel) => {
-					return <OpenChatInfo key={channel.id} channelInfo={channel} />;
+					return <OpenChatInfo key={channel.id} channelInfo={channel} chatSocket={chatSocket} />;
 				})}
 			</OpenChatListC>
 		</OpenChatListStyleC>

@@ -133,3 +133,10 @@ export interface IDMRoomList {
 	message: string;
 	data: IDMRoom[];
 }
+
+export interface IUserBanned {
+	func: string;
+	code: number;
+	message: string;
+	data: IUserData;
+}

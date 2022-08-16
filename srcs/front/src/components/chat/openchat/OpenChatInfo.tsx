@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useSetRecoilState } from 'recoil';
-import { IChannel } from '../../../modules/Interfaces/chatInterface';
-import { channelInfoData, chatContent, channelIdData } from '../../../modules/atoms';
+import { useSetRecoilState, useRecoilValue } from 'recoil';
+import { IChannel, IMyData } from '../../../modules/Interfaces/chatInterface';
+import { channelInfoData, chatContent, channelIdData, MyInfo } from '../../../modules/atoms';
 
 const OpenChatStyleC = styled.li`
 	display: flex;
@@ -28,22 +28,41 @@ const OpenChatDivStyleC = styled.div`
 
 interface IOpenChatInfoProps {
 	channelInfo: IChannel;
+	chatSocket: any;
 }
 
-function OpenChatInfo({ channelInfo }: IOpenChatInfoProps) {
+interface IJoinPossible {
+	func: string;
+	code: number;
+	message: string;
+}
+
+function OpenChatInfo({ channelInfo, chatSocket }: IOpenChatInfoProps) {
 	const setChannelInfo = useSetRecoilState<IChannel>(channelInfoData);
 	const setContent = useSetRecoilState<string>(chatContent);
 	const setChannelId = useSetRecoilState<number>(channelIdData);
+	const myInfo = useRecoilValue<IMyData>(MyInfo);
+
+	useEffect(() => {
+		chatSocket.on('listeningJoinPossible', (response: IJoinPossible) => {
+			if (response.code === 200) {
+				if (channelInfo.privacy === 'protected') {
+					setChannelInfo(channelInfo);
+					setChannelId(channelInfo.id);
+					setContent('ProtectedPassword');
+				} else {
+					setChannelInfo(channelInfo);
+					setChannelId(channelInfo.id);
+					setContent('OpenChatRoom');
+				}
+			}
+		});
+	}, [chatSocket]);
 	const onClick = () => {
-		if (channelInfo.privacy === 'protected') {
-			setChannelInfo(channelInfo);
-			setChannelId(channelInfo.id);
-			setContent('ProtectedPassword');
-		} else {
-			setChannelInfo(channelInfo);
-			setChannelId(channelInfo.id);
-			setContent('OpenChatRoom');
-		}
+		chatSocket.emit('isJoinPossible', {
+			channelId: channelInfo.id,
+			userId: myInfo.id,
+		});
 	};
 	return (
 		<OpenChatStyleC onClick={onClick}>
