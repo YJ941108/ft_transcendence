@@ -1464,7 +1464,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
 
       /** DM 보내기 */
-      const dm: any = await this.handleCreateDm(client, { anotherId: memoryReceiver.id });
+      const dm: any = await this.handleCreateDm(client, { anotherId });
       await this.handleDmSubmit(client, {
         DMId: dm.data,
         authorId: memorySender.id,
@@ -1501,6 +1501,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       // } as CreateMessageDto);
       // this.server.to(`dm_${DM.id}`).emit('newPongInvite', { message });
     } catch (e) {
+      console.log(e);
       this.server.to(client.id).emit('chatError', e.message);
     }
   }
