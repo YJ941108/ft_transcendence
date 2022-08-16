@@ -57,3 +57,16 @@ export const emitSendDMMessage = (chatSocket: Socket, DMId: number, authorId: nu
 		}
 	});
 };
+
+// export const emitSendPongInvite = (chatSocket: Socket, authorId: number) => {
+// 	chatSocket.emit('sendPongInvite', { authorId }, (response: IDebug) => {
+// 		if (response.code === 200) {
+// 			console.log('sendPongInvite SUCCESS', response);
+// 		} else if (response.code === 400) {
+// 			console.log('sendPongInvite FAIL', response);
+// 		}
+// 	});
+// };
+export const emitSendPongInvite = (chatSocket: Socket, authorId: number) => {
+	chatSocket.emit('sendPongInvite', { authorId });
+};

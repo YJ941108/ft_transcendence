@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useSetRecoilState } from 'recoil';
-import { emitCreateDMRoom, emitUserAction } from './Emit';
+import { emitCreateDMRoom, emitUserAction, emitSendPongInvite } from './Emit';
 import { IUserList } from '../../modules/Interfaces/userInterface';
 import { chatContent } from '../../modules/atoms';
 
@@ -64,7 +64,7 @@ function UserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
 				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'block')}>
 					BLOCK
 				</UserInteractionStyleC>
-				<UserInteractionStyleC>PLAY</UserInteractionStyleC>
+				<UserInteractionStyleC onClick={() => emitSendPongInvite(chatSocket, id)}>PLAY</UserInteractionStyleC>
 				<UserInteractionStyleC
 					onClick={() => {
 						emitCreateDMRoom(chatSocket, id);
