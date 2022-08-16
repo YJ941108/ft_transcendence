@@ -484,6 +484,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     const DM = await this.chatService.getDmData(data.DMId);
     const author = await this.usersService.getUserWithoutFriends(data.authorId);
+    console.log('authorId:', author);
 
     const message: CreateMessageDto = { DM, author, content: data.message };
 
@@ -1472,6 +1473,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         type: 'invite',
         roomId: roomId,
       });
+
+      return this.returnMessage('sendPongInvite', 200, '게임 초대를 보냈습니다.');
 
       // /** DM방 생성 */
       // let DM = await this.chatService.checkIfDmExists(senderId, anotherId);
