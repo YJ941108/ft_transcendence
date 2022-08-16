@@ -533,14 +533,11 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   }
 
   /** 게임 초대 */
-  setInviteRoomToReady(client: Socket, userId: number, roomId: string) {
+  setInviteRoomToReady(roomId: string) {
     const room = this.rooms.get(roomId);
     if (!room) {
       throw new Error('Game is over');
     }
-
-    this.handleJoinRoom(client, roomId);
-    room.changeGameState(GameState.STARTING);
   }
 
   createInvitedUser(id: number, username: string) {
@@ -560,7 +557,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     const sender = this.connectedUsers.getUserById(senderId);
     const receiver = this.connectedUsers.getUserById(receiverId);
 
-    if (!sender || !receiver) return;
+    if (!sender || !receiver) {
+      return;
+    }
 
     this.rooms.forEach((room: Room) => {
       if (room.isAPlayer(sender)) {
@@ -579,7 +578,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     const secondPlayer: User = this.createInvitedUser(receiverData.id, receiverData.nickname);
 
     /** 게임방 만들기 */
-    const roomId: string = `${Date.now()}${firstPlayer.nickname}&${secondPlayer.nickname}`;
+    const roomId: string = `${firstPlayer.nickname}&${secondPlayer.nickname}`;
     let room: Room = new Room(roomId, [firstPlayer, secondPlayer]);
     room.gameState = GameState.WAITING;
     this.rooms.set(roomId, room);

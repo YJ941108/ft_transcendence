@@ -494,6 +494,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         content: sendMessage.content,
         createdAt: sendMessage.createdAt,
         author: author,
+        type: 'text',
       };
       // const refactorMessage = {
       //   content: sendMessage.content,
@@ -1414,36 +1415,53 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  /**
+   * 게임 초대 후 수락할 때 초대한 사람이 못기다리고 나가버리면... 오류
+   * @param client
+   * @param param1
+   */
   @SubscribeMessage('acceptPongInvite')
-  async handleAcceptPongInvite(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() { roomId, userId }: { roomId: string; userId: number },
-  ) {
+  async handleAcceptPongInvite(@ConnectedSocket() client: Socket, @MessageBody() { roomId }: { roomId: string }) {
     try {
-      this.pongGateway.setInviteRoomToReady(client, userId, roomId);
-      this.server.to(client.id).emit('redirectToGame');
+      this.pongGateway.setInviteRoomToReady(roomId);
+      this.server.to(client.id).emit('listeningInviteGame', {
+        func: 'sendPongInvite',
+        code: 200,
+        message: `메시지를 보냈습니다.`,
+        data: {
+          roomId,
+        },
+      });
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
   }
 
   @SubscribeMessage('sendPongInvite')
-  async handleSendPongInvite(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() { senderId, receiverId }: { senderId: number; receiverId: number },
-  ) {
+  async handleSendPongInvite(@ConnectedSocket() client: Socket, @MessageBody() { anotherId }: { anotherId: number }) {
     try {
       const memorySender = this.chatUsers.getUser(client.id);
-      const memoryReceiver = this.chatUsers.getUserById(receiverId);
+      const memoryReceiver = this.chatUsers.getUserById(anotherId);
 
       /** 게임 방이 존재하는지 확인 */
-      this.pongGateway.roomAlreadyExists(senderId, receiverId);
+      /** 상대방이 게임중이면 chatError */
+      this.pongGateway.roomAlreadyExists(memorySender.id, anotherId);
 
       /** 초대방 만들기 */
       const roomId = await this.pongGateway.createInviteRoom(
         { id: memorySender.id, nickname: memorySender.nickname } as User,
-        receiverId,
+        anotherId,
       );
+
+      /** 방 정보 */
+      this.server.to(client.id).emit('listeningInviteGame', {
+        func: 'sendPongInvite',
+        code: 200,
+        message: `메시지를 보냈습니다.`,
+        data: {
+          roomId,
+        },
+      });
 
       /** DM 보내기 */
       const dm: any = await this.handleCreateDm(client, { anotherId: memoryReceiver.id });
@@ -1456,10 +1474,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
 
       // /** DM방 생성 */
-      // let DM = await this.chatService.checkIfDmExists(senderId, receiverId);
+      // let DM = await this.chatService.checkIfDmExists(senderId, anotherId);
       // if (!DM) {
       //   DM = await this.chatService.createDm({
-      //     users: [{ id: senderId }, { id: receiverId }],
+      //     users: [{ id: senderId }, { id: anotherId }],
       //   } as CreateDirectMessageDto);
 
       //   if (memoryReceiver) {
@@ -1482,8 +1500,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       //   DM,
       // } as CreateMessageDto);
       // this.server.to(`dm_${DM.id}`).emit('newPongInvite', { message });
-
-      this.server.to(client.id).emit('listeningInviteGame');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
