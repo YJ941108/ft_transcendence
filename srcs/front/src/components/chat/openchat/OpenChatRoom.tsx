@@ -57,7 +57,6 @@ function OpenChatRoom({ chatSocket }: any) {
 		});
 		setChatContent('OpenChatList');
 	};
-
 	useEffect(() => {
 		chatSocket.on('listeningMessage', (response: IMessageResponse) => {
 			setMessageList((prevMessages) => {
@@ -119,6 +118,8 @@ function OpenChatRoom({ chatSocket }: any) {
 			</button>
 			<ul>
 				{messageList?.map((message: IMessages) => {
+					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
+						return <li key={message.id}>BLOCKED</li>;
 					return <li key={message.id}>{message.content}</li>;
 				})}
 			</ul>
