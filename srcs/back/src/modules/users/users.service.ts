@@ -73,7 +73,7 @@ export class UsersService {
   async getUserWithoutFriends(id: number): Promise<Users> {
     const user = await this.usersRepository.findOne({ id });
     if (!user) {
-      throw new BadRequestException('유저가 없습니다.');
+      throw new BadRequestException(`${id}: 유저가 없습니다.`);
     }
     return user;
   }

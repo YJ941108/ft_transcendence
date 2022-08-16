@@ -574,7 +574,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   async createInviteRoom(sender: User, receiverId: number) {
     /** 유저 관리 */
     const firstPlayer: User = this.createInvitedUser(sender.id, sender.nickname);
-    const receiverData = await this.usersService.getUserWithFriends(receiverId);
+    const receiverData = await this.usersService.getUserWithoutFriends(receiverId);
     const secondPlayer: User = this.createInvitedUser(receiverData.id, receiverData.nickname);
 
     /** 게임방 만들기 */
