@@ -323,7 +323,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     const dbUser = await this.usersService.getUserWithoutFriends(dbId);
 
-    let response: Array<{ id: number; me: Users; another: Users; createdAt: Date; message: Message[] }> = [];
+    let response: Array<{
+      id: number;
+      me: Users;
+      another: Users;
+      createdAt: Date;
+      message: Message[];
+    }> = [];
     for (let i = 0; i < DMRooms.length; i++) {
       let another: Users;
       if (dbUser.nickname === DMRooms[i].users[0].nickname) {
@@ -484,18 +490,25 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     const DM = await this.chatService.getDmData(data.DMId);
     const author = await this.usersService.getUserWithoutFriends(data.authorId);
-    console.log('authorId:', author);
 
     const message: CreateMessageDto = { DM, author, content: data.message };
 
+    if (data.type === 'invite') {
+      message.type = data.type;
+    }
+    if (data.roomId) {
+      message.roomId = data.roomId;
+    }
+
     try {
       const sendMessage = await this.chatService.addMessageToDm(message);
-      const emitData = {
+      const emitData: { id: number; content: string; createdAt: Date; author: Users; type: string; roomId: string } = {
         id: sendMessage.id,
         content: sendMessage.content,
         createdAt: sendMessage.createdAt,
         author: author,
-        type: 'text',
+        type: sendMessage.type,
+        roomId: sendMessage.roomId,
       };
       // const refactorMessage = {
       //   content: sendMessage.content,
@@ -1453,6 +1466,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         { id: memorySender.id, nickname: memorySender.nickname } as User,
         anotherId,
       );
+      this.logger.log(`sendPongInvite: createInviteRoom: ${roomId}`);
 
       /** 방 정보 */
       this.server.to(client.id).emit('listeningInviteGame', {

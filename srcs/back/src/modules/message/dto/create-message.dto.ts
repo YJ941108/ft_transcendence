@@ -23,10 +23,10 @@ export class CreateMessageDto {
 
   @IsOptional()
   @IsString()
-  @IsIn(['regular', 'invite'])
-  readonly type?: string;
+  @IsIn(['text', 'invite'])
+  type?: string;
 
   @IsOptional()
   @IsString()
-  readonly roomId?: string;
+  roomId?: string;
 }
