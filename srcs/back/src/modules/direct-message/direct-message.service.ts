@@ -16,6 +16,9 @@ export class DirectMessageService {
 
   findAll() {
     return this.directMessagesRepository.find({
+      order: {
+        id: 'ASC',
+      },
       relations: ['users', 'messages', 'messages.author'],
     });
   }
