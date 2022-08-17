@@ -14,7 +14,7 @@ function AuthPage() {
 		};
 		setLogin();
 	}, [location.search]);
-	return <Navigate to="/game" />;
+	return <Navigate to="/tfa" />;
 }
 
 export default AuthPage;
