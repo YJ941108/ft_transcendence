@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Socket } from 'socket.io-client';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { emitSendDMMessage } from './Emit';
+import { emitAcceptPongInvite, emitSendDMMessage } from './Emit';
 import { IDMRoom, IMessageResponse, IMessages } from '../../modules/Interfaces/chatInterface';
 import { DMRoomInfo, MyInfo } from '../../modules/atoms';
 
@@ -36,6 +36,11 @@ const DMInputStyleC = styled.textarea`
 const DMButtonStyleC = styled.div`
 	background-color: red;
 	width: 20%;
+`;
+
+const AcceptButtonStyleC = styled.button`
+	width: 50px;
+	height: 1rem;
 `;
 
 const ChatMessageStyleC = styled.li`
@@ -78,6 +83,7 @@ function DMRoom({ chatSocket }: ISocket) {
 	const sendMessage = () => {
 		if (message.trim() !== '') {
 			emitSendDMMessage(chatSocket, roomInfo.id, Info.id, message);
+			console.log(messageList);
 			// scrollToBottom();
 		}
 		const timer = setTimeout(() => {
@@ -100,7 +106,6 @@ function DMRoom({ chatSocket }: ISocket) {
 					setMessageList((msgList) => {
 						return [...msgList, element];
 					});
-					// scrollToBottom();
 					return () => {};
 				});
 			});
@@ -114,10 +119,9 @@ function DMRoom({ chatSocket }: ISocket) {
 	useEffect(() => {
 		if (chatSocket) {
 			chatSocket.on('listeningDMMessage', (response: IMessageResponse) => {
-				setMessageList((msg) => {
-					return [...msg, response.data];
+				setMessageList((msgList) => {
+					return [...msgList, response.data];
 				});
-				// scrollToBottom();
 			});
 			return () => {
 				chatSocket.off('listeningDMMessage');
@@ -134,9 +138,11 @@ function DMRoom({ chatSocket }: ISocket) {
 						return (
 							<ChatMessageStyleC key={msg.id}>
 								{msg.author.nickname} : {msg.content}
-								<button type="button" onClick={sendMessage}>
-									abc
-								</button>
+								<AcceptButtonStyleC
+									onClick={() => {
+										emitAcceptPongInvite(chatSocket, msg.roomId);
+									}}
+								/>
 							</ChatMessageStyleC>
 						);
 					}
