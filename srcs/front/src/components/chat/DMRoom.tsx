@@ -130,6 +130,16 @@ function DMRoom({ chatSocket }: ISocket) {
 		<DMRoomStyleC>
 			<ChatLogStyleC ref={messageBoxRef}>
 				{messageList?.map((msg: IMessages) => {
+					if (msg.type === 'invite') {
+						return (
+							<ChatMessageStyleC key={msg.id}>
+								{msg.author.nickname} : {msg.content}
+								<button type="button" onClick={sendMessage}>
+									abc
+								</button>
+							</ChatMessageStyleC>
+						);
+					}
 					return (
 						<ChatMessageStyleC key={msg.id}>
 							{msg.author.nickname} : {msg.content}

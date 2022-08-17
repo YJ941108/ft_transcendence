@@ -67,6 +67,6 @@ export const emitSendDMMessage = (chatSocket: Socket, DMId: number, authorId: nu
 // 		}
 // 	});
 // };
-export const emitSendPongInvite = (chatSocket: Socket, authorId: number) => {
-	chatSocket.emit('sendPongInvite', { authorId });
+export const emitSendPongInvite = (chatSocket: Socket, anotherId: number) => {
+	chatSocket.emit('sendPongInvite', { anotherId });
 };
