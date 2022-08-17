@@ -338,6 +338,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         another = DMRooms[i].users[0];
       }
 
+      DMRooms[i].messages.sort((a, b) => a.id - b.id);
+
       response.push({
         id: DMRooms[i].id,
         me: dbUser,
