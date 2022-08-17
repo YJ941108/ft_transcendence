@@ -1446,6 +1446,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           roomId,
         },
       });
+      return this.returnMessage('acceptPongInvite', 200, '게임 초대를 수락했습니다.');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
