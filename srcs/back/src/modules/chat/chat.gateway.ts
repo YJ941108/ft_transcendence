@@ -494,6 +494,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     const DM = await this.chatService.getDmData(data.DMId);
     const author = await this.usersService.getUserWithoutFriends(data.authorId);
+    DM.users[0].id;
 
     const message: CreateMessageDto = { DM, author, content: data.message };
 
@@ -529,7 +530,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
       // const NewDM = await this.chatService.getDmData(data.DMId);
       // this.listeningDMRoomInfo(`dm_${message.DM.id}`, 'sendDMMessage', memoryUser, NewDM);
-      this.listeningDMRoomList(emitData.roomId, memoryUser.id, memoryUser.nickname, 'sendDMMessage');
+
+      let anotherId = DM.users[0].id;
+      if (anotherId === memoryUser.id) {
+        anotherId = DM.users[1].id;
+      }
+
+      const memoryAnother = this.chatUsers.getUserById(anotherId);
+      if (memoryAnother) {
+        this.listeningDMRoomList(memoryAnother.socketId, memoryAnother.id, memoryAnother.nickname, 'sendDMMessage');
+      }
+      this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'sendDMMessage');
 
       return this.returnMessage('sendDMMessage', 200, '메시지 보내기 성공');
     } catch (e) {
