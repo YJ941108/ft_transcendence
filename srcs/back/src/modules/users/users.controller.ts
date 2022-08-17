@@ -119,7 +119,7 @@ export class UsersController {
    * @param req
    * @returns
    */
-  @Get('me/tfa')
+  @Post('me/tfa')
   async getTwoFactorAuthCode(@Req() req: any): Promise<Object> {
     const user = await this.getUser(req);
     return this.usersService.getTwoFactorAuthCode(user.id);
