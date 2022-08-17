@@ -412,9 +412,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
       }
 
+      const orderedDM = await this.chatService.getDmData(dm.id);
+
       /** 나는 DM방에 들어가야 함 */
       this.userJoinRoom(client.id, `dm_${dm.id}`);
-      this.listeningDMRoomInfo(client.id, 'createDMRoom', memoryUser, dm);
+      this.listeningDMRoomInfo(client.id, 'createDMRoom', memoryUser, orderedDM);
 
       // /** 상대방에게 리스트 갱신하기 */
       // const memoryUsers = this.chatUsers.getUsers();

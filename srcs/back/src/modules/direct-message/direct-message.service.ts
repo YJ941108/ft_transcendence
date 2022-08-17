@@ -16,9 +16,6 @@ export class DirectMessageService {
 
   findAll() {
     return this.directMessagesRepository.find({
-      order: {
-        id: 'ASC',
-      },
       relations: ['users', 'messages', 'messages.author'],
     });
   }
@@ -26,6 +23,9 @@ export class DirectMessageService {
   async findOne(id: number) {
     const directMessage = await this.directMessagesRepository.findOne(id, {
       relations: ['users', 'messages', 'messages.author'],
+      order: {
+        id: 'ASC',
+      },
     });
     if (!directMessage) {
       throw new Error(`Direct Message [${id}] not found`);
