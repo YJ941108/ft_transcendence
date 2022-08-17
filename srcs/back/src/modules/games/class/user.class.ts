@@ -64,8 +64,8 @@ export class User {
    * @param mode
    */
   setMode(mode: string) {
-    if (mode === 'timer') {
-      this.mode = GameMode.TIMER;
+    if (mode === 'BIG') {
+      this.mode = GameMode.BIG;
     } else {
       this.mode = GameMode.DEFAULT;
     }

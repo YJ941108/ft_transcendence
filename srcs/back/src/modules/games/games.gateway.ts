@@ -212,7 +212,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
     }
 
-    if (mode !== 'DEFAULT') {
+    if (mode !== 'DEFAULT' && mode !== 'BIG') {
       return this.returnMessage('joinQueue', 400, '모드가 올바르지 않습니다.');
     } else if (user && this.queue.isInQueue(user)) {
       return this.returnMessage('joinQueue', 400, '이미 큐에 들어왔습니다');
