@@ -294,6 +294,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       another = dm.users[0];
     }
 
+    dm.messages.sort((a, b) => a.id - b.id);
+
     const response = {
       id: dm.id,
       me: user,
