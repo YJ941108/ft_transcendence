@@ -34,6 +34,8 @@ export interface IMessages {
 	content: string;
 	createdAt: string;
 	author: IUserData;
+	type: string;
+	roomId: string;
 }
 
 export interface IMessageResponse {

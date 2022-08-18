@@ -1,9 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useSetRecoilState } from 'recoil';
+import { Socket } from 'socket.io-client';
 import { emitCreateDMRoom, emitUserAction } from './Emit';
-import { IUserList } from '../../modules/Interfaces/userInterface';
+// import { IUserList } from '../../modules/Interfaces/userInterface';
 import { chatContent } from '../../modules/atoms';
+import { IMessages } from '../../modules/Interfaces/chatInterface';
 
 const UserPhotoDivStyleC = styled.div`
 	width: 70px;
@@ -29,6 +31,10 @@ const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
 `;
 
+const LastMessageDivStyleC = styled.div`
+	width: 100%;
+`;
+
 const UserInteractionStyleC = styled.span`
 	margin: 0 3px 3px 0;
 	cursor: pointer;
@@ -48,7 +54,17 @@ const UserStyleC = styled.li`
 	}
 `;
 
-function DirectMessageInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
+interface IDMList {
+	id: number;
+	nickname: string;
+	photo: string;
+	chatSocket: Socket;
+	isOnline: boolean;
+	lastMsg: IMessages[];
+}
+
+function DirectMessageInfo({ id, nickname, photo, chatSocket, isOnline, lastMsg }: IDMList) {
+	const lastMessage = lastMsg.at(-1)?.content;
 	const createDMRoom = useSetRecoilState(chatContent);
 	return (
 		<UserStyleC>
@@ -57,6 +73,7 @@ function DirectMessageInfo({ id, nickname, photo, chatSocket, isOnline }: IUserL
 			</UserPhotoDivStyleC>
 			<UserInfoDivStyleC>
 				<UserNickNameStyleC>{nickname}</UserNickNameStyleC>
+				<LastMessageDivStyleC>{lastMessage}</LastMessageDivStyleC>
 				{isOnline ? <UserNickNameStyleC>ONLINE</UserNickNameStyleC> : <UserNickNameStyleC>OFFLINE</UserNickNameStyleC>}
 				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'request')}>
 					ADD
@@ -70,7 +87,6 @@ function DirectMessageInfo({ id, nickname, photo, chatSocket, isOnline }: IUserL
 				>
 					MSG
 				</UserInteractionStyleC>
-				{/* <UserInteractionStyleC onClick={() => createDMRoom('DMRoom')}>DMROOM</UserInteractionStyleC> */}
 			</UserInfoDivStyleC>
 		</UserStyleC>
 	);
