@@ -9,10 +9,10 @@ interface Props {
 const ToggleBtn = styled.button`
 	width: 60px;
 	height: 30px;
+	float: right;
 	border-radius: 30px;
 	border: none;
 	cursor: pointer;
-	float: right;
 	background-color: ${(props: Props) => (props.tfa ? 'green' : 'darkgray')};
 	display: block;
 	justify-content: center;
@@ -35,8 +35,8 @@ const Circle = styled.div`
 `;
 
 const ToggleBox = styled.div`
+	text-align: center;
 	margin-top: 20px;
-	padding: 10px;
 	width: 200px;
 	column-count: 2;
 	line-height: 30px;
@@ -60,8 +60,7 @@ function Toggle({ tfa }: Props) {
 
 	return (
 		<ToggleBox>
-			{/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-			<label>2AF 인증 {toggle ? 'On' : 'Off'}</label>
+			<label htmlFor="ToggleBtn">2AF 인증 {toggle ? 'On' : 'Off'}</label>
 			<ToggleBtn onClick={clickedToggle} tfa={toggle}>
 				<Circle tfa={toggle} />
 			</ToggleBtn>
