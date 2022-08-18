@@ -54,7 +54,15 @@ function Game() {
 			setIsDisplayGame(false);
 		});
 		return () => {
-			if (socket) socket.disconnect();
+			if (socket) {
+				socket.off('updateCurrentGames');
+				socket.off('newRoom');
+				socket.off('joinedQueue');
+				socket.off('leavedQueue');
+				socket.off('joinedRoom');
+				socket.off('leavedRoom');
+				socket.disconnect();
+			}
 			setGameRooms([]);
 		};
 	}, []);
@@ -70,9 +78,14 @@ function Game() {
 							leaveQueue
 						</button>
 					) : (
-						<button type="button" onClick={joinQueue} value="DEFAULT">
-							joinQueue
-						</button>
+						<div>
+							<button type="button" onClick={joinQueue} value="DEFAULT">
+								Default
+							</button>
+							<button type="button" onClick={joinQueue} value="BIG">
+								BigBall
+							</button>
+						</div>
 					)}
 					<GameRooms gameRooms={gameRooms} socket={socket} />
 				</>
