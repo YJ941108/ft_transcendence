@@ -34,6 +34,7 @@ export class UsersController {
   @Get()
   async getUsers(): Promise<Users[]> {
     const users = await this.usersService.getUsers();
+    users.sort((a, b) => a.ratio - b.ratio);
     return users;
   }
 
