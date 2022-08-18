@@ -194,6 +194,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         `${client.id}: ${memoryUser.nickname}이 joinChat 성공. 서버에서 listeningGetUsers && listeningMe를 emit함`,
       );
     } catch (e) {
+      console.log(e);
       this.chatUsers.removeUser(memoryUser);
       this.server.to(client.id).emit('chatError', {
         func: 'joinChat',
@@ -359,10 +360,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         response.splice(roomIndex, 1);
       }
 
-      /** 온라인인지 오프라인인지 변환 */
-      if (this.chatUsers.getUserByNickname(dbUserWithBlockedUsers[i].nickname)) {
-        dbUserWithBlockedUsers[i].isOnline = true;
-      }
+      // /** 온라인인지 오프라인인지 변환 */
+      // if (this.chatUsers.getUserByNickname(dbUserWithBlockedUsers[i].nickname)) {
+      //   dbUserWithBlockedUsers[i].isOnline = true;
+      // }
     }
 
     this.server.to(socketId).emit('listeningDMRoomList', {
