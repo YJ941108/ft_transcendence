@@ -54,6 +54,7 @@ function DirectMessageList({ chatSocket }: ISocket) {
 						photo={element.another.photo}
 						chatSocket={chatSocket}
 						isOnline={element.another.isOnline}
+						lastMsg={element.message}
 					/>
 				);
 			})}

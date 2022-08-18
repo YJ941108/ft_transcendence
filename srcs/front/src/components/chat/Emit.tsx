@@ -57,3 +57,23 @@ export const emitSendDMMessage = (chatSocket: Socket, DMId: number, authorId: nu
 		}
 	});
 };
+
+export const emitSendPongInvite = (chatSocket: Socket, anotherId: number) => {
+	chatSocket.emit('sendPongInvite', { anotherId }, (response: IDebug) => {
+		if (response.code === 200) {
+			console.log('sendPongInvite SUCCESS', response);
+		} else if (response.code === 400) {
+			console.log('sendPongInvite FAIL', response);
+		}
+	});
+};
+
+export const emitAcceptPongInvite = (chatSocket: Socket, roomId: string) => {
+	chatSocket.emit('acceptPongInvite', { roomId }, (response: IDebug) => {
+		if (response.code === 200) {
+			console.log('acceptPongInvite SUCCESS', response);
+		} else if (response.code === 400) {
+			console.log('acceptPongInvite FAIL', response);
+		}
+	});
+};
