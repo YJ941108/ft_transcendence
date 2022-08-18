@@ -9,8 +9,8 @@ export const getUserData = async () => {
 	return response.data;
 };
 
-export const getUsersData = async () => {
-	const response = await axios.get('/api/users');
+export const getUsersData = async (nickname: string) => {
+	const response = await axios.get(`/api/users/${nickname}`);
 	return response.data;
 };
 

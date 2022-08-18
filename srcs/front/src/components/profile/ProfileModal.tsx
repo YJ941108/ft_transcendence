@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -24,15 +24,20 @@ function ProfileModal() {
 	const [show, setShow] = useState(false);
 	const [inputValue, setInputValue] = useState('');
 	const [inputPhoto, setInputPhoto] = useState('');
+	const [previewPhoto, setPreviewPhoto] = useState('');
+
+	useEffect(() => {
+		if (data?.photo) setPreviewPhoto(data.photo);
+	}, []);
 	const handleFile = (e: any) => {
+		setPreviewPhoto(URL.createObjectURL(e.target.files[0]));
 		setInputPhoto(e.target.files[0]);
-		console.log(inputPhoto);
 	};
 	const handleClose = () => setShow(false);
 	const handleShow = () => setShow(true);
+
 	const handleSubmit = async (event: any) => {
 		event.preventDefault();
-		console.log(inputPhoto);
 		const formData = new FormData();
 		formData.append('nickname', inputValue);
 		formData.append('file', inputPhoto);
@@ -64,35 +69,36 @@ function ProfileModal() {
 				</Modal.Header>
 				<ModalStyledDiv>
 					<Modal.Body className="custom_modal_img_body">
-						<img src={inputPhoto} alt="profile_photo" className="custom_modal_img" />
-						<div id="result" />
+						<img src={previewPhoto} alt="profile_photo" className="custom_modal_img" />
 					</Modal.Body>
 					<Modal.Body className="custom_modal_form_body">
-						<form onSubmit={handleSubmit}>
-							<div>
-								<label htmlFor="nickName">
-									Nick Name:
-									<input
-										type="text"
-										id="nickName"
-										placeholder={data?.nickname}
-										onChange={(e) => setInputValue(e.target.value)}
-									/>
-								</label>
-							</div>
-							<div>
-								<label htmlFor="file">
-									Default file input example
-									<input
-										type="file"
-										id="file"
-										onChange={(e) => {
-											handleFile(e);
-										}}
-									/>
-								</label>
-							</div>
-						</form>
+						<div>
+							<form onSubmit={handleSubmit}>
+								<div>
+									<label htmlFor="nickName">
+										Nick Name:
+										<input
+											type="text"
+											id="nickName"
+											placeholder={data?.nickname}
+											onChange={(e) => setInputValue(e.target.value)}
+										/>
+									</label>
+								</div>
+								<div>
+									<label htmlFor="file">
+										Default file input example
+										<input
+											type="file"
+											id="file"
+											onChange={(e) => {
+												handleFile(e);
+											}}
+										/>
+									</label>
+								</div>
+							</form>
+						</div>
 						<Button variant="success" onClick={handleSubmit}>
 							Save Change
 						</Button>
