@@ -22,6 +22,7 @@ const ProfileCardBox = styled.div`
 	display: inline-block;
 	color: white;
 	padding: 20px;
+	height: 250px;
 	width: 188px;
 	border-radius: 10px;
 	text-align: center;

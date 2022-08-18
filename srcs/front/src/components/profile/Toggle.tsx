@@ -36,6 +36,8 @@ const Circle = styled.div`
 
 const ToggleBox = styled.div`
 	margin-top: 20px;
+	padding: 10px;
+	width: 200px;
 	column-count: 2;
 	line-height: 30px;
 `;
