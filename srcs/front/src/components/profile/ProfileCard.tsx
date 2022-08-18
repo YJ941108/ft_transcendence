@@ -22,7 +22,6 @@ const ProfileCardBox = styled.div`
 	display: inline-block;
 	color: white;
 	padding: 20px;
-	height: 250px;
 	width: 188px;
 	border-radius: 10px;
 	text-align: center;
@@ -47,7 +46,8 @@ const ProfileCardBox = styled.div`
 
 function ProfileCard() {
 	const { isLoading, data, error } = useQuery<IUser>('user', getUserData);
-
+	console.log('url = ', data?.photo);
+	React.useEffect(() => {}, [data]);
 	if (isLoading) return null;
 	if (error) return null;
 	return (

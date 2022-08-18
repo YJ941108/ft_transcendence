@@ -3,20 +3,22 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
 import axios from 'axios';
+import { useQuery } from 'react-query';
 import { getUserData } from '../../modules/api';
 import { IUser } from './UserInterface';
 
 const ModalStyledDiv = styled.div`
 	display: grid;
-	padding: 10px;
+	align-items: center;
+	grid-template-columns: 1fr 2fr;
+	padding: 20px;
+	grid-gap: 20px;
 	width: 100%;
 	height: 100%;
-	grid-template-columns: 1fr 4fr;
-	grid-template-areas: '
-	imgBody formBody
-	';
+	grid-template-areas:
+		'imgBody formBody formBody'
+		'editBtn editBtn editBtn';
 `;
 
 function ProfileModal() {
@@ -30,8 +32,8 @@ function ProfileModal() {
 		if (data?.photo) setPreviewPhoto(data.photo);
 	}, []);
 	const handleFile = (e: any) => {
-		setPreviewPhoto(URL.createObjectURL(e.target.files[0]));
 		setInputPhoto(e.target.files[0]);
+		setPreviewPhoto(URL.createObjectURL(e.target.files[0]));
 	};
 	const handleClose = () => setShow(false);
 	const handleShow = () => setShow(true);
@@ -48,6 +50,7 @@ function ProfileModal() {
 					alert(res.data.message);
 					handleClose();
 					setInputValue('');
+					setInputPhoto('');
 					return res;
 				})
 				.catch((err) => {
@@ -68,41 +71,36 @@ function ProfileModal() {
 					<Modal.Title>Profile Edit</Modal.Title>
 				</Modal.Header>
 				<ModalStyledDiv>
-					<Modal.Body className="custom_modal_img_body">
-						<img src={previewPhoto} alt="profile_photo" className="custom_modal_img" />
-					</Modal.Body>
-					<Modal.Body className="custom_modal_form_body">
-						<div>
-							<form onSubmit={handleSubmit}>
-								<div>
-									<label htmlFor="nickName">
-										Nick Name:
-										<input
-											type="text"
-											id="nickName"
-											placeholder={data?.nickname}
-											onChange={(e) => setInputValue(e.target.value)}
-										/>
-									</label>
-								</div>
-								<div>
-									<label htmlFor="file">
-										Default file input example
-										<input
-											type="file"
-											id="file"
-											onChange={(e) => {
-												handleFile(e);
-											}}
-										/>
-									</label>
-								</div>
-							</form>
-						</div>
-						<Button variant="success" onClick={handleSubmit}>
-							Save Change
-						</Button>
-					</Modal.Body>
+					<img src={previewPhoto} alt="profile_photo" className="custom_modal_img" />
+					<div className="formDiv">
+						<form onSubmit={handleSubmit}>
+							<div>
+								<label htmlFor="nickName">
+									<div>현재 아이디 : {data?.nickname}</div>
+									<input
+										type="text"
+										id="nickName"
+										placeholder="수정할 이름을 입력해주세요!"
+										onChange={(e) => setInputValue(e.target.value)}
+									/>
+								</label>
+							</div>
+							<div>
+								<label htmlFor="file">
+									<input
+										type="file"
+										accept="image/*"
+										onChange={(e) => {
+											handleFile(e);
+										}}
+									/>
+								</label>
+							</div>
+						</form>
+					</div>
+					<Button className="editButton" onClick={handleSubmit}>
+						Save Change
+					</Button>
 				</ModalStyledDiv>
 			</Modal>
 		</div>
