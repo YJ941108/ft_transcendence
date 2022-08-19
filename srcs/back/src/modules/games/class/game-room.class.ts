@@ -211,7 +211,7 @@ export default class Room implements IRoom {
   resetPosition(): void {
     this.paddleOne.reset();
     this.paddleTwo.reset();
-    this.ball.reset();
+    this.ball.reset(this.mode);
   }
 
   /**

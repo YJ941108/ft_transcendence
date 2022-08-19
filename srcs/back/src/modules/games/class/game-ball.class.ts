@@ -71,11 +71,20 @@ export class Ball implements IBall {
   /**
    * 공 초기화
    */
-  reset() {
+  reset(mode: GameMode) {
     let dir = this.x < CANVAS_WIDTH / 2 ? -1 : 1;
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
-    this.speed = BALL_DEFAULT_SPEED;
+    if (mode === GameMode.BIG) {
+      this.speed = BALL_DEFAULT_SPEED * 5;
+    } else {
+      this.speed = BALL_DEFAULT_SPEED;
+    }
+    if (mode === GameMode.BIG) {
+      this.acceleration = BALL_ACCELERATION * 5;
+    } else {
+      this.acceleration = BALL_ACCELERATION;
+    }
     this.velocity = {
       dx: dir * this.speed,
       dy: 0,
