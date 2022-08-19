@@ -298,6 +298,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       room.resume();
       room.addUser(user);
     }
+    console.log(room);
     this.server.to(client.id).emit('joinedRoom');
     this.server.to(client.id).emit('updateRoom', JSON.stringify(room.serialize()));
     return this.returnMessage('joinRoom', 200, '방에 들어왔습니다.');
