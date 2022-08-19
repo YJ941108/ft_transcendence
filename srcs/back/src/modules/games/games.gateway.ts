@@ -564,6 +564,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (!room) {
       throw new Error('Game is over');
     }
+    room.changeGameState(GameState.STARTING);
     return room;
   }
 
