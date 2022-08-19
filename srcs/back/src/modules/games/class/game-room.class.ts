@@ -147,6 +147,10 @@ export default class Room implements IRoom {
     this.players.push(user);
   }
 
+  getUsers(): User[] {
+    return this.players;
+  }
+
   /**
    *
    * @param userRm
