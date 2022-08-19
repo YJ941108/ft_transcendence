@@ -14,7 +14,6 @@ const ProfileDiv = styled.div`
 	padding: 30px;
 	width: 100%;
 	height: 100%;
-	//grid-template-rows: 300px 1fr;
 	grid-template-columns: 1fr 4fr;
 	grid-template-areas: 'ProfileCard ProfileContent';
 	grid-gap: 10px;

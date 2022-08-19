@@ -8,6 +8,8 @@ import { IUser } from './UserInterface';
 
 const RootStyled = styled.div`
 	grid-area: ProfileCard;
+	text-align: center;
+	padding: inherit;
 	height: 100%;
 	a {
 		display: block;
@@ -22,7 +24,6 @@ const ProfileCardBox = styled.div`
 	display: inline-block;
 	color: white;
 	padding: 20px;
-	height: 250px;
 	width: 188px;
 	border-radius: 10px;
 	text-align: center;
@@ -47,7 +48,7 @@ const ProfileCardBox = styled.div`
 
 function ProfileCard() {
 	const { isLoading, data, error } = useQuery<IUser>('user', getUserData);
-
+	React.useEffect(() => {}, [data]);
 	if (isLoading) return null;
 	if (error) return null;
 	return (
