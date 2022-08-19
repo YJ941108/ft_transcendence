@@ -20,6 +20,7 @@ import { User } from '../games/class/user.class';
 import { GamesGateway } from '../games/games.gateway';
 import { CreateMessageDto } from '../message/dto/create-message.dto';
 import { Message } from '../message/entities/message.entity';
+import { MessageService } from '../message/message.service';
 import { Users } from '../users/entities/users.entity';
 import { UsersService } from '../users/users.service';
 import { BadRequestTransformationFilter } from './chat.filter';
@@ -51,6 +52,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private readonly chatService: ChatService,
     private readonly usersService: UsersService,
     private readonly pongGateway: GamesGateway,
+    private readonly messageService: MessageService,
   ) {}
 
   /**
@@ -1458,7 +1460,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    * @param param1
    */
   @SubscribeMessage('acceptPongInvite')
-  async handleAcceptPongInvite(@ConnectedSocket() client: Socket, @MessageBody() { roomId }: { roomId: string }) {
+  async handleAcceptPongInvite(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() { roomId, messageId }: { roomId: string; messageId: number },
+  ) {
     try {
       this.pongGateway.setInviteRoomToReady(roomId);
       this.server.to(client.id).emit('listeningInviteGame', {
@@ -1469,6 +1474,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           roomId,
         },
       });
+      await this.messageService.setType(messageId, 'text');
+
       return this.returnMessage('acceptPongInvite', 200, '게임 초대를 수락했습니다.');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
