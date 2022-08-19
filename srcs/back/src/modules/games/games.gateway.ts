@@ -181,6 +181,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     /* Verify that player is not already in a game */
     this.rooms.forEach((room: Room) => {
+      console.log('방 전체 조회 후 joinroom을 위한 room: ', room);
+      console.log('isPlayer', room.isAPlayer(newUser));
+      console.log('roomState', room.gameState);
       if (
         room.isAPlayer(newUser) &&
         room.gameState !== GameState.PLAYER_ONE_WIN &&
@@ -606,7 +609,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.rooms.set(roomId, room);
     this.currentGames.push(room);
     console.log('firstPlayer', firstPlayer);
-    this.server.to(firstPlayer.socketId).emit('newRoom', room);
 
     /** 게임 알리기 */
     this.server.emit('updateCurrentGames', this.currentGames);

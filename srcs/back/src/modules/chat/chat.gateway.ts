@@ -1465,19 +1465,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @MessageBody() { roomId, messageId }: { roomId: string; messageId: number },
   ) {
     try {
+      /** 게임 확인 */
       const room = this.pongGateway.setInviteRoomToReady(roomId);
-      this.server.to(client.id).emit('listeningInviteGame', {
-        func: 'sendPongInvite',
-        code: 200,
-        message: `메시지를 보냈습니다.`,
-        data: {
-          roomId,
-        },
-      });
-      const playsers = room.getUsers();
-      console.log(playsers);
-      this.server.to(playsers[1].socketId).emit('newRoom', room);
 
+      /** 수락 후 */
       await this.messageService.setType(messageId, 'text');
 
       return this.returnMessage('acceptPongInvite', 200, '게임 초대를 수락했습니다.');
@@ -1502,16 +1493,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         anotherId,
       );
       this.logger.log(`sendPongInvite: createInviteRoom: ${roomId}`);
-
-      /** 방 정보 */
-      this.server.to(client.id).emit('listeningInviteGame', {
-        func: 'sendPongInvite',
-        code: 200,
-        message: `메시지를 보냈습니다.`,
-        data: {
-          roomId,
-        },
-      });
 
       /** DM 보내기 */
       const dm: any = await this.handleCreateDm(client, { anotherId });
