@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { Socket } from 'socket.io-client';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { emitAcceptPongInvite, emitSendDMMessage } from './Emit';
 import { IDMRoom, IMessageResponse, IMessages } from '../../modules/Interfaces/chatInterface';
 import { DMRoomInfo, MyInfo } from '../../modules/atoms';
+import { useChatSocket } from './SocketContext';
 
 const DMRoomStyleC = styled.div`
 	min-height: 600px;
@@ -47,11 +47,8 @@ const ChatMessageStyleC = styled.li`
 	margin: 3px;
 `;
 
-interface ISocket {
-	chatSocket: Socket;
-}
-
-function DMRoom({ chatSocket }: ISocket) {
+function DMRoom() {
+	const chatSocket = useChatSocket();
 	const [message, setMessage] = useState('');
 	const [roomInfo, setRoomInfo] = useRecoilState<IDMRoom>(DMRoomInfo);
 	const [messageList, setMessageList] = useState<IMessages[]>([]);
