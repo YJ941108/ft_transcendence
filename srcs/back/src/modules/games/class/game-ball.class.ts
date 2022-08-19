@@ -59,7 +59,10 @@ export class Ball implements IBall {
     }
     this.speed = BALL_DEFAULT_SPEED;
     this.acceleration = BALL_ACCELERATION;
-    this.velocity = { dx: this.speed * (Math.random() < 0.5 ? 1 : -1), dy: 0 };
+    this.velocity = {
+      dx: (this.speed * (Math.random() < 0.5 ? 1 : -1)) / 2,
+      dy: (this.speed * (Math.random() < 0.5 ? 1 : -1)) / 2,
+    };
     this.goal = false;
     this.color = 'white';
   }
@@ -73,8 +76,8 @@ export class Ball implements IBall {
     this.y = CANVAS_HEIGHT / 2;
     this.speed = BALL_DEFAULT_SPEED;
     this.velocity = {
-      dx: dir * this.speed * Math.random(),
-      dy: dir * this.speed * Math.random(),
+      dx: dir * this.speed,
+      dy: dir * this.speed,
     };
   }
 
@@ -95,7 +98,7 @@ export class Ball implements IBall {
           (this.y - this.r >= p1.y && this.y - this.r <= p1.y + p1.height)
         ) {
           this.x = p1.x + p1.width + this.r;
-          this.r -= 5;
+          // this.r -= 5;
           p1.color = 'rgba(127, 0, 0, 0.8)';
           return true;
         }
@@ -107,7 +110,7 @@ export class Ball implements IBall {
           (this.y - this.r >= p2.y && this.y - this.r <= p2.y + p2.height)
         ) {
           this.x = p2.x - this.r;
-          this.r -= 5;
+          // this.r -= 5;
           p2.color = 'rgba(127, 0, 0, 0.8)';
           return true;
         }
@@ -168,10 +171,9 @@ export class Ball implements IBall {
         this.r += 1;
       }
     }
-
     if (!this.handleCollision(secondPassed, p1, p2)) {
-      this.x += this.velocity.dx * secondPassed;
-      this.y += this.velocity.dy * secondPassed;
+      this.x += (this.velocity.dx * secondPassed) / 2;
+      this.y += (this.velocity.dy * secondPassed) / 2;
     }
 
     /** Goal Paddle */
