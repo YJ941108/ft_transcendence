@@ -1,4 +1,3 @@
-import { GameMode } from 'src/enums/games.enum';
 import {
   BALL_ACCELERATION,
   BALL_MAX_SPEED,
@@ -49,14 +48,10 @@ export class Ball implements IBall {
   /**
    * velocity의 Math.random()에 의해 공이 시작할 때 왼쪽으로 갈지, 오른쪽으로 갈지 정해진다.
    */
-  constructor(mode: GameMode) {
+  constructor() {
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
-    if (mode === GameMode.BIG) {
-      this.r = BALL_DEFAULT_RADIUS * 5;
-    } else {
-      this.r = BALL_DEFAULT_RADIUS;
-    }
+    this.r = BALL_DEFAULT_RADIUS;
     this.speed = BALL_DEFAULT_SPEED;
     this.acceleration = BALL_ACCELERATION;
     this.velocity = { dx: this.speed * (Math.random() < 0.5 ? 1 : -1), dy: 0 };
@@ -95,7 +90,7 @@ export class Ball implements IBall {
           (this.y - this.r >= p1.y && this.y - this.r <= p1.y + p1.height)
         ) {
           this.x = p1.x + p1.width + this.r;
-          this.r -= 5;
+          // this.r -= 5;
           p1.color = 'rgba(127, 0, 0, 0.8)';
           return true;
         }
@@ -107,7 +102,7 @@ export class Ball implements IBall {
           (this.y - this.r >= p2.y && this.y - this.r <= p2.y + p2.height)
         ) {
           this.x = p2.x - this.r;
-          this.r -= 5;
+          // this.r -= 5;
           p2.color = 'rgba(127, 0, 0, 0.8)';
           return true;
         }
