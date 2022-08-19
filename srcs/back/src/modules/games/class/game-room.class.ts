@@ -277,7 +277,7 @@ export default class Room implements IRoom {
 
     this.paddleOne.update(secondPassed);
     this.paddleTwo.update(secondPassed);
-    this.ball.update(secondPassed, this.paddleOne, this.paddleTwo);
+    this.ball.update(secondPassed, this.paddleOne, this.paddleTwo, this.players[0].mode);
     this.checkGoal();
   }
 

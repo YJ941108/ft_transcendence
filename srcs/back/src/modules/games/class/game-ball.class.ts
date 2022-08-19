@@ -73,8 +73,8 @@ export class Ball implements IBall {
     this.y = CANVAS_HEIGHT / 2;
     this.speed = BALL_DEFAULT_SPEED;
     this.velocity = {
-      dx: dir * this.speed,
-      dy: 0,
+      dx: dir * this.speed * Math.random(),
+      dy: dir * this.speed * Math.random(),
     };
   }
 
@@ -95,7 +95,7 @@ export class Ball implements IBall {
           (this.y - this.r >= p1.y && this.y - this.r <= p1.y + p1.height)
         ) {
           this.x = p1.x + p1.width + this.r;
-          // this.r -= 5;
+          this.r -= 5;
           p1.color = 'rgba(127, 0, 0, 0.8)';
           return true;
         }
@@ -107,7 +107,7 @@ export class Ball implements IBall {
           (this.y - this.r >= p2.y && this.y - this.r <= p2.y + p2.height)
         ) {
           this.x = p2.x - this.r;
-          // this.r -= 5;
+          this.r -= 5;
           p2.color = 'rgba(127, 0, 0, 0.8)';
           return true;
         }
@@ -158,9 +158,15 @@ export class Ball implements IBall {
    * @param p1
    * @param p2
    */
-  update(secondPassed: number, p1: Paddle, p2: Paddle) {
-    if (this.r < BALL_DEFAULT_RADIUS) {
-      this.r += 1;
+  update(secondPassed: number, p1: Paddle, p2: Paddle, mode: GameMode) {
+    if (mode === GameMode.BIG) {
+      if (this.r < BALL_DEFAULT_RADIUS * 5) {
+        this.r += 1;
+      }
+    } else {
+      if (this.r < BALL_DEFAULT_RADIUS) {
+        this.r += 1;
+      }
     }
 
     if (!this.handleCollision(secondPassed, p1, p2)) {
