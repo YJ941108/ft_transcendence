@@ -179,6 +179,24 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     }
     newUser.setUserStatus(UserStatus.IN_HUB);
 
+    /* Verify that player is not already in a game */
+    this.rooms.forEach((room: Room) => {
+      if (
+        room.isAPlayer(newUser) &&
+        room.gameState !== GameState.PLAYER_ONE_WIN &&
+        room.gameState !== GameState.PLAYER_TWO_WIN
+      ) {
+        newUser.setUserStatus(UserStatus.PLAYING);
+        newUser.setRoomId(room.roomId);
+
+        this.server.to(client.id).emit('newRoom', room);
+        if (room.gameState === GameState.PAUSED) {
+          room.resume();
+        }
+        return;
+      }
+    });
+
     /** 접속중인 유저에 추가 */
     const isConnected = this.connectedUsers.getUserById(newUser.id);
     if (!isConnected) {
