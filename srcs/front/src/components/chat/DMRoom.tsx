@@ -137,7 +137,7 @@ function DMRoom() {
 								{msg.author.nickname} : {msg.content}
 								<AcceptButtonStyleC
 									onClick={() => {
-										emitAcceptPongInvite(chatSocket, msg.roomId);
+										emitAcceptPongInvite(chatSocket, msg.roomId, msg.id);
 									}}
 								/>
 							</ChatMessageStyleC>
