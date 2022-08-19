@@ -171,7 +171,7 @@ export class Ball implements IBall {
    * @param p1
    * @param p2
    */
-  update(secondPassed: number, p1: Paddle, p2: Paddle, mode: GameMode) {
+  update(secondPassed: number, p1: Paddle, p2: Paddle) {
     if (this.r < BALL_DEFAULT_RADIUS) {
       this.r += 1;
     }
