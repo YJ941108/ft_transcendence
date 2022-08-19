@@ -206,7 +206,7 @@ export default class Room implements IRoom {
    */
   resume(): void {
     this.changeGameState(GameState.RESUMED);
-    this.pauseTime[this.pauseTime.length - 1].resume = Date.now();
+    this.pauseTime.push({ pause: Date.now(), resume: Date.now() });
   }
 
   /**
