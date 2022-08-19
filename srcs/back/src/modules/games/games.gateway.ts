@@ -550,10 +550,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
     }
 
-    if (!room.isAPlayer(user)) {
-      this.server.to(client.id).emit('newRoom', room);
-      return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
-    }
+    this.server.to(client.id).emit('newRoom', room);
+    return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
   }
 
   /** 게임 초대 */
