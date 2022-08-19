@@ -238,7 +238,7 @@ export default class Room implements IRoom {
        * 그렇지 않으면 -> PLAYER_SCORED
        */
       if (
-        this.mode === GameMode.DEFAULT &&
+        (this.mode === GameMode.DEFAULT || this.mode === GameMode.BIG) &&
         (this.paddleOne.goal === this.maxGoal || this.paddleTwo.goal === this.maxGoal)
       ) {
         if (this.paddleOne.goal === this.maxGoal) {
