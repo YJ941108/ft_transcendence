@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { deleteToken } from '../../modules/login/login';
+import { useChatSocket } from './SocketContext';
 
 const UserPhotoDivStyleC = styled.div`
 	width: 70px;
@@ -47,6 +48,7 @@ export interface IMyInfo {
 }
 
 function MyUserInfo({ id, nickname, photo }: IMyInfo) {
+	const socket = useChatSocket();
 	const navigate = useNavigate();
 	console.log(id);
 	return (
@@ -61,6 +63,8 @@ function MyUserInfo({ id, nickname, photo }: IMyInfo) {
 				type="button"
 				onClick={() => {
 					deleteToken();
+					socket.disconnect();
+					console.log(socket);
 					navigate('/');
 				}}
 			>

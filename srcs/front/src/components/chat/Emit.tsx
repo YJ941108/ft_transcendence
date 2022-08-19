@@ -68,8 +68,8 @@ export const emitSendPongInvite = (chatSocket: Socket, anotherId: number) => {
 	});
 };
 
-export const emitAcceptPongInvite = (chatSocket: Socket, roomId: string) => {
-	chatSocket.emit('acceptPongInvite', { roomId }, (response: IDebug) => {
+export const emitAcceptPongInvite = (chatSocket: Socket, roomId: string, messageId: number) => {
+	chatSocket.emit('acceptPongInvite', { roomId, messageId }, (response: IDebug) => {
 		if (response.code === 200) {
 			console.log('acceptPongInvite SUCCESS', response);
 		} else if (response.code === 400) {
