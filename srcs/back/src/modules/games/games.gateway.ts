@@ -164,6 +164,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('handleUserConnect')
   handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): User[] | Object {
     if (user && !user.id) {
+      this.logger.log(`handleUserConnect: user: ${user}`);
+      this.logger.log(`handleUserConnect: user.id: ${user.id}`);
       return this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
     }
 
@@ -185,6 +187,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     /** 접속중인 유저 반환 */
     const users = this.connectedUsers.findAll();
+    this.logger.log(`handleUserConnect: users: ${users}`);
     return this.returnMessage('handleUserConnect', 200, '성공', users);
   }
 
