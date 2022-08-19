@@ -292,7 +292,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
      * 관전자인 경우
      * 플레이어인 경우
      */
-    if (room.isAPlayer(user)) {
+    if (room.isAPlayer(user) && room.gameState === GameState.PAUSED) {
       room.resume();
       room.addUser(user);
     } else if (user.status === UserStatus.IN_HUB) {
