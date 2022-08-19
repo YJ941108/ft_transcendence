@@ -584,6 +584,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     room.gameState = GameState.WAITING;
     this.rooms.set(roomId, room);
     this.currentGames.push(room);
+    console.log('firstPlayer', firstPlayer);
     this.server.to(firstPlayer.socketId).emit('newRoom', room);
 
     /** 게임 알리기 */

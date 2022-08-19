@@ -1475,6 +1475,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         },
       });
       const playsers = room.getUsers();
+      console.log(playsers);
       this.server.to(playsers[1].socketId).emit('newRoom', room);
 
       await this.messageService.setType(messageId, 'text');
