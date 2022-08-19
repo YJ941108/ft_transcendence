@@ -295,6 +295,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (user.status === UserStatus.IN_HUB) {
       this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
     } else if (room.isAPlayer(user)) {
+      room.resume();
       room.addUser(user);
     }
     this.server.to(client.id).emit('joinedRoom');
