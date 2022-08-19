@@ -538,6 +538,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (!room) {
       throw new Error('Game is over');
     }
+    return room;
   }
 
   createInvitedUser(id: number, username: string) {
@@ -583,6 +584,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     room.gameState = GameState.WAITING;
     this.rooms.set(roomId, room);
     this.currentGames.push(room);
+    this.server.to(sender.socketId).emit('newRoom', room);
 
     /** 게임 알리기 */
     this.server.emit('updateCurrentGames', this.currentGames);

@@ -1465,7 +1465,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @MessageBody() { roomId, messageId }: { roomId: string; messageId: number },
   ) {
     try {
-      this.pongGateway.setInviteRoomToReady(roomId);
+      const room = this.pongGateway.setInviteRoomToReady(roomId);
       this.server.to(client.id).emit('listeningInviteGame', {
         func: 'sendPongInvite',
         code: 200,
@@ -1474,6 +1474,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           roomId,
         },
       });
+      this.server.to(client.id).emit('newRoom', room);
+
       await this.messageService.setType(messageId, 'text');
 
       return this.returnMessage('acceptPongInvite', 200, '게임 초대를 수락했습니다.');
