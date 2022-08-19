@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import AuthPage from './pages/AuthPage';
 import GamePage from './pages/GamePage';
 import ProfilePage from './pages/ProfilePage';
+import MainPage from './pages/MainPage';
 import UsersPage from './pages/UsersPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ErrorPage from './pages/ErrorPage';
@@ -17,12 +18,14 @@ function Router() {
 				<Route path="/" element={<HomePage />} />
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/auth" element={<AuthPage />} />
-				<Route path="/game" element={<GamePage />} />
-				<Route path="/profile" element={<ProfilePage />} />
 				<Route path="/tfa" element={<TfaPage />} />
-				<Route path="/users" element={<UsersPage />} />
-				<Route path="/leaderboard" element={<LeaderboardPage />} />
+				<Route path="/main" element={<MainPage />}>
+					<Route path="game" element={<GamePage />} />
+					<Route path="profile" element={<ProfilePage />} />
+					<Route path="leaderboard" element={<LeaderboardPage />} />
+				</Route>
 				<Route path="*" element={<ErrorPage />} />
+				<Route path="/users" element={<UsersPage />} />
 			</Routes>
 		</BrowserRouter>
 	);

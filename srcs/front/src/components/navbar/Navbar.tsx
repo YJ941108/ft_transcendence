@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
@@ -22,21 +22,21 @@ const NavbarListC = styled.li<INavbarListProps>`
 `;
 
 function Navbar() {
-	const url = window.location.href.split('/').pop();
-
+	const [url, setUrl] = useState<string | undefined>('');
+	useEffect(() => {
+		console.log(window.location);
+		setUrl(window.location.href.split('/').pop());
+	}, [window.location]);
 	return (
 		<NavbarC>
 			<NavbarListC current={url === 'game'}>
-				<Link to="/game">play</Link>
+				<Link to="/main/game">play</Link>
 			</NavbarListC>
 			<NavbarListC current={url === 'profile'}>
-				<Link to="/profile">profile</Link>
-			</NavbarListC>
-			<NavbarListC current={url === 'friends'}>
-				<Link to="/friends">friends</Link>
+				<Link to="/main/profile">profile</Link>
 			</NavbarListC>
 			<NavbarListC current={url === 'leaderboard'}>
-				<Link to="/leaderboard">leaderboard</Link>
+				<Link to="/main/leaderboard">leaderboard</Link>
 			</NavbarListC>
 		</NavbarC>
 	);
