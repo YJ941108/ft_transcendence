@@ -42,7 +42,7 @@ function Tfa() {
 
 	if (isLoading) return <h1>loading</h1>;
 	if (error) return <h1>error</h1>;
-	if (!isTfa || isTfaSucceed) return <Navigate to="/game" />;
+	if (!isTfa || isTfaSucceed) return <Navigate to="/main/game" />;
 	return (
 		<div>
 			<button type="button" onClick={getTfaCode}>
