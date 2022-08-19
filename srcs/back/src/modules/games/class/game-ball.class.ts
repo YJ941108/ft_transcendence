@@ -53,15 +53,19 @@ export class Ball implements IBall {
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
     this.r = BALL_DEFAULT_RADIUS;
-    this.speed = BALL_DEFAULT_SPEED;
-    this.acceleration = BALL_ACCELERATION;
+    if (mode === GameMode.BIG) {
+      this.speed = BALL_DEFAULT_SPEED * 5;
+    } else {
+      this.speed = BALL_DEFAULT_SPEED;
+    }
+    if (mode === GameMode.BIG) {
+      this.acceleration = BALL_ACCELERATION * 5;
+    } else {
+      this.acceleration = BALL_ACCELERATION;
+    }
     this.velocity = { dx: this.speed * (Math.random() < 0.5 ? 1 : -1), dy: 0 };
     this.goal = false;
-    if (mode === GameMode.BIG) {
-      this.color = 'rgba(127, 0, 0, 0.8)';
-    } else {
-      this.color = 'white';
-    }
+    this.color = 'white';
   }
 
   /**
