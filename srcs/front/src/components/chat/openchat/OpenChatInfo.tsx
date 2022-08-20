@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { useSetRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilValue } from 'recoil';
+import { MyInfo } from '../../../modules/atoms';
 import { IChannel, IMyData } from '../../../modules/Interfaces/chatInterface';
-import { channelInfoData, chatContent, channelIdData, MyInfo } from '../../../modules/atoms';
 import { useChatSocket } from '../SocketContext';
 
 const OpenChatStyleC = styled.li`
@@ -31,34 +31,10 @@ interface IOpenChatInfoProps {
 	channelInfo: IChannel;
 }
 
-interface IJoinPossible {
-	func: string;
-	code: number;
-	message: string;
-}
-
 function OpenChatInfo({ channelInfo }: IOpenChatInfoProps) {
 	const chatSocket = useChatSocket();
-	const setChannelInfo = useSetRecoilState<IChannel>(channelInfoData);
-	const setContent = useSetRecoilState<string>(chatContent);
-	const setChannelId = useSetRecoilState<number>(channelIdData);
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 
-	useEffect(() => {
-		chatSocket.on('listeningJoinPossible', (response: IJoinPossible) => {
-			if (response.code === 200) {
-				if (channelInfo.privacy === 'protected') {
-					setChannelInfo(channelInfo);
-					setChannelId(channelInfo.id);
-					setContent('ProtectedPassword');
-				} else {
-					setChannelInfo(channelInfo);
-					setChannelId(channelInfo.id);
-					setContent('OpenChatRoom');
-				}
-			}
-		});
-	}, [chatSocket]);
 	const onClick = () => {
 		chatSocket.emit('isJoinPossible', {
 			channelId: channelInfo.id,
