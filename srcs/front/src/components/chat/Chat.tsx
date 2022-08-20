@@ -67,16 +67,16 @@ function Chat() {
 
 	const selectComponent: ISelectComponent = {
 		UserList: <UserList />,
-		OpenChatList: <OpenChatList chatSocket={socket} />,
+		OpenChatList: <OpenChatList />,
 		FriendsList: <FriendsList />,
 		DirectMessageList: <DirectMessageList />,
 		DMRoom: <DMRoom />,
-		NewOpenChatRoom: <NewOpenChatRoom chatSocket={socket} />,
-		OpenChatRoom: <OpenChatRoom chatSocket={socket} />,
-		OpenChatInvite: <OpenChatInvite chatSocket={socket} />,
-		EditOpenChatRoom: <EditOpenChatRoom chatSocket={socket} />,
-		ProtectedPassword: <ProtectedPassword chatSocket={socket} />,
-		OpenChatUsers: <OpenChatUsers chatSocket={socket} />,
+		NewOpenChatRoom: <NewOpenChatRoom />,
+		OpenChatRoom: <OpenChatRoom />,
+		OpenChatInvite: <OpenChatInvite />,
+		EditOpenChatRoom: <EditOpenChatRoom />,
+		ProtectedPassword: <ProtectedPassword />,
+		OpenChatUsers: <OpenChatUsers />,
 	};
 
 	useEffect(() => {

@@ -3,16 +3,13 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { useSetRecoilState, useRecoilValue } from 'recoil';
 import { channelInfoData, chatContent, MyInfo, channelIdData } from '../../../modules/atoms';
+import { useChatSocket } from '../SocketContext';
 import { IMyData, IChannel } from '../../../modules/Interfaces/chatInterface';
 
 enum OpenChatVisibility {
 	private = 'private',
 	public = 'public',
 	protectedPassword = 'protectedPassword',
-}
-
-interface INewOpenChatRoomProps {
-	chatSocket: any;
 }
 
 interface IFormInput {
@@ -26,7 +23,8 @@ const NewOpenChatRoomC = styled.div`
 	height: 100%;
 `;
 
-function NewOpenChatRoom({ chatSocket }: INewOpenChatRoomProps) {
+function NewOpenChatRoom() {
+	const chatSocket = useChatSocket();
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 	const { register, handleSubmit } = useForm<IFormInput>();
 	const [isPassword, setIsPassword] = useState(false);

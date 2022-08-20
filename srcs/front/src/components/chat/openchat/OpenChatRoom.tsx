@@ -5,6 +5,7 @@ import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
 import { IChannel, IMyData, IMessageResponse, IMessages, IUserBanned } from '../../../modules/Interfaces/chatInterface';
 import { getChannelInfo } from '../../../modules/api';
+import { useChatSocket } from '../SocketContext';
 
 interface IFormInput {
 	message: string;
@@ -16,7 +17,8 @@ interface ISendMessage {
 	userId: number;
 }
 
-function OpenChatRoom({ chatSocket }: any) {
+function OpenChatRoom() {
+	const chatSocket = useChatSocket();
 	const { register, handleSubmit, reset } = useForm<IFormInput>();
 	const [messageList, setMessageList] = useState<IMessages[]>([]);
 	const myInfo = useRecoilValue<IMyData>(MyInfo);

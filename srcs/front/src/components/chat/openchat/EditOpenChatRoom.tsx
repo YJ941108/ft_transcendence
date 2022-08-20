@@ -3,11 +3,8 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { useRecoilState, useSetRecoilState } from 'recoil';
 import { chatContent, channelInfoData } from '../../../modules/atoms';
+import { useChatSocket } from '../SocketContext';
 import { IChannel } from '../../../modules/Interfaces/chatInterface';
-
-interface IEditOpenChatRoomProps {
-	chatSocket: any;
-}
 
 interface IFormInput {
 	channelId: number;
@@ -21,8 +18,9 @@ const EditOpenChatRoomC = styled.div`
 	height: 100%;
 `;
 
-function EditOpenChatRoom({ chatSocket }: IEditOpenChatRoomProps) {
+function EditOpenChatRoom() {
 	const { register, handleSubmit } = useForm<IFormInput>();
+	const chatSocket = useChatSocket();
 	const [isPassword, setIsPassword] = useState(false);
 	const setContent = useSetRecoilState(chatContent);
 	const [channelData, setChannelData] = useRecoilState<IChannel>(channelInfoData);

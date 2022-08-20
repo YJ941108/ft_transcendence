@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useSetRecoilState, useRecoilValue } from 'recoil';
 import { IChannel, IMyData } from '../../../modules/Interfaces/chatInterface';
 import { channelInfoData, chatContent, channelIdData, MyInfo } from '../../../modules/atoms';
+import { useChatSocket } from '../SocketContext';
 
 const OpenChatStyleC = styled.li`
 	display: flex;
@@ -28,7 +29,6 @@ const OpenChatDivStyleC = styled.div`
 
 interface IOpenChatInfoProps {
 	channelInfo: IChannel;
-	chatSocket: any;
 }
 
 interface IJoinPossible {
@@ -37,7 +37,8 @@ interface IJoinPossible {
 	message: string;
 }
 
-function OpenChatInfo({ channelInfo, chatSocket }: IOpenChatInfoProps) {
+function OpenChatInfo({ channelInfo }: IOpenChatInfoProps) {
+	const chatSocket = useChatSocket();
 	const setChannelInfo = useSetRecoilState<IChannel>(channelInfoData);
 	const setContent = useSetRecoilState<string>(chatContent);
 	const setChannelId = useSetRecoilState<number>(channelIdData);
