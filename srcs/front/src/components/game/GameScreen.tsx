@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import styled from 'styled-components';
+import PlayerInfo from '../chat/PlayerInfo';
 import GameData from './GameData';
 import { IRoom, IUser, IKey, GameState } from './GameInterfaces';
 
@@ -125,6 +126,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 			<Canvas id="pong-canvas" width="1920" height="1080">
 				hello
 			</Canvas>
+			<PlayerInfo leftPlayer={room.paddleOne} rightPlayer={room.paddleTwo} />
 			<button onClick={leaveRoom} type="button">
 				leave room
 			</button>
