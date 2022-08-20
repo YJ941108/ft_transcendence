@@ -91,7 +91,6 @@ function Chat() {
 		socket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
 			setUsers(response.data);
 		});
-
 		socket.on('listeningDMRoomList', (response: { data: IDMRoom[] }) => {
 			setRooms(response.data);
 		});

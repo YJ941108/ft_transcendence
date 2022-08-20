@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { emitAcceptPongInvite, emitSendDMMessage } from './Emit';
+import { emitSendDMMessage, IDebug } from './Emit';
 import { IDMRoom, IMessageResponse, IMessages } from '../../modules/Interfaces/chatInterface';
 import { DMRoomInfo, MyInfo } from '../../modules/atoms';
 import { useChatSocket } from './SocketContext';
@@ -49,12 +50,23 @@ const ChatMessageStyleC = styled.li`
 
 function DMRoom() {
 	const chatSocket = useChatSocket();
+	const navigate = useNavigate();
+	const url = window.location.href.split('/').pop();
 	const [message, setMessage] = useState('');
 	const [roomInfo, setRoomInfo] = useRecoilState<IDMRoom>(DMRoomInfo);
 	const [messageList, setMessageList] = useState<IMessages[]>([]);
 	const Info = useRecoilValue(MyInfo);
 	const messageBoxRef = useRef<HTMLUListElement>(null);
-
+	const emitAcceptPongInvite = (roomId: string) => {
+		chatSocket.emit('acceptPongInvite', { roomId }, (response: IDebug) => {
+			if (response.code === 200) {
+				if (url !== 'game') navigate('/main/game');
+				else window.location.reload();
+			} else if (response.code === 400) {
+				console.log('sendPongInvite FAIL', response);
+			}
+		});
+	};
 	useEffect(() => {
 		const scrollToBottom = (e: Event) => {
 			e.stopPropagation();

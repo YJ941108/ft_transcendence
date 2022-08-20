@@ -2,7 +2,7 @@
 import { Socket } from 'socket.io-client';
 import { IDMRoomList } from '../../modules/Interfaces/chatInterface';
 
-interface IDebug {
+export interface IDebug {
 	func: string;
 	code: number;
 	message: string;
@@ -54,26 +54,6 @@ export const emitSendDMMessage = (chatSocket: Socket, DMId: number, authorId: nu
 			console.log('sendDMMessage SUCCESS', response);
 		} else if (response.code === 400) {
 			console.log('sendDMMessage FAIL', response);
-		}
-	});
-};
-
-export const emitSendPongInvite = (chatSocket: Socket, anotherId: number) => {
-	chatSocket.emit('sendPongInvite', { anotherId }, (response: IDebug) => {
-		if (response.code === 200) {
-			console.log('sendPongInvite SUCCESS', response);
-		} else if (response.code === 400) {
-			console.log('sendPongInvite FAIL', response);
-		}
-	});
-};
-
-export const emitAcceptPongInvite = (chatSocket: Socket, roomId: string, messageId: number) => {
-	chatSocket.emit('acceptPongInvite', { roomId, messageId }, (response: IDebug) => {
-		if (response.code === 200) {
-			console.log('acceptPongInvite SUCCESS', response);
-		} else if (response.code === 400) {
-			console.log('acceptPongInvite FAIL', response);
 		}
 	});
 };

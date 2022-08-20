@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useSetRecoilState } from 'recoil';
-import { emitCreateDMRoom, emitUserAction, emitSendPongInvite } from './Emit';
+import { useNavigate } from 'react-router-dom';
+import { emitCreateDMRoom, emitUserAction, IDebug } from './Emit';
 import { IUserList } from '../../modules/Interfaces/userInterface';
 import { chatContent } from '../../modules/atoms';
 
@@ -50,6 +51,22 @@ const UserStyleC = styled.li`
 
 function UserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
 	const createDMRoom = useSetRecoilState(chatContent);
+	const navigate = useNavigate();
+	const url = window.location.href.split('/').pop();
+	const emitSendPongInvite = (anotherId: number) => {
+		chatSocket.emit('sendPongInvite', { anotherId }, (response: IDebug) => {
+			if (response.code === 200) {
+				if (url !== 'game') {
+					navigate('/main/game');
+				} else {
+					window.location.reload();
+				}
+			} else if (response.code === 400) {
+				console.log('sendPongInvite FAIL', response);
+			}
+		});
+	};
+
 	return (
 		<UserStyleC>
 			<UserPhotoDivStyleC>
@@ -64,7 +81,7 @@ function UserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
 				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'block')}>
 					BLOCK
 				</UserInteractionStyleC>
-				<UserInteractionStyleC onClick={() => emitSendPongInvite(chatSocket, id)}>PLAY</UserInteractionStyleC>
+				<UserInteractionStyleC onClick={() => emitSendPongInvite(id)}>PLAY</UserInteractionStyleC>
 				<UserInteractionStyleC
 					onClick={() => {
 						emitCreateDMRoom(chatSocket, id);
