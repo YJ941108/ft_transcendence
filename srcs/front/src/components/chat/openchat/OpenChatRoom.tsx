@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import styled from 'styled-components';
 import { useQuery } from 'react-query';
 import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
 import { IChannel, IMyData, IMessageResponse, IMessages, IUserBanned } from '../../../modules/Interfaces/chatInterface';
 import { getChannelInfo } from '../../../modules/api';
+import { useChatSocket } from '../SocketContext';
+
+const ChatLogStyleC = styled.ul`
+	min-height: 720px;
+	max-height: 720px; // 수정해야함
+	border-bottom: solid white 2px;
+	height: 100%;
+	overflow-wrap: break-word;
+	overflow-y: scroll;
+`;
 
 interface IFormInput {
 	message: string;
@@ -16,7 +27,8 @@ interface ISendMessage {
 	userId: number;
 }
 
-function OpenChatRoom({ chatSocket }: any) {
+function OpenChatRoom() {
+	const chatSocket = useChatSocket();
 	const { register, handleSubmit, reset } = useForm<IFormInput>();
 	const [messageList, setMessageList] = useState<IMessages[]>([]);
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
@@ -120,13 +132,13 @@ function OpenChatRoom({ chatSocket }: any) {
 			<button type="button" onClick={leaveChannel}>
 				leaveRoom
 			</button>
-			<ul>
+			<ChatLogStyleC>
 				{messageList?.map((message: IMessages) => {
 					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
 						return <li key={message.id}>BLOCKED</li>;
 					return <li key={message.id}>{message.content}</li>;
 				})}
-			</ul>
+			</ChatLogStyleC>
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<input {...register('message')} />
 				<button type="submit">send</button>

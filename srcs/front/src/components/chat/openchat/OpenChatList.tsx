@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useRecoilValue } from 'recoil';
-import { channelListInfo } from '../../../modules/atoms';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import OpenChatNewButton from './OpenChatNewButton';
 import { IChannel } from '../../../modules/Interfaces/chatInterface';
 import OpenChatInfo from './OpenChatInfo';
+import { channelInfoData, chatContent, channelIdData, channelListInfo } from '../../../modules/atoms';
+import { useChatSocket } from '../SocketContext';
 
 const OpenChatListStyleC = styled.ul`
 	background-color: black;
@@ -24,14 +25,46 @@ const OpenChatListC = styled.ul`
 	overflow-y: scroll;
 `;
 
-function OpenChatList({ chatSocket }: any) {
+interface IJoinPossible {
+	func: string;
+	code: number;
+	data: IChannel;
+	message: string;
+}
+
+function OpenChatList() {
+	const chatSocket = useChatSocket();
 	const channelList = useRecoilValue<IChannel[]>(channelListInfo);
+	const setChannelInfo = useSetRecoilState<IChannel>(channelInfoData);
+	const setContent = useSetRecoilState<string>(chatContent);
+	const setChannelId = useSetRecoilState<number>(channelIdData);
+
+	useEffect(() => {
+		chatSocket.on('listeningJoinPossible', (response: IJoinPossible) => {
+			const channelInfo = response.data;
+			if (response.code === 200) {
+				if (channelInfo.privacy === 'protected') {
+					setChannelInfo(channelInfo);
+					setChannelId(channelInfo.id);
+					setContent('ProtectedPassword');
+				} else {
+					setChannelInfo(channelInfo);
+					setChannelId(channelInfo.id);
+					setContent('OpenChatRoom');
+				}
+			}
+		});
+		return () => {
+			chatSocket.off('listeningJoinPossible');
+		};
+	}, [chatSocket]);
+
 	return (
 		<OpenChatListStyleC>
 			<OpenChatNewButton />
 			<OpenChatListC>
 				{channelList.map((channel: IChannel) => {
-					return <OpenChatInfo key={channel.id} channelInfo={channel} chatSocket={chatSocket} />;
+					return <OpenChatInfo key={channel.id} channelInfo={channel} />;
 				})}
 			</OpenChatListC>
 		</OpenChatListStyleC>

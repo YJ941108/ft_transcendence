@@ -39,6 +39,7 @@ const UserNickNameStyleC = styled.p`
 `;
 
 const OwnerButtonStyleC = styled.button<IOwnerButton>`
+	font-size: 12px;
 	visibility: ${(props) => (props.isOwner ? 'visible' : 'hidden')};
 	margin: 0 3px 3px 0;
 	color: ${(props) => (props.isAdmin ? 'red' : 'white')};
@@ -49,6 +50,7 @@ const OwnerButtonStyleC = styled.button<IOwnerButton>`
 `;
 
 const AdminButtonStyleC = styled.button<IAdminButton>`
+	font-size: 12px;
 	visibility: ${(props) => {
 		if (props.isMeAdmin || props.isOwner) return 'visible';
 		return 'hidden';
@@ -112,6 +114,8 @@ function OpenChatUser({ isOwner, isAdmin, isMeAdmin, user, channelInfo, myInfo }
 		});
 	};
 
+	const setKickUser = () => {};
+
 	return (
 		<UserStyleC>
 			<UserPhotoDivStyleC>
@@ -127,6 +131,9 @@ function OpenChatUser({ isOwner, isAdmin, isMeAdmin, user, channelInfo, myInfo }
 				</AdminButtonStyleC>
 				<AdminButtonStyleC isOwner={isOwner} isMeAdmin={isMeAdmin} onClick={() => setPunishUser(user.id, 'mute')}>
 					MUTE
+				</AdminButtonStyleC>
+				<AdminButtonStyleC isOwner={isOwner} isMeAdmin={isMeAdmin} onClick={() => setKickUser()}>
+					KICK
 				</AdminButtonStyleC>
 			</UserInfoDivStyleC>
 		</UserStyleC>
