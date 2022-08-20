@@ -55,7 +55,7 @@ interface ISelectComponent {
 	OpenChatUsers: React.ReactNode;
 }
 function Chat() {
-	const { isLoading, data: userData, error } = useQuery<IMyData>('user', getUserData);
+	const { isLoading, data: userData, error } = useQuery<IMyData>('me', getUserData);
 	const content = useRecoilValue(chatContent);
 	const socket = useChatSocket();
 	const [, setMyInfo] = useRecoilState<IMyData>(MyInfo);
@@ -81,6 +81,7 @@ function Chat() {
 	};
 
 	useEffect(() => {
+		console.log(userData, 'chat User Data');
 		if (isLoading || error || !userData) return () => {};
 		emitJoinChat(socket, userData.id, userData.nickname);
 		console.log(userData, 'chatUserData');

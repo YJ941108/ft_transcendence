@@ -4,29 +4,38 @@ import axios from 'axios';
 
 interface Props {
 	tfa: boolean | undefined;
+	show: boolean;
 }
 
-const ToggleBtn = styled.button`
+interface IToggleBox {
+	show: boolean;
+}
+
+interface ITfa {
+	tfa: boolean | undefined;
+}
+
+const ToggleBtn = styled.button<ITfa>`
 	width: 60px;
 	height: 30px;
 	float: right;
 	border-radius: 30px;
 	border: none;
 	cursor: pointer;
-	background-color: ${(props: Props) => (props.tfa ? 'green' : 'darkgray')};
+	background-color: ${(props) => (props.tfa ? 'green' : 'darkgray')};
 	display: block;
 	justify-content: center;
 	align-items: center;
 	transition: all 0.5s ease-in-out;
 `;
-const Circle = styled.div`
+const Circle = styled.div<ITfa>`
 	background-color: white;
 	width: 20px;
 	height: 20px;
 	border-radius: 50px;
 	left: 2%;
 	transition: all 0.5s ease-in-out;
-	${(props: Props) =>
+	${(props) =>
 		props.tfa &&
 		css`
 			transform: translate(30px, 0);
@@ -34,15 +43,16 @@ const Circle = styled.div`
 		`}
 `;
 
-const ToggleBox = styled.div`
+const ToggleBox = styled.div<IToggleBox>`
 	text-align: center;
 	margin-top: 20px;
 	width: 200px;
 	column-count: 2;
 	line-height: 30px;
+	visibility: ${(props) => (props.show ? 'hidden' : 'visible')};
 `;
 
-function Toggle({ tfa }: Props) {
+function Toggle({ tfa, show }: Props) {
 	const [toggle, setToggle] = useState(tfa);
 	const clickedToggle = () => {
 		setToggle((prev) => !prev);
@@ -59,7 +69,7 @@ function Toggle({ tfa }: Props) {
 	}, [toggle]);
 
 	return (
-		<ToggleBox>
+		<ToggleBox show={show}>
 			<label htmlFor="ToggleBtn">2AF 인증 {toggle ? 'On' : 'Off'}</label>
 			<ToggleBtn onClick={clickedToggle} tfa={toggle}>
 				<Circle tfa={toggle} />

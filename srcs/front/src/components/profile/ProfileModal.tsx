@@ -62,7 +62,7 @@ function ProfileModal() {
 		else alert('수정을 위해 입력을 해주세요.');
 	};
 	return (
-		<div>
+		<div hidden={show}>
 			<Button variant="info" onClick={handleShow}>
 				User Edit
 			</Button>
