@@ -102,7 +102,7 @@ export class UsersController {
    * @param nickname
    * @returns
    */
-  @Get(':nickname')
+  @Get('another/:nickname')
   async getUserByNickname(@Param('nickname') nickname: string): Promise<any> {
     const user = await this.usersService.getUserByNickname(nickname);
 
