@@ -103,26 +103,22 @@ export class Paddle implements IPaddle {
     }
 
     if (this.left && !this.right) {
-      if (this.x > 0 && this.x + this.width < CANVAS_WIDTH / 4) {
-        this.x -= this.speed * secondPassed;
-      } else if (this.x + this.width < (CANVAS_WIDTH / 4) * 3 && this.x + this.width < CANVAS_WIDTH) {
-        this.x -= this.speed * secondPassed;
-      } else if (this.x <= 0) {
+      if (this.x <= 0) {
         this.x = 0;
-      } else if (this.x + this.width <= (CANVAS_WIDTH / 4) * 3) {
+      } else if (this.x <= (CANVAS_WIDTH / 4) * 3) {
         this.x = (CANVAS_WIDTH / 4) * 3;
+      } else {
+        this.x -= this.speed * secondPassed;
       }
     }
 
     if (this.right && !this.left) {
-      if (this.x > 0 && this.x + this.width < CANVAS_WIDTH / 4) {
-        this.x += this.speed * secondPassed;
-      } else if (this.x + this.width < (CANVAS_WIDTH / 4) * 3 && this.x + this.width < CANVAS_WIDTH) {
-        this.x += this.speed * secondPassed;
-      } else if (this.x + this.width < CANVAS_WIDTH / 4) {
-        this.x = CANVAS_WIDTH / 4 - this.width;
-      } else if (this.x + this.width <= CANVAS_WIDTH) {
+      if (this.x > CANVAS_WIDTH / 4) {
+        this.x = CANVAS_WIDTH / 4;
+      } else if (this.x > CANVAS_WIDTH - this.width) {
         this.x = CANVAS_WIDTH - this.width;
+      } else {
+        this.x += this.speed * secondPassed;
       }
     }
   }
