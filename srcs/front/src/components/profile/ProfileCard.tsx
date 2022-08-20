@@ -6,6 +6,7 @@ import { IUser } from './UserInterface';
 
 type Props = {
 	data: IUser | undefined;
+	show: boolean;
 };
 
 const RootStyled = styled.div`
@@ -48,15 +49,17 @@ const ProfileCardBox = styled.div`
 	}
 `;
 
-function ProfileCard({ data }: Props) {
+function ProfileCard({ data, show }: Props) {
 	return (
 		<RootStyled>
 			<ProfileCardBox>
 				<img src={data?.photo} alt="profile" />
 				<h1>{data?.nickname}</h1>
-				<ProfileModal />
+				<div hidden={show}>
+					<ProfileModal />
+				</div>
 			</ProfileCardBox>
-			<Toggle tfa={data?.tfa} />
+			<Toggle tfa={data?.tfa} show={show} />
 		</RootStyled>
 	);
 }
