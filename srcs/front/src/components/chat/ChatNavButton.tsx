@@ -7,7 +7,12 @@ const ChatNavButtonStyleC = styled.button`
 	width: 25%;
 	height: 4rem;
 	background-color: white;
-	border: 1px solid rgba(0, 0, 0, 0.5);
+	/* border: 1px solid rgba(0, 0, 0, 0.5); */
+	border: none;
+	background-color: rgba(255, 255, 255, 0.9);
+	&:hover {
+		background-color: rgba(150, 150, 150, 0.1);
+	}
 `;
 
 const ChatButtonIconStyleC = styled.img`

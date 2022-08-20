@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { useRecoilValue, useRecoilState } from 'recoil';
-import { io, Socket } from 'socket.io-client';
+import { useChatSocket } from './SocketContext';
 import {
 	MyInfo,
 	chatContent,
@@ -34,9 +34,8 @@ import OpenChatUsers from './openchat/OpenChatUsers';
 
 const ChatC = styled.div`
 	width: 300px;
-	height: 100%;
-	position: absolute;
-	top: 3rem;
+	/* height: 100%;
+	position: absolute; */
 	border: solid white 2px;
 `;
 interface ISelectComponent {
@@ -56,7 +55,8 @@ interface ISelectComponent {
 function Chat() {
 	const { isLoading, data: userData, error } = useQuery<IMyData>('user', getUserData);
 	const content = useRecoilValue(chatContent);
-	const [socket, setSocket] = useState<any>(null);
+	const socket = useChatSocket();
+	// console.log(socket.connected);
 	const [, setMyInfo] = useRecoilState<IMyData>(MyInfo);
 	const [, setRooms] = useRecoilState<IDMRoom[]>(DMRoomList);
 	const [, setUsers] = useRecoilState<IUserData[]>(chatUserList);
@@ -66,11 +66,11 @@ function Chat() {
 	const [, setChannelList] = useRecoilState<IChannel[]>(channelListInfo);
 
 	const selectComponent: ISelectComponent = {
-		UserList: <UserList chatSocket={socket} />,
+		UserList: <UserList />,
 		OpenChatList: <OpenChatList chatSocket={socket} />,
-		FriendsList: <FriendsList chatSocket={socket} />,
-		DirectMessageList: <DirectMessageList chatSocket={socket} />,
-		DMRoom: <DMRoom chatSocket={socket} />,
+		FriendsList: <FriendsList />,
+		DirectMessageList: <DirectMessageList />,
+		DMRoom: <DMRoom />,
 		NewOpenChatRoom: <NewOpenChatRoom chatSocket={socket} />,
 		OpenChatRoom: <OpenChatRoom chatSocket={socket} />,
 		OpenChatInvite: <OpenChatInvite chatSocket={socket} />,
@@ -80,24 +80,17 @@ function Chat() {
 	};
 
 	useEffect(() => {
-		if (!socket || isLoading || error || !userData) return () => {};
-		if (socket.connected === false) {
-			socket.on('connect', () => {
-				emitJoinChat(socket, userData.id, userData.nickname);
-			});
-		}
+		if (isLoading || error || !userData) return () => {};
+		emitJoinChat(socket, userData.id, userData.nickname);
 		socket.on('listeningMe', (response: IMyDataResponse) => {
 			setMyInfo(response.data);
-			console.log(response.data);
 			setRequestUsers(response.data.friendsRequest);
 			setFriendsUsers(response.data.friends);
 			setBlockedUsers(response.data.blockedUsers);
-			console.log(response.data.blockedUsers);
 		});
 		socket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
 			setUsers(response.data);
 		});
-
 		socket.on('listeningDMRoomList', (response: { data: IDMRoom[] }) => {
 			setRooms(response.data);
 		});
@@ -116,14 +109,14 @@ function Chat() {
 			socket.off('listeningChannelInfo');
 			socket.off('chatError');
 		};
-	}, [socket, isLoading, error, userData]);
+	}, [isLoading, error, userData]);
 
-	useEffect(() => {
-		console.log('여기 들어오면 안되는데');
-		if (isLoading || error || !userData) return;
-		const socketIo: Socket = io('http://3.39.20.24:3032/api/chat');
-		setSocket(socketIo);
-	}, [isLoading, error, setSocket]);
+	// useEffect(() => {
+	// 	if (isLoading || error || !userData) return;
+	// 	console.log('여기 들어오면 안되는데');
+	// 	const socketIo: Socket = io('http://3.39.20.24:3032/api/chat');
+	// 	setSocket(socketIo);
+	// }, [isLoading, error, setSocket]);
 
 	return isLoading ? null : (
 		<ChatC>

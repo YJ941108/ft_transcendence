@@ -1,22 +1,18 @@
 import React from 'react';
 import styled from 'styled-components';
 import ChatNavButton from './ChatNavButton';
-import UserList from '../../img/alluser.png';
-import DirectMessageList from '../../img/directmessage.png';
-import FriendsList from '../../img/friends.png';
-import OpenChatList from '../../img/openchat.png';
 
 const ChatNavStyleC = styled.div`
-	width: 100%;
+	/* width: 100%; */
 `;
 
 function ChatNav() {
 	return (
 		<ChatNavStyleC>
-			<ChatNavButton name="UserList" imgSrc={UserList} />
-			<ChatNavButton name="OpenChatList" imgSrc={OpenChatList} />
-			<ChatNavButton name="FriendsList" imgSrc={FriendsList} />
-			<ChatNavButton name="DirectMessageList" imgSrc={DirectMessageList} />
+			<ChatNavButton name="UserList" imgSrc="/img/alluser.png" />
+			<ChatNavButton name="OpenChatList" imgSrc="/img/openchat.png" />
+			<ChatNavButton name="FriendsList" imgSrc="/img/friends.png" />
+			<ChatNavButton name="DirectMessageList" imgSrc="/img/directmessage.png" />
 		</ChatNavStyleC>
 	);
 }

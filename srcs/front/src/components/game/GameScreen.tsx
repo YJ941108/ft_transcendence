@@ -98,6 +98,9 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 				gameData.drawStartCountDown(countDown[count]);
 			} else if (room.gameState === GameState.PAUSED) {
 				gameData.drawPausedState();
+			} else if (room.gameState === GameState.RESUMED) {
+				const count: number = (Date.now() - room.pauseTime[room.pauseTime.length - 1].resume) / 1000;
+				gameData.drawStartCountDown(countDown[Math.floor(count)]);
 			} else if (room.gameState === GameState.PLAYER_ONE_WIN || room.gameState === GameState.PLAYER_TWO_WIN) {
 				gameEnd(room.roomId, room.paddleOne.user.nickname, room.paddleTwo.user.nickname, room.gameState, gameData);
 			}

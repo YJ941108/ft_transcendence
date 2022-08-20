@@ -1,27 +1,23 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useRecoilState } from 'recoil';
-import { Socket } from 'socket.io-client';
 import { DMRoomList } from '../../modules/atoms';
 import DirectMessageInfo from './li-DirectMessage';
 import { IDMRoom } from '../../modules/Interfaces/chatInterface';
+import { useChatSocket } from './SocketContext';
 
 const DirectMessageListC = styled.ul`
 	list-style: none;
 	width: 100%;
-	min-height: 600px;
-	max-height: 600px;
-	padding: 5px;
+	min-height: 800px;
+	max-height: 800px;
 	vertical-align: baseline;
 	box-sizing: border-box;
 	overflow-y: scroll;
 `;
 
-interface ISocket {
-	chatSocket: Socket;
-}
-
-function DirectMessageList({ chatSocket }: ISocket) {
+function DirectMessageList() {
+	const chatSocket = useChatSocket();
 	const [rooms, setRooms] = useRecoilState<IDMRoom[]>(DMRoomList);
 
 	useEffect(() => {
