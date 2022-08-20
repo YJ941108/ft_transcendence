@@ -1331,32 +1331,57 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
     }
     if (adminId === userId) {
-      throw new WsException('If you want to leave the channel, go to Channel settings.');
+      throw new Error('어드민은 나갈 수 없어요');
     }
     try {
-      const admin = this.chatUsers.getUserById(adminId);
-      const channel = await this.chatService.getChannelData(channelId);
+      let admin = await this.usersService.getUserWithoutFriends(adminId);
+      let dbChannel = await this.chatService.getChannelData(channelId);
 
       /** 추방 */
-      const user = await this.chatService.kickUser(channel, adminId, userId);
-      const message = await this.chatService.addMessageToChannel({
-        content: `${admin.nickname} kicked ${user.username}`,
-        channel,
-      });
-
+      const user = await this.chatService.kickUser(dbChannel, adminId, userId);
       const roomId = `channel_${channelId}`;
       const chatUser = this.chatUsers.getUserById(userId);
       if (chatUser) {
-        this.server.to(chatUser.socketId).emit('kickedFromChannel', `You have been kicked from ${channel.name}.`);
+        this.server.to(chatUser.socketId).emit('listeningBan', {
+          func: 'punishUser',
+          code: 200,
+          message: `관리자가 내보냈습니다.`,
+        });
         this.userLeaveRoom(chatUser.socketId, roomId);
       }
 
-      this.server.to(roomId).emit('userKicked', message);
-      /* If the channel is visible to everyone, inform every client */
-      if (channel.privacy !== 'private') {
-        this.server.emit('peopleCountChanged', channel);
+      /** 처벌 메시지 보내기 */
+      const message = await this.chatService.addMessageToChannel({
+        content: `${admin.nickname}이 ${user.username}를 차버렸습니당`,
+        channel: dbChannel,
+        author: admin,
+      });
+      this.server.to(`channel_${dbChannel.id}`).emit('listeningMessage', {
+        func: 'sendMessage',
+        code: 200,
+        message: `메시지를 보냈습니다.`,
+        data: {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          author: admin,
+        },
+      });
+
+      this.listeningChannelList(memoryUser.socketId, memoryUser.id);
+
+      /** 다른 사람에게 공개적으로 알려줄 때 */
+      if (dbChannel.privacy !== 'private') {
+        this.server.socketsJoin(roomId);
       }
-      this.logger.log(`User [${userId}] was kicked from Channel [${channelId}]`);
+
+      /** 방에 속한 사람에게 리스트 보내주기 */
+      const memoryUsers = this.chatUsers.getUsers();
+      dbChannel = await this.chatService.getChannelData(channelId);
+      for (let i = 0; i < memoryUsers.length; i++) {
+        this.listeningChannelList(roomId, memoryUsers[i].id);
+        this.listeningChannelInfo(dbChannel, roomId);
+      }
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
