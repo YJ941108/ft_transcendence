@@ -1,27 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { emitUserAction } from './Emit';
-import { IUserList } from '../../modules/Interfaces/userInterface';
-
-const UserPhotoDivStyleC = styled.div`
-	width: 70px;
-	height: 70px;
-	overflow: hidden;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	margin: 0 5px;
-`;
-
-const UserPhotoStyleC = styled.img`
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: center;
-`;
-
-const UserInfoDivStyleC = styled.div`
-	max-width: 70%;
-	margin: 5px;
-`;
+import { useChatSocket } from './SocketContext';
+import { IUserInfo } from '../../modules/Interfaces/userInterface';
+import ListStyle from './UserInfoStyle';
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
@@ -32,36 +14,23 @@ const UserInteractionStyleC = styled.span`
 	cursor: pointer;
 `;
 
-const RequestUserStyleC = styled.li`
-	display: flex;
-	align-items: center;
-	height: 85px;
-	border-bottom: 1px solid rgba(255, 255, 255, 1);
-	overflow: hidden;
-	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
-	&:last-of-type {
-		border: none;
-	}
-`;
-
-function RequestUserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
-	console.log(id);
+function RequestUserInfo({ user }: IUserInfo) {
+	const chatSocket = useChatSocket();
 	return (
-		<RequestUserStyleC>
-			<UserPhotoDivStyleC>
-				<UserPhotoStyleC src={photo} alt={nickname} />
-			</UserPhotoDivStyleC>
-			<UserInfoDivStyleC>
-				<UserNickNameStyleC>{nickname}</UserNickNameStyleC>
-				{isOnline ? <UserNickNameStyleC>ONLINE</UserNickNameStyleC> : <UserNickNameStyleC>OFFLINE</UserNickNameStyleC>}
-				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'accept')}>
-					ACCEPT
-				</UserInteractionStyleC>
-				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'deny')}>DENY</UserInteractionStyleC>
-			</UserInfoDivStyleC>
-		</RequestUserStyleC>
+		<ListStyle user={user}>
+			<UserNickNameStyleC>{user.nickname}</UserNickNameStyleC>
+			{user.isOnline ? (
+				<UserNickNameStyleC>ONLINE</UserNickNameStyleC>
+			) : (
+				<UserNickNameStyleC>OFFLINE</UserNickNameStyleC>
+			)}
+			<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'accept')}>
+				ACCEPT
+			</UserInteractionStyleC>
+			<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'deny')}>
+				DENY
+			</UserInteractionStyleC>
+		</ListStyle>
 	);
 }
 

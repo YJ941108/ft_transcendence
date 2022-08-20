@@ -26,6 +26,8 @@ const UserInfoDivStyleC = styled.div`
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
+	text-overflow: ellipsis;
+	overflow: hidden;
 `;
 
 const RequestUserStyleC = styled.li`
@@ -64,7 +66,6 @@ function MyUserInfo({ id, nickname, photo }: IMyInfo) {
 				onClick={() => {
 					deleteToken();
 					socket.disconnect();
-					console.log(socket);
 					navigate('/');
 				}}
 			>
