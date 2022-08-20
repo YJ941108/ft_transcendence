@@ -22,6 +22,10 @@ export interface IKey {
 export interface IUser {
 	id: number;
 	nickname: string;
+	wins: number;
+	losses: number;
+	ratio: number;
+	photo: string;
 }
 
 export interface IPlayer {

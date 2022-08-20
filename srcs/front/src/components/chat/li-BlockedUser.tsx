@@ -1,27 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import { emitUserAction } from './Emit';
-import { IUserList } from '../../modules/Interfaces/userInterface';
-
-const UserPhotoDivStyleC = styled.div`
-	width: 70px;
-	height: 70px;
-	overflow: hidden;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	margin: 0 5px;
-`;
-
-const UserPhotoStyleC = styled.img`
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: center;
-`;
-
-const UserInfoDivStyleC = styled.div`
-	max-width: 70%;
-	margin: 5px;
-`;
+import { IUserInfo } from '../../modules/Interfaces/userInterface';
+import { useChatSocket } from './SocketContext';
+import ListStyle from './UserInfoStyle';
+import UserStatus from './UserStatus';
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
@@ -32,36 +15,17 @@ const UserInteractionStyleC = styled.span`
 	cursor: pointer;
 `;
 
-const BlockedUserStyleC = styled.li`
-	display: flex;
-	align-items: center;
-	height: 85px;
-	border-bottom: 1px solid rgba(255, 255, 255, 1);
-	overflow: hidden;
-	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
-	&:last-of-type {
-		border: none;
-	}
-`;
-
-function BlockedUserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
-	console.log(id);
+function BlockedUserInfo({ user }: IUserInfo) {
+	const chatSocket = useChatSocket();
 	return (
-		<BlockedUserStyleC>
-			<UserPhotoDivStyleC>
-				<UserPhotoStyleC src={photo} alt={nickname} />
-			</UserPhotoDivStyleC>
-			<UserInfoDivStyleC>
-				<UserNickNameStyleC>{nickname}</UserNickNameStyleC>
-				{isOnline ? <UserNickNameStyleC>ONLINE</UserNickNameStyleC> : <UserNickNameStyleC>OFFLINE</UserNickNameStyleC>}
-				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'release')}>
-					UNBLOCK
-				</UserInteractionStyleC>
-				<UserInteractionStyleC>PLAY</UserInteractionStyleC>
-			</UserInfoDivStyleC>
-		</BlockedUserStyleC>
+		<ListStyle user={user}>
+			<UserNickNameStyleC>{user.nickname}</UserNickNameStyleC>
+			<UserStatus user={user} />
+			<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'release')}>
+				UNBLOCK
+			</UserInteractionStyleC>
+			<UserInteractionStyleC>PLAY</UserInteractionStyleC>
+		</ListStyle>
 	);
 }
 

@@ -5,6 +5,7 @@ import { DMRoomList } from '../../modules/atoms';
 import DirectMessageInfo from './li-DirectMessage';
 import { IDMRoom } from '../../modules/Interfaces/chatInterface';
 import { useChatSocket } from './SocketContext';
+import ListSection from './ListSection';
 
 const DirectMessageListC = styled.ul`
 	list-style: none;
@@ -41,18 +42,9 @@ function DirectMessageList() {
 
 	return (
 		<DirectMessageListC>
+			<ListSection title="DIRECT MESSAGE" />
 			{rooms?.map((element: IDMRoom) => {
-				return (
-					<DirectMessageInfo
-						key={element.id}
-						nickname={element.another.nickname}
-						id={element.another.id}
-						photo={element.another.photo}
-						chatSocket={chatSocket}
-						isOnline={element.another.isOnline}
-						lastMsg={element.message}
-					/>
-				);
+				return <DirectMessageInfo key={element.id} DMRoom={element} />;
 			})}
 		</DirectMessageListC>
 	);

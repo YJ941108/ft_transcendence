@@ -63,8 +63,8 @@ const GlobalStyle = createGlobalStyle`
     border-spacing: 0;
 	}
 	body {
-    font-family: 'Roboto', sans-serif;
-    height: 100vh;
+		/* height: 100vh; */
+    font-family: ${(props) => props.theme.font};
     background-color: ${(props) => props.theme.backgroundColor};
     color: ${(props) => props.theme.textColor}
 	}

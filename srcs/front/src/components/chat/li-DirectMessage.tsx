@@ -1,31 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useSetRecoilState } from 'recoil';
-import { Socket } from 'socket.io-client';
 import { emitCreateDMRoom, emitUserAction } from './Emit';
-// import { IUserList } from '../../modules/Interfaces/userInterface';
 import { chatContent } from '../../modules/atoms';
-import { IMessages } from '../../modules/Interfaces/chatInterface';
-
-const UserPhotoDivStyleC = styled.div`
-	width: 70px;
-	height: 70px;
-	overflow: hidden;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	margin: 0 5px;
-`;
-
-const UserPhotoStyleC = styled.img`
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: center;
-`;
-
-const UserInfoDivStyleC = styled.div`
-	max-width: 70%;
-	margin: 5px;
-`;
+import { IDMRoom } from '../../modules/Interfaces/chatInterface';
+import { useChatSocket } from './SocketContext';
+import ListStyle from './UserInfoStyle';
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
@@ -40,55 +20,36 @@ const UserInteractionStyleC = styled.span`
 	cursor: pointer;
 `;
 
-const UserStyleC = styled.li`
-	display: flex;
-	align-items: center;
-	height: 85px;
-	border-bottom: 1px solid rgba(255, 255, 255, 1);
-	overflow: hidden;
-	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
-	&:last-of-type {
-		border: none;
-	}
-`;
-
-interface IDMList {
-	id: number;
-	nickname: string;
-	photo: string;
-	chatSocket: Socket;
-	isOnline: boolean;
-	lastMsg: IMessages[];
+interface IDMRoomList {
+	DMRoom: IDMRoom;
 }
 
-function DirectMessageInfo({ id, nickname, photo, chatSocket, isOnline, lastMsg }: IDMList) {
-	const lastMessage = lastMsg.at(-1)?.content;
+function DirectMessageInfo({ DMRoom }: IDMRoomList) {
+	const lastMessage = DMRoom.message.at(-1)?.content;
+	const chatSocket = useChatSocket();
 	const createDMRoom = useSetRecoilState(chatContent);
 	return (
-		<UserStyleC>
-			<UserPhotoDivStyleC>
-				<UserPhotoStyleC src={photo} alt={nickname} />
-			</UserPhotoDivStyleC>
-			<UserInfoDivStyleC>
-				<UserNickNameStyleC>{nickname}</UserNickNameStyleC>
-				<LastMessageDivStyleC>{lastMessage}</LastMessageDivStyleC>
-				{isOnline ? <UserNickNameStyleC>ONLINE</UserNickNameStyleC> : <UserNickNameStyleC>OFFLINE</UserNickNameStyleC>}
-				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'request')}>
-					ADD
-				</UserInteractionStyleC>
-				<UserInteractionStyleC>PLAY</UserInteractionStyleC>
-				<UserInteractionStyleC
-					onClick={() => {
-						emitCreateDMRoom(chatSocket, id);
-						createDMRoom('DMRoom');
-					}}
-				>
-					MSG
-				</UserInteractionStyleC>
-			</UserInfoDivStyleC>
-		</UserStyleC>
+		<ListStyle user={DMRoom.another}>
+			<UserNickNameStyleC>{DMRoom.another.nickname}</UserNickNameStyleC>
+			<LastMessageDivStyleC>{lastMessage}</LastMessageDivStyleC>
+			{DMRoom.another.isOnline ? (
+				<UserNickNameStyleC>ONLINE</UserNickNameStyleC>
+			) : (
+				<UserNickNameStyleC>OFFLINE</UserNickNameStyleC>
+			)}
+			<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, DMRoom.another.nickname, 'request')}>
+				ADD
+			</UserInteractionStyleC>
+			<UserInteractionStyleC>PLAY</UserInteractionStyleC>
+			<UserInteractionStyleC
+				onClick={() => {
+					emitCreateDMRoom(chatSocket, DMRoom.another.id);
+					createDMRoom('DMRoom');
+				}}
+			>
+				MSG
+			</UserInteractionStyleC>
+		</ListStyle>
 	);
 }
 

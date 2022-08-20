@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { IUserList } from '../../modules/Interfaces/userInterface';
+import { useChatSocket } from './SocketContext';
 
 const UserPhotoDivStyleC = styled.div`
 	width: 70px;
@@ -45,7 +46,8 @@ const DirectMessageStyleC = styled.li`
 	}
 `;
 
-function DirectMessageInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
+function DirectMessageInfo({ id, nickname, photo, isOnline }: IUserList) {
+	const chatSocket = useChatSocket();
 	console.log(id, chatSocket);
 	return (
 		<DirectMessageStyleC>

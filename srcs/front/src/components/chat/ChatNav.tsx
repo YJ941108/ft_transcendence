@@ -9,12 +9,22 @@ const ChatNavStyleC = styled.div`
 function ChatNav() {
 	return (
 		<ChatNavStyleC>
-			<ChatNavButton name="UserList" imgSrc="/img/alluser.png" />
-			<ChatNavButton name="OpenChatList" imgSrc="/img/openchat.png" />
-			<ChatNavButton name="FriendsList" imgSrc="/img/friends.png" />
-			<ChatNavButton name="DirectMessageList" imgSrc="/img/directmessage.png" />
+			<ChatNavButton name="UserList" title="USER" />
+			<ChatNavButton name="OpenChatList" title="CHAT" />
+			<ChatNavButton name="FriendsList" title="FRIENDS" />
+			<ChatNavButton name="DirectMessageList" title="DM" />
 		</ChatNavStyleC>
 	);
 }
+// function ChatNav() {
+// 	return (
+// 		<ChatNavStyleC>
+// 			<ChatNavButton name="UserList" imgSrc="/img/alluser.png" />
+// 			<ChatNavButton name="OpenChatList" imgSrc="/img/openchat.png" />
+// 			<ChatNavButton name="FriendsList" imgSrc="/img/friends.png" />
+// 			<ChatNavButton name="DirectMessageList" imgSrc="/img/directmessage.png" />
+// 		</ChatNavStyleC>
+// 	);
+// }
 
 export default ChatNav;
