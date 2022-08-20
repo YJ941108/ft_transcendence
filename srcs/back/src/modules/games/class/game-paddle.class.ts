@@ -102,7 +102,7 @@ export class Paddle implements IPaddle {
       }
     }
 
-    if (this.mode === GameMode.BIG && this.left && !this.right) {
+    if (this.left && !this.right) {
       if (this.x > 0) {
         this.x -= this.speed * secondPassed;
       } else {
@@ -110,7 +110,7 @@ export class Paddle implements IPaddle {
       }
     }
 
-    if (this.mode === GameMode.BIG && this.right && !this.left) {
+    if (this.right && !this.left) {
       if (this.x + this.width < CANVAS_WIDTH / 4) {
         this.x += this.speed * secondPassed;
       } else {

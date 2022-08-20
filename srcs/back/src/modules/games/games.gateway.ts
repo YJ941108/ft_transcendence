@@ -545,12 +545,24 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowDown') {
         room.paddleOne.down = false;
       }
+      if (data.key === 'ArrowLeft') {
+        room.paddleOne.left = false;
+      }
+      if (data.key === 'ArrowRight') {
+        room.paddleOne.right = false;
+      }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') {
         room.paddleTwo.up = false;
       }
       if (data.key === 'ArrowDown') {
         room.paddleTwo.down = false;
+      }
+      if (data.key === 'ArrowLeft') {
+        room.paddleOne.left = false;
+      }
+      if (data.key === 'ArrowRight') {
+        room.paddleOne.right = false;
       }
     }
   }
