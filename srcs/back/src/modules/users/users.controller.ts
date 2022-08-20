@@ -44,10 +44,42 @@ export class UsersController {
    * @returns
    */
   @Get('me')
-  async getUser(@Req() req: any): Promise<Users> {
+  async getUser(@Req() req: any): Promise<any> {
     const email = req?.user?.email;
     const user = await this.usersService.getUserByEmail(email);
-    return user;
+
+    let arr = [];
+    const temp = user.achievement.split('').map((e) => Number(e));
+    for (let j = 0; j < temp.length; j++) {
+      if (temp[j] === 0) {
+        arr.push(false);
+      } else {
+        arr.push(true);
+      }
+    }
+
+    const response = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      nickname: user.nickname,
+      photo: user.photo,
+      tfa: user.tfa,
+      tfaCode: user.tfaCode,
+      isFriend: user.isFriend,
+      isOnline: user.isOnline,
+      isRequest: user.isRequest,
+      wins: user.wins,
+      losses: user.losses,
+      ratio: user.ratio,
+      achievement: arr,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      friendsRequest: user.friendsRequest,
+      friends: user.friends,
+    };
+
+    return response;
   }
 
   /**
@@ -71,8 +103,40 @@ export class UsersController {
    * @returns
    */
   @Get(':nickname')
-  async getUserByNickname(@Param('nickname') nickname: string): Promise<Users> {
+  async getUserByNickname(@Param('nickname') nickname: string): Promise<any> {
     const user = await this.usersService.getUserByNickname(nickname);
+
+    let arr = [];
+    const temp = user.achievement.split('').map((e) => Number(e));
+    for (let j = 0; j < temp.length; j++) {
+      if (temp[j] === 0) {
+        arr.push(false);
+      } else {
+        arr.push(true);
+      }
+    }
+
+    const response = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      nickname: user.nickname,
+      photo: user.photo,
+      tfa: user.tfa,
+      tfaCode: user.tfaCode,
+      isFriend: user.isFriend,
+      isOnline: user.isOnline,
+      isRequest: user.isRequest,
+      wins: user.wins,
+      losses: user.losses,
+      ratio: user.ratio,
+      achievement: arr,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    return response;
+
     return user;
   }
 

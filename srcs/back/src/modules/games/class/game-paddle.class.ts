@@ -30,6 +30,7 @@ export interface IPaddle {
 export class Paddle implements IPaddle {
   user: User;
   x: number;
+  default_x: number;
   y: number;
   width: number;
   height: number;
@@ -48,6 +49,7 @@ export class Paddle implements IPaddle {
     this.width = PADDLE_WIDTH;
     this.height = PADDLE_HEIGHT;
     this.x = x;
+    this.default_x = x;
     this.y = CANVAS_HEIGHT / 2 - this.height / 2;
     this.speed = PADDLE_SPEED;
     this.goal = 0;
@@ -64,6 +66,7 @@ export class Paddle implements IPaddle {
    */
   reset(): void {
     this.y = CANVAS_HEIGHT / 2 - this.height / 2;
+    this.x = this.default_x;
   }
 
   /**
@@ -103,9 +106,9 @@ export class Paddle implements IPaddle {
     }
 
     if (this.left && !this.right) {
-      if (this.x <= 0) {
+      if (this.x < 0) {
         this.x = 0;
-      } else if (this.x <= (CANVAS_WIDTH / 4) * 3) {
+      } else if (this.x < (CANVAS_WIDTH / 4) * 3) {
         this.x = (CANVAS_WIDTH / 4) * 3;
       } else {
         this.x -= this.speed * secondPassed;
