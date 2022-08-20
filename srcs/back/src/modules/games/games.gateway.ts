@@ -490,7 +490,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param data
    */
   @SubscribeMessage('keyDown')
-  async handleKeyUp(
+  async handleKeyDown(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomId: string; key: string; nickname: string },
   ) {
@@ -503,12 +503,24 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowDown') {
         room.paddleOne.down = true;
       }
+      if (data.key === 'ArrowLeft') {
+        room.paddleOne.left = true;
+      }
+      if (data.key === 'ArrowRight') {
+        room.paddleOne.right = true;
+      }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') {
         room.paddleTwo.up = true;
       }
       if (data.key === 'ArrowDown') {
         room.paddleTwo.down = true;
+      }
+      if (data.key === 'ArrowLeft') {
+        room.paddleTwo.left = true;
+      }
+      if (data.key === 'ArrowRight') {
+        room.paddleTwo.right = true;
       }
     }
   }
@@ -520,7 +532,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param data
    */
   @SubscribeMessage('keyUp')
-  async handleKeyDown(
+  async handleKeyUp(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomId: string; key: string; nickname: string },
   ) {

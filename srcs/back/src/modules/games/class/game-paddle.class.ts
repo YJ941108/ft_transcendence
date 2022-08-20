@@ -1,5 +1,13 @@
 import { User } from './user.class';
-import { CANVAS_HEIGHT, PADDLE_HEIGHT, PADDLE_SPEED, PADDLE_WIDTH, TIMING } from '../../../constants/games.constant';
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  PADDLE_HEIGHT,
+  PADDLE_SPEED,
+  PADDLE_WIDTH,
+  TIMING,
+} from '../../../constants/games.constant';
+import { GameMode } from 'src/enums/games.enum';
 
 /**
  *
@@ -13,6 +21,7 @@ export interface IPaddle {
   speed: number;
   goal: number;
   color: string;
+  mode: GameMode;
 }
 
 /**
@@ -29,9 +38,12 @@ export class Paddle implements IPaddle {
   color: string;
   up: boolean;
   down: boolean;
+  left: boolean;
+  right: boolean;
   step: number;
+  mode: GameMode;
 
-  constructor(user: User, x: number) {
+  constructor(user: User, x: number, mode: GameMode) {
     this.user = user;
     this.width = PADDLE_WIDTH;
     this.height = PADDLE_HEIGHT;
@@ -41,7 +53,10 @@ export class Paddle implements IPaddle {
     this.goal = 0;
     this.up = false;
     this.down = false;
+    this.left = false;
+    this.right = false;
     this.color = 'rgba(255, 255, 255, 0.8)';
+    this.mode = mode;
   }
 
   /**
@@ -84,6 +99,22 @@ export class Paddle implements IPaddle {
         this.y += this.speed * secondPassed;
       } else {
         this.y = CANVAS_HEIGHT - this.height;
+      }
+    }
+
+    if (this.mode === GameMode.BIG && this.left && !this.right) {
+      if (this.x > 0) {
+        this.x -= this.speed * secondPassed;
+      } else {
+        this.x = 0;
+      }
+    }
+
+    if (this.mode === GameMode.BIG && this.right && !this.left) {
+      if (this.x + this.width < CANVAS_WIDTH / 4) {
+        this.x += this.speed * secondPassed;
+      } else {
+        this.x = CANVAS_WIDTH / 4 - this.width;
       }
     }
   }
