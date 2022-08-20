@@ -9,9 +9,8 @@ import { useChatSocket } from './SocketContext';
 const DirectMessageListC = styled.ul`
 	list-style: none;
 	width: 100%;
-	min-height: 600px;
-	max-height: 600px;
-	padding: 5px;
+	min-height: 800px;
+	max-height: 800px;
 	vertical-align: baseline;
 	box-sizing: border-box;
 	overflow-y: scroll;

@@ -8,12 +8,10 @@ import { useChatSocket } from './SocketContext';
 import MyUserInfo from './li-MyInfo';
 
 const UserListStyleC = styled.ul`
-	/* min-height: 600px; */
-	/* max-height: 600px; */
-	height: 70%;
+	min-height: 800px;
+	max-height: 800px;
 	overflow-y: scroll;
 	background-color: black;
-	border-left: 2px solid white;
 `;
 
 function UserList() {

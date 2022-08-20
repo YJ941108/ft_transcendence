@@ -34,8 +34,8 @@ import OpenChatUsers from './openchat/OpenChatUsers';
 
 const ChatC = styled.div`
 	width: 300px;
-	height: 100%;
-	position: absolute;
+	/* height: 100%;
+	position: absolute; */
 	border: solid white 2px;
 `;
 interface ISelectComponent {
