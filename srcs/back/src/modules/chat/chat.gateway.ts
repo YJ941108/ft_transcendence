@@ -100,11 +100,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
       }
 
-      // dbUsers[j].friendsRequest.forEach((value, index, array) => {
-      //   if (value.id === memoryUser.id) {
-      //     dbUsers[j].isRequest = true;
-      //   }
-      // });
+      const requestIdx = dbUsers[j].friendsRequest.findIndex((value) => {
+        return value.id === dbUser.id;
+      });
+      if (requestIdx !== -1) {
+        dbUsers[j].isRequest = true;
+      }
+
+      const blockIdx = dbUser.blockedUsers.findIndex((value) => {
+        return value.id === dbUsers[j].id;
+      });
+      if (blockIdx !== -1) {
+        dbUsers[j].isBlocked = true;
+      }
 
       /** 온라인인지 오프라인인지 변환 */
       if (this.chatUsers.getUserByNickname(dbUsers[j].nickname)) {
