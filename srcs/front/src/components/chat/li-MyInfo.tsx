@@ -44,15 +44,13 @@ const RequestUserStyleC = styled.li`
 	}
 `;
 export interface IMyInfo {
-	id: number;
 	nickname: string;
 	photo: string;
 }
 
-function MyUserInfo({ id, nickname, photo }: IMyInfo) {
+function MyUserInfo({ nickname, photo }: IMyInfo) {
 	const socket = useChatSocket();
 	const navigate = useNavigate();
-	console.log(id);
 	return (
 		<RequestUserStyleC>
 			<UserPhotoDivStyleC>
