@@ -75,6 +75,8 @@ export class Paddle implements IPaddle {
    * @param secondPassed
    */
   update(secondPassed: number): void {
+    const flash_distance = 5;
+
     if (this.color !== 'rgba(255, 255, 255, 0.8)' && this.step <= TIMING) {
       this.color =
         'rgb(' +
@@ -91,18 +93,22 @@ export class Paddle implements IPaddle {
     }
 
     if (this.up && !this.down) {
-      if (this.y > 0) {
-        this.y -= this.speed * secondPassed;
-      } else {
+      if (this.y <= 0) {
         this.y = 0;
+      } else if (this.flash) {
+        this.y -= this.speed * secondPassed * flash_distance;
+      } else {
+        this.y -= this.speed * secondPassed;
       }
     }
 
     if (this.down && !this.up) {
-      if (this.y + this.height < CANVAS_HEIGHT) {
-        this.y += this.speed * secondPassed;
-      } else {
+      if (this.y + this.height >= CANVAS_HEIGHT) {
         this.y = CANVAS_HEIGHT - this.height;
+      } else if (this.flash) {
+        this.y += this.speed * secondPassed * flash_distance;
+      } else {
+        this.y += this.speed * secondPassed;
       }
     }
 
@@ -113,7 +119,7 @@ export class Paddle implements IPaddle {
       } else if (this.x > (CANVAS_WIDTH / 4) * 2 && this.x < (CANVAS_WIDTH / 4) * 3) {
         this.x = (CANVAS_WIDTH / 4) * 3;
       } else if (this.flash) {
-        this.x -= this.speed * secondPassed * 100;
+        this.x -= this.speed * secondPassed * flash_distance;
       } else {
         this.x -= this.speed * secondPassed;
       }
@@ -125,7 +131,7 @@ export class Paddle implements IPaddle {
       } else if (this.x > CANVAS_WIDTH - this.width) {
         this.x = CANVAS_WIDTH - this.width;
       } else if (this.flash) {
-        this.x += this.speed * secondPassed * 100;
+        this.x += this.speed * secondPassed * flash_distance;
       } else {
         this.x += this.speed * secondPassed;
       }
