@@ -947,10 +947,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     try {
       const isBanned = await this.chatService.checkIfUserIsBanned(channelId, userId);
+      const channel = await this.chatService.getChannelData(channelId);
       this.server.to(client.id).emit('listeningJoinPossible', {
         func: 'isJoinPossible',
         code: 200,
         message: `입장 가능합니다`,
+        data: channel,
       });
     } catch (e) {
       this.chatError(client, e);
