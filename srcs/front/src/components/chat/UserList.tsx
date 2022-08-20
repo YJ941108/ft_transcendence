@@ -24,7 +24,6 @@ function UserList() {
 	useEffect(() => {
 		if (chatSocket) {
 			chatSocket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
-				console.log(response, 'listeningGetUsers');
 				setUsers(response.data);
 			});
 			return () => {
