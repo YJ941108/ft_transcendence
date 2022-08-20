@@ -1,10 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
 import Toggle from './Toggle';
-import { getUserData } from '../../modules/api';
 import ProfileModal from './ProfileModal';
 import { IUser } from './UserInterface';
+
+type Props = {
+	data: IUser | undefined;
+};
 
 const RootStyled = styled.div`
 	grid-area: ProfileCard;
@@ -46,11 +48,7 @@ const ProfileCardBox = styled.div`
 	}
 `;
 
-function ProfileCard() {
-	const { isLoading, data, error } = useQuery<IUser>('user', getUserData);
-	React.useEffect(() => {}, [data]);
-	if (isLoading) return null;
-	if (error) return null;
+function ProfileCard({ data }: Props) {
 	return (
 		<RootStyled>
 			<ProfileCardBox>
