@@ -13,7 +13,8 @@ const ProfileDiv = styled.div`
 	width: 100%;
 	height: 100%;
 	grid-template-columns: 1fr 4fr;
-	grid-template-areas: 'ProfileCard ProfileContent';
+	grid-template-areas: '
+	ProfileCard ProfileContent';
 	grid-gap: 10px;
 `;
 
