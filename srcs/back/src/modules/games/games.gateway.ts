@@ -559,10 +559,10 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         room.paddleTwo.down = false;
       }
       if (data.key === 'ArrowLeft') {
-        room.paddleOne.left = false;
+        room.paddleTwo.left = false;
       }
       if (data.key === 'ArrowRight') {
-        room.paddleOne.right = false;
+        room.paddleTwo.right = false;
       }
     }
   }
