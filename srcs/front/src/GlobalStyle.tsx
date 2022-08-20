@@ -22,6 +22,19 @@ const GlobalStyle = createGlobalStyle`
     font: inherit;
     vertical-align: baseline;
   }
+
+  @font-face {
+  font-family: 'RetroGaming';
+  src: local('RetroGaming'), url(/RetroGaming.ttf) format('truetype');
+  }
+
+  @font-face {
+  font-family: 'NeoDunggeunmo';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.3/NeoDunggeunmo.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  }
+
   /* HTML5 display-role reset for older browsers */
   article, aside, details, figcaption, figure,
   footer, header, hgroup, main, menu, nav, section {
@@ -50,8 +63,8 @@ const GlobalStyle = createGlobalStyle`
     border-spacing: 0;
 	}
 	body {
-    font-family: 'Roboto', sans-serif;
-    height: 100vh;
+		/* height: 100vh; */
+    font-family: ${(props) => props.theme.font};
     background-color: ${(props) => props.theme.backgroundColor};
     color: ${(props) => props.theme.textColor}
 	}

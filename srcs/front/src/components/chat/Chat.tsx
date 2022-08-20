@@ -37,6 +37,8 @@ const ChatC = styled.div`
 	/* height: 100%;
 	position: absolute; */
 	border: solid white 2px;
+	font-family: ${(props) => props.theme.font};
+	font-size: 16px;
 `;
 interface ISelectComponent {
 	[index: string]: React.ReactNode;
@@ -102,7 +104,7 @@ function Chat() {
 			setChannelList(response.data);
 		});
 		socket.on('chatError', (message: IErr) => {
-			alert(message);
+			alert(message.message);
 		});
 		return () => {
 			socket.off('connect');

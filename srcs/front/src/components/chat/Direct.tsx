@@ -4,6 +4,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { emitCreateDMRoom, emitUserAction } from './Emit';
 import { IUserList } from '../../modules/Interfaces/userInterface';
 import { chatContent, MyInfo } from '../../modules/atoms';
+import { useChatSocket } from './SocketContext';
 
 const UserPhotoDivStyleC = styled.div`
 	width: 70px;
@@ -48,7 +49,8 @@ const UserStyleC = styled.li`
 	}
 `;
 
-function DirectMessageInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
+function DirectMessageInfo({ id, nickname, photo, isOnline }: IUserList) {
+	const chatSocket = useChatSocket();
 	const info = useRecoilValue(MyInfo);
 	if (info.id !== id) {
 		const createDMRoom = useSetRecoilState(chatContent);
