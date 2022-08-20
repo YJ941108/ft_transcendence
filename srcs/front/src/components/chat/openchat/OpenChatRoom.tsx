@@ -17,7 +17,7 @@ interface ISendMessage {
 }
 
 function OpenChatRoom({ chatSocket }: any) {
-	const { register, handleSubmit } = useForm<IFormInput>();
+	const { register, handleSubmit, reset } = useForm<IFormInput>();
 	const [messageList, setMessageList] = useState<IMessages[]>([]);
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 	const [channelInfo, setChannelInfo] = useRecoilState<IChannel>(channelInfoData);
@@ -36,6 +36,9 @@ function OpenChatRoom({ chatSocket }: any) {
 			userId: myInfo.id,
 		};
 		chatSocket.emit('sendMessage', message);
+		reset({
+			message: '',
+		});
 	};
 
 	const joinChat = () => {
