@@ -4,6 +4,10 @@ export interface IUser {
 	email: string;
 	nickname: string;
 	photo: string;
+	wins: number;
+	losses: number;
+	ratio: number;
+	achievement: boolean[];
 	updated_at: string;
 	username: string;
 	friends: number[];
