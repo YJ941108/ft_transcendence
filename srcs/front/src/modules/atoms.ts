@@ -2,11 +2,6 @@ import { atom } from 'recoil';
 import IUserData from './Interfaces/userInterface';
 import { IMyData, IDMRoom, IChannel } from './Interfaces/chatInterface';
 
-export const chatSocketState = atom({
-	key: 'chatSocket',
-	default: null,
-});
-
 export const chatContent = atom({
 	key: 'chatContent',
 	default: 'UserList',
