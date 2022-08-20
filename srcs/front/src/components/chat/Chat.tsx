@@ -56,7 +56,6 @@ function Chat() {
 	const { isLoading, data: userData, error } = useQuery<IMyData>('user', getUserData);
 	const content = useRecoilValue(chatContent);
 	const socket = useChatSocket();
-	// console.log(socket.connected);
 	const [, setMyInfo] = useRecoilState<IMyData>(MyInfo);
 	const [, setRooms] = useRecoilState<IDMRoom[]>(DMRoomList);
 	const [, setUsers] = useRecoilState<IUserData[]>(chatUserList);
@@ -82,6 +81,11 @@ function Chat() {
 	useEffect(() => {
 		if (isLoading || error || !userData) return () => {};
 		emitJoinChat(socket, userData.id, userData.nickname);
+		console.log(userData, 'chatUserData');
+		return () => {};
+	}, [userData]);
+
+	useEffect(() => {
 		socket.on('listeningMe', (response: IMyDataResponse) => {
 			setMyInfo(response.data);
 			setRequestUsers(response.data.friendsRequest);
