@@ -54,12 +54,12 @@ export class Ball implements IBall {
     this.y = CANVAS_HEIGHT / 2;
     this.r = BALL_DEFAULT_RADIUS;
     if (mode === GameMode.BIG) {
-      this.speed = BALL_DEFAULT_SPEED * 5;
+      this.speed = BALL_DEFAULT_SPEED * 1;
     } else {
       this.speed = BALL_DEFAULT_SPEED;
     }
     if (mode === GameMode.BIG) {
-      this.acceleration = BALL_ACCELERATION * 5;
+      this.acceleration = BALL_ACCELERATION * 1;
     } else {
       this.acceleration = BALL_ACCELERATION;
     }
@@ -76,12 +76,12 @@ export class Ball implements IBall {
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
     if (mode === GameMode.BIG) {
-      this.speed = BALL_DEFAULT_SPEED * 5;
+      this.speed = BALL_DEFAULT_SPEED * 1;
     } else {
       this.speed = BALL_DEFAULT_SPEED;
     }
     if (mode === GameMode.BIG) {
-      this.acceleration = BALL_ACCELERATION * 5;
+      this.acceleration = BALL_ACCELERATION * 1;
     } else {
       this.acceleration = BALL_ACCELERATION;
     }

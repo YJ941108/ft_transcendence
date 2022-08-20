@@ -41,6 +41,7 @@ export class Paddle implements IPaddle {
   down: boolean;
   left: boolean;
   right: boolean;
+  flash: boolean;
   step: number;
   mode: GameMode;
 
@@ -105,22 +106,26 @@ export class Paddle implements IPaddle {
       }
     }
 
-    if (this.left && !this.right) {
+    if (this.mode === GameMode.BIG && this.left && !this.right) {
       /** Player 1 */
       if (this.x < 0) {
         this.x = 0;
       } else if (this.x > (CANVAS_WIDTH / 4) * 2 && this.x < (CANVAS_WIDTH / 4) * 3) {
         this.x = (CANVAS_WIDTH / 4) * 3;
+      } else if (this.flash) {
+        this.x -= this.speed * secondPassed * 100;
       } else {
         this.x -= this.speed * secondPassed;
       }
     }
 
-    if (this.right && !this.left) {
+    if (this.mode === GameMode.BIG && this.right && !this.left) {
       if (this.x > CANVAS_WIDTH / 4 && this.x < (CANVAS_WIDTH / 4) * 2) {
         this.x = CANVAS_WIDTH / 4;
       } else if (this.x > CANVAS_WIDTH - this.width) {
         this.x = CANVAS_WIDTH - this.width;
+      } else if (this.flash) {
+        this.x += this.speed * secondPassed * 100;
       } else {
         this.x += this.speed * secondPassed;
       }
