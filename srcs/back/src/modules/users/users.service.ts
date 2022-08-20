@@ -312,7 +312,7 @@ export class UsersService {
     const { id, nickname, action } = userActionDto;
 
     if (!action) {
-      throw new BadRequestException();
+      throw new Error('액션이 없습니다');
     } else if (action === 'request') {
       return this.usersRepository.friendRequest(userActionDto);
     } else if (action === 'accept') {
@@ -326,7 +326,7 @@ export class UsersService {
     } else if (action === 'release') {
       return this.usersRepository.userRelease(userActionDto);
     } else {
-      throw new BadRequestException('없는 명령어입니다.');
+      throw new Error('없는 명령어입니다.');
     }
   }
 

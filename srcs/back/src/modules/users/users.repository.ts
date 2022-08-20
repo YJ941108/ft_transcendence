@@ -90,12 +90,12 @@ export class UsersRepository extends Repository<Users> {
     /** 중복 처리 */
     another.friendsRequest.map((e: { id: number }) => {
       if (e.id === user.id) {
-        throw new BadRequestException('이미 요청을 했습니다');
+        throw new Error('이미 요청을 했습니다');
       }
     });
     user.friends.map((e: { id: number }) => {
       if (e.id === another.id) {
-        throw new BadRequestException('이미 친구입니다');
+        throw new Error('이미 친구입니다');
       }
     });
 
@@ -117,7 +117,7 @@ export class UsersRepository extends Repository<Users> {
     /** 이미 친구인지 확인 */
     user.friends.map((e: { id: number }) => {
       if (e.id === another.id) {
-        throw new BadRequestException('이미 친구입니다');
+        throw new Error('이미 친구입니다');
       }
     });
 
@@ -131,7 +131,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 친구 요청이 없는 경우 */
     if (!hasFriendRequest) {
-      throw new BadRequestException('요청이 오지 않았습니다.');
+      throw new Error('요청이 오지 않았습니다.');
     }
 
     /** 데이터 삽입 */
@@ -168,7 +168,7 @@ export class UsersRepository extends Repository<Users> {
     /** 이미 친구인지 확인 */
     user.friends.map((e: { id: number }) => {
       if (e.id === another.id) {
-        throw new BadRequestException('이미 친구입니다');
+        throw new Error('이미 친구입니다');
       }
     });
 
@@ -182,7 +182,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 친구 요청이 없는 경우 */
     if (!hasFriendRequest) {
-      throw new BadRequestException('요청이 오지 않았습니다.');
+      throw new Error('요청이 오지 않았습니다.');
     }
 
     /** 데이터 삭제 */
@@ -205,7 +205,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 예외 처리 */
     if (!isFriend) {
-      throw new BadRequestException('친구가 아닙니다');
+      throw new Error('친구가 아닙니다');
     }
 
     /** 삭제 */
@@ -234,7 +234,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 예외 처리 */
     if (isBlocked) {
-      throw new BadRequestException('이미 차단되어 있습니다.');
+      throw new Error('이미 차단되어 있습니다.');
     }
 
     user.blockedUsers.push(another);
@@ -255,7 +255,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 예외 처리 */
     if (!isBlocked) {
-      throw new BadRequestException('차단 목록에 없습니다');
+      throw new Error('차단 목록에 없습니다');
     }
 
     const index = user.blockedUsers.findIndex((e) => e.id === another.id);
