@@ -106,9 +106,10 @@ export class Paddle implements IPaddle {
     }
 
     if (this.left && !this.right) {
+      /** Player 1 */
       if (this.x < 0) {
         this.x = 0;
-      } else if (this.x < (CANVAS_WIDTH / 4) * 3) {
+      } else if (this.x > (CANVAS_WIDTH / 4) * 2 && this.x < (CANVAS_WIDTH / 4) * 3) {
         this.x = (CANVAS_WIDTH / 4) * 3;
       } else {
         this.x -= this.speed * secondPassed;
@@ -116,7 +117,7 @@ export class Paddle implements IPaddle {
     }
 
     if (this.right && !this.left) {
-      if (this.x > CANVAS_WIDTH / 4) {
+      if (this.x > CANVAS_WIDTH / 4 && this.x < (CANVAS_WIDTH / 4) * 2) {
         this.x = CANVAS_WIDTH / 4;
       } else if (this.x > CANVAS_WIDTH - this.width) {
         this.x = CANVAS_WIDTH - this.width;
