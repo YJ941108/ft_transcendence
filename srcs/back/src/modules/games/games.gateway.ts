@@ -319,6 +319,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     const room: Room = this.rooms.get(roomId);
     if (!room) {
+      this.server.to(client.id).emit('leavedRoom');
       return this.returnMessage('leaveRoom', 400, 'room이 없습니다.', roomId);
     } else if (!room.isAPlayer(user)) {
       return this.returnMessage('leaveRoom', 400, '이미 방을 나갔습니다.');
