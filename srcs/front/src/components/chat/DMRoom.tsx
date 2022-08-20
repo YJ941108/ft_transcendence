@@ -8,14 +8,14 @@ import { DMRoomInfo, MyInfo } from '../../modules/atoms';
 import { useChatSocket } from './SocketContext';
 
 const DMRoomStyleC = styled.div`
-	min-height: 600px;
-	max-height: 600px;
+	min-height: 800px;
+	max-height: 800px;
 `;
 
 const ChatLogStyleC = styled.ul`
-	min-height: 400px;
-	max-height: 400px;
-	/* height: 100%; */
+	min-height: 720px;
+	border-bottom: solid white 2px;
+	height: 100%;
 	overflow-wrap: break-word;
 	overflow-y: scroll;
 `;
@@ -30,13 +30,28 @@ const DMDivStyleC = styled.div`
 
 const DMInputStyleC = styled.textarea`
 	width: 80%;
+	height: 100%;
 	resize: none;
 	font-family: 'Galmuri7', 'sans-serif';
+	/* border: 1px solid rgba(0, 0, 0, 0.1); */
+	border: none;
+	&:hover {
+		border: 1px solid rgba(0, 0, 0, 0.3);
+	}
+	&:focus {
+		outline: none;
+		/* outline: 1px solid rgba(0, 0, 0, 0.5); */
+		border: 1px solid rgba(0, 0, 0, 0.3);
+	}
 `;
 
-const DMButtonStyleC = styled.div`
-	background-color: red;
+const DMSendButtonStyleC = styled.button`
+	background-color: white;
+	color: black;
+	height: 100%;
 	width: 20%;
+	/* border: 1px solid rgba(0, 0, 0, 0.1); */
+	border: none;
 `;
 
 const AcceptButtonStyleC = styled.button`
@@ -57,8 +72,8 @@ function DMRoom() {
 	const [messageList, setMessageList] = useState<IMessages[]>([]);
 	const Info = useRecoilValue(MyInfo);
 	const messageBoxRef = useRef<HTMLUListElement>(null);
-	const emitAcceptPongInvite = (roomId: string) => {
-		chatSocket.emit('acceptPongInvite', { roomId }, (response: IDebug) => {
+	const emitAcceptPongInvite = (roomId: string, messageId: number) => {
+		chatSocket.emit('acceptPongInvite', { roomId, messageId }, (response: IDebug) => {
 			if (response.code === 200) {
 				if (url !== 'game') navigate('/main/game');
 				else window.location.reload();
@@ -149,7 +164,7 @@ function DMRoom() {
 								{msg.author.nickname} : {msg.content}
 								<AcceptButtonStyleC
 									onClick={() => {
-										emitAcceptPongInvite(chatSocket, msg.roomId, msg.id);
+										emitAcceptPongInvite(msg.roomId, msg.id);
 									}}
 								/>
 							</ChatMessageStyleC>
@@ -170,11 +185,13 @@ function DMRoom() {
 						setMessage(event.target.value);
 					}}
 				/>
-				<DMButtonStyleC
+				<DMSendButtonStyleC
 					onClick={() => {
 						sendMessage();
 					}}
-				/>
+				>
+					<img src="/img/send.png" width="16px" alt="send" />
+				</DMSendButtonStyleC>
 			</DMDivStyleC>
 		</DMRoomStyleC>
 	);
