@@ -111,6 +111,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         dbUsers[j].isOnline = true;
       }
     }
+    dbUsers.sort((a, b) => {
+      if (a.nickname < b.nickname) {
+        return -1;
+      }
+    });
+    dbUsers.sort((a, b) => {
+      if (a.isOnline === true && b.isOnline === false) {
+        return -1;
+      }
+    });
 
     this.server.emit('listeningGetUsers', {
       func: 'listeningGetUsers',
