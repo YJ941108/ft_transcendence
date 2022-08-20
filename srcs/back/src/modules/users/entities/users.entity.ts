@@ -113,6 +113,12 @@ export class Users extends BaseEntity {
   })
   isBlocked: boolean;
 
+  @Column({
+    nullable: true,
+    default: false,
+  })
+  isPlaying: boolean;
+
   /** games */
   @Column({
     nullable: true,

@@ -274,11 +274,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param client 소켓에 접속한 클라이언트
    */
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
+  async handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     const user = this.connectedUsers.getUserBySocketId(client.id);
     if (!user) {
       return this.returnMessage('joinRoom', 400, '유저가 없습니다.');
     }
+    await this.usersService.setIsPlaying(user.id, true);
 
     const room: Room = this.rooms.get(roomId);
     if (!room) {
@@ -312,20 +313,21 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param client 소켓에 접속한 클라이언트
    */
   @SubscribeMessage('leaveRoom')
-  handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
-    const user: User = this.connectedUsers.getUserBySocketId(client.id);
-    if (!user) {
+  async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
+    const memoryUser: User = this.connectedUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('leaveRoom', 400, '유저가 없습니다.');
     }
+    await this.usersService.setIsPlaying(memoryUser.id, false);
 
     const room: Room = this.rooms.get(roomId);
     if (!room) {
       this.server.to(client.id).emit('leavedRoom');
       return this.returnMessage('leaveRoom', 400, 'room이 없습니다.', roomId);
-    } else if (!room.isAPlayer(user)) {
+    } else if (!room.isAPlayer(memoryUser)) {
       return this.returnMessage('leaveRoom', 400, '이미 방을 나갔습니다.');
     }
-    room.removeUser(user);
+    room.removeUser(memoryUser);
 
     /** 방에 아무도 없다면 */
     if (room.players.length === 0) {
@@ -341,7 +343,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     /** 게임이 진행중이었다면 일시정지 */
     if (
-      room.isAPlayer(user) &&
+      room.isAPlayer(memoryUser) &&
       room.gameState !== GameState.PLAYER_ONE_WIN &&
       room.gameState !== GameState.PLAYER_TWO_WIN
     ) {

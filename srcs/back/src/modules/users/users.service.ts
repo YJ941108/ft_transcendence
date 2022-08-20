@@ -265,6 +265,12 @@ export class UsersService {
     };
   }
 
+  async setIsPlaying(id: number, status: boolean): Promise<void> {
+    const user = await this.getUserWithoutFriends(id);
+    user.isPlaying = status;
+    await this.usersRepository.save(user);
+  }
+
   /**
    * 유저 게임 점수
    * @param user
@@ -298,8 +304,6 @@ export class UsersService {
     user.ratio = this.updateUserRatio(user);
 
     const updatedUser = await this.usersRepository.save(user);
-    // await this.achievementsService.checkUserAchievement(user, 'wins', user.wins);
-    // await this.achievementsService.checkUserAchievement(user, 'games', user.games.length + 1);
     return updatedUser;
   }
 
@@ -330,13 +334,6 @@ export class UsersService {
     }
   }
 
-  /**
-   * Get a Direct Message between two users
-   *
-   * @param id - The id of the user to which the result will be send back to
-   * @param friendId - The id of the user's friend
-   * @returns A Direct Message
-   */
   async getDirectMessage(id: number, friendId: number) {
     const user = await this.usersRepository.findOne(id, {
       relations: [
@@ -359,13 +356,6 @@ export class UsersService {
     throw new Error('User sent no DM');
   }
 
-  /**
-   * Get a Direct Message between two users
-   *
-   * @param id - The id of the user to which the result will be send back to
-   * @param friendId - The id of the user's friend
-   * @returns A Direct Message
-   */
   async getUserWithDirectMessages(id: number): Promise<DirectMessage[]> {
     const user = await this.usersRepository.findOne(id, {
       relations: [

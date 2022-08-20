@@ -80,7 +80,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   async listeningGetUsers(socketId: string, functionName: string, dbUser: Users): Promise<void> {
     const memoryUser = this.chatUsers.getUserBySocketId(socketId);
-    let nickname;
+    let nickname = '';
     if (memoryUser) {
       nickname = memoryUser.nickname;
     }
