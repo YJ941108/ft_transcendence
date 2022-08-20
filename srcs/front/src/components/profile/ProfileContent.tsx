@@ -1,11 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
-import { getUserData } from '../../modules/api';
 import { IUser } from './UserInterface';
 import ProfileAchievement from './ProfileAchievement';
 import ProfileHistory from './ProfileHistory';
 import '../styles/ProfileContent.css';
+
+type Props = {
+	data: IUser | undefined;
+};
 
 const ProfileContentBox = styled.div`
 	grid-area: ProfileContent;
@@ -13,9 +15,7 @@ const ProfileContentBox = styled.div`
 	grid-template-rows: repeat(3, 1fr);
 `;
 
-function ProfileContent() {
-	const { isLoading, data, error } = useQuery<IUser>('user', getUserData);
-	if (isLoading || error) return null;
+function ProfileContent({ data }: Props) {
 	return (
 		<ProfileContentBox>
 			<ProfileHistory wins={data?.wins} losses={data?.losses} ratio={data?.ratio} />
