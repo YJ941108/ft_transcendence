@@ -85,7 +85,11 @@ export class UsersRepository extends Repository<Users> {
    * @returns
    */
   async friendRequest(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 중복 처리 */
     another.friendsRequest.map((e: { id: number }) => {
@@ -112,7 +116,11 @@ export class UsersRepository extends Repository<Users> {
    * @returns
    */
   async friendAccept(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 친구인지 확인 */
     user.friends.map((e: { id: number }) => {
@@ -163,7 +171,11 @@ export class UsersRepository extends Repository<Users> {
   }
 
   async friendDeny(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 친구인지 확인 */
     user.friends.map((e: { id: number }) => {
@@ -193,7 +205,11 @@ export class UsersRepository extends Repository<Users> {
   }
 
   async frinedDelete(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 친구등록이 되어있는지 확인 */
     let isFriend = false;
@@ -222,7 +238,11 @@ export class UsersRepository extends Repository<Users> {
   }
 
   async userBlock(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['blockedUsers']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 차단되어 있는지 확인 */
     let isBlocked = false;
@@ -243,7 +263,11 @@ export class UsersRepository extends Repository<Users> {
   }
 
   async userRelease(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['blockedUsers']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 차단되어 있는지 확인 */
     let isBlocked = false;
