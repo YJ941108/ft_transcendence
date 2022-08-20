@@ -162,7 +162,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @return connectedUsers
    */
   @SubscribeMessage('handleUserConnect')
-  handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): User[] | Object {
+  async handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): Promise<User[] | Object> {
     if (user && !user.id) {
       this.logger.log(`handleUserConnect: user: ${user}`);
       this.logger.log(`handleUserConnect: user.id: ${user.id}`);
@@ -172,7 +172,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     /** 유저 생성 */
     let newUser: User = this.connectedUsers.getUserById(user.id);
     if (!newUser) {
-      newUser = new User(user.id, user.nickname, client.id, user.ratio);
+      const dbUser = await this.usersService.getUserWithoutFriends(user.id);
+      newUser = new User(dbUser.id, dbUser.nickname, dbUser.photo, dbUser.wins, dbUser.losses, dbUser.ratio, client.id);
     } else {
       newUser.setSocketId(client.id);
       newUser.setNickname(user.nickname);
@@ -605,14 +606,15 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     return room;
   }
 
-  createInvitedUser(id: number, username: string) {
+  async createInvitedUser(id: number, username: string) {
     /**
      * 게임 메모리에 유저가 존재하는지 확인
      * 없으면 만들기
      */
     let newUser: User = this.connectedUsers.getUserById(id);
     if (!newUser) {
-      newUser = new User(id, username);
+      const dbUser = await this.usersService.getUserWithoutFriends(id);
+      newUser = new User(id, username, dbUser.photo, dbUser.wins, dbUser.losses, dbUser.ratio);
       this.connectedUsers.addUser(newUser);
     }
     return newUser;
@@ -638,9 +640,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
   async createInviteRoom(sender: User, receiverId: number) {
     /** 유저 관리 */
-    const firstPlayer: User = this.createInvitedUser(sender.id, sender.nickname);
+    const firstPlayer: User = await this.createInvitedUser(sender.id, sender.nickname);
     const receiverData = await this.usersService.getUserWithoutFriends(receiverId);
-    const secondPlayer: User = this.createInvitedUser(receiverData.id, receiverData.nickname);
+    const secondPlayer: User = await this.createInvitedUser(receiverData.id, receiverData.nickname);
 
     /** 게임방 만들기 */
     const roomId: string = `${firstPlayer.nickname}&${secondPlayer.nickname}`;
