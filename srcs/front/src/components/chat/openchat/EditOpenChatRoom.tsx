@@ -53,7 +53,7 @@ function EditOpenChatRoom() {
 				exit
 			</button>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<input {...register('openChatName')} />
+				<input {...register('openChatName', { required: true, maxLength: 10 })} />
 				<select {...register('openChatVisibility')} onChange={openChatVisibilityChange}>
 					<option value="private">private</option>
 					<option value="public">public</option>

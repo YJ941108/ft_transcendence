@@ -95,7 +95,6 @@ function Chat() {
 			setRooms(response.data);
 		});
 		socket.on('listeningChannelList', (response: { data: IChannel[] }) => {
-			console.log(response.data, 'listeningChannelList');
 			setChannelList(response.data);
 		});
 		socket.on('chatError', (message: IErr) => {
