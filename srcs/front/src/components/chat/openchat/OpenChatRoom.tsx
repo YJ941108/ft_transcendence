@@ -95,12 +95,13 @@ function OpenChatRoom({ chatSocket }: any) {
 			setMessageList((prevMessageList) => {
 				return [...prevMessageList, ...newMessages];
 			});
-			if (myInfo.id === basicChannelInfo.id) setIsOwner(true);
+			if (myInfo.id === basicChannelInfo.data.owner.id) setIsOwner(true);
 		}
 		return () => {
 			setMessageList([]);
 		};
 	}, [basicChannelInfo]);
+
 	if (isLoading) return <h1>Loading</h1>;
 	if (error) return <h1>Error</h1>;
 	return (
