@@ -78,17 +78,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     };
   }
 
-  async listeningGetUsers(socketId: string, functionName: string, dbUser?: Users): Promise<void> {
+  async listeningGetUsers(socketId: string, functionName: string, dbUser: Users): Promise<void> {
     const memoryUser = this.chatUsers.getUserBySocketId(socketId);
     let nickname;
     if (memoryUser) {
       nickname = memoryUser.nickname;
     }
     const dbUsers = await this.usersService.getUsersWithFriendsRequest();
-
-    if (!dbUser) {
-      dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
-    }
 
     for (let j = 0; j < dbUsers.length; j++) {
       /** 친구인지 아닌지 변환 */
@@ -202,7 +198,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     try {
-      await this.listeningGetUsers(client.id, 'joinChat');
+      const dbUser = await this.usersService.getUserWithFriends(newUser.id);
+      await this.listeningGetUsers(client.id, 'joinChat', dbUser);
       await this.listeningMe(client.id, 'joinChat');
       await this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'joinChat');
       await this.listeningChannelList(client.id, memoryUser.id);
