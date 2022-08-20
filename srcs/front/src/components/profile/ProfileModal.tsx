@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useQuery } from 'react-query';
 import { getUserData } from '../../modules/api';
 import { IUser } from './UserInterface';
+import '../styles/Modal.css';
 
 const ModalStyledDiv = styled.div`
 	display: grid;
