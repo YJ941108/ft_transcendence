@@ -281,7 +281,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (!user) {
       return this.returnMessage('joinRoom', 400, '유저가 없습니다.');
     }
-    await this.usersService.setIsPlaying(user.id, true);
 
     const room: Room = this.rooms.get(roomId);
     if (!room) {
@@ -300,6 +299,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (room.gameState === GameState.PAUSED) {
         room.resume();
       }
+      await this.usersService.setIsPlaying(user.id, true);
+      await this.usersService.setRoomId(user.id, roomId);
       room.addUser(user);
     } else if (user.status === UserStatus.IN_HUB) {
       this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
@@ -320,7 +321,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (!memoryUser) {
       return this.returnMessage('leaveRoom', 400, '유저가 없습니다.');
     }
-    await this.usersService.setIsPlaying(memoryUser.id, false);
 
     const room: Room = this.rooms.get(roomId);
     if (!room) {
@@ -330,6 +330,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       room.removeSpectator(memoryUser);
       return this.returnMessage('leaveRoom', 200, '관전에서 나왔습니다.', roomId);
     }
+    await this.usersService.setIsPlaying(memoryUser.id, false);
+    await this.usersService.setRoomId(memoryUser.id, '');
+
     room.removeUser(memoryUser);
 
     /** 방에 아무도 없다면 */
