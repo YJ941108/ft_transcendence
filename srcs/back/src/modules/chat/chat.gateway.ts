@@ -624,11 +624,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
-  async listeningChannelInfo(channel: Channel, roomId?: string) {
+  async listeningChannelInfo(channel: Channel, roomId?: string, type?: string, id?: number) {
     if (!roomId) {
       this.server.emit('listeningChannelInfo', {
         func: 'listeningChannelInfo',
         code: 200,
+        message: `채팅 방 정보를 보냈습니다.`,
+        data: channel,
+      });
+    } else if (type == 'protected') {
+      this.server.to(roomId).emit('listeningChannelInfo', {
+        func: 'listeningChannelInfo',
+        code: id,
         message: `채팅 방 정보를 보냈습니다.`,
         data: channel,
       });
@@ -963,6 +970,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleJoinChannel(
     @ConnectedSocket() client: Socket,
     @MessageBody() { channelId, userId }: { channelId: number; userId: number },
+    type?: string,
   ) {
     let memoryUser = this.chatUsers.getUserBySocketId(client.id);
     if (!memoryUser) {
@@ -981,7 +989,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
         /** 이미 초대가 됐는데 리스트에서 접속한다면 */
         this.userJoinRoom(client.id, roomId);
-        this.listeningChannelInfo(channel, roomId);
+        if (type === 'protected') {
+          this.listeningChannelInfo(channel, roomId, type, memoryUser.id);
+        } else {
+          this.listeningChannelInfo(channel, roomId);
+        }
         return this.returnMessage('joinChannel', 200, '이미 채널에 들어왔습니다');
       }
 
@@ -994,8 +1006,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.userJoinRoom(client.id, roomId);
       /** client.id에게 방 전체 정보 보내기 */
       channel = await this.chatService.getChannelData(channelId);
-      this.listeningChannelInfo(channel, roomId);
-
+      if (type === 'protected') {
+        this.listeningChannelInfo(channel, roomId, type, memoryUser.id);
+      } else {
+        this.listeningChannelInfo(channel, roomId);
+      }
       /** 다른 모든 사람에게 알리기 */
       if (channel.privacy !== 'private') {
         this.server.socketsJoin(roomId);
@@ -1038,7 +1053,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       /* If password is wrong, raise an Error */
       await this.chatService.checkChannelPassword(channelId, password);
-      this.handleJoinChannel(client, { channelId, userId });
+      this.handleJoinChannel(client, { channelId, userId }, 'protected');
       return this.returnMessage('joinProtected', 200, '비밀번호가 일치합니다.');
     } catch (e) {
       this.chatError(client, e);
