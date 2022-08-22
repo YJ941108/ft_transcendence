@@ -92,11 +92,14 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
         this.createNewRoom(players);
       }
-      const users = this.connectedUsers.findAll();
-      users.map((value) => {
-        this.handleUserConnect(value.client, value);
-        this.handleGetCurrentGames(value.client);
-      });
+      // const users = this.connectedUsers.findAll();
+      // users.map((value) => {
+      //   if (value.client) {
+
+      //   }
+      //   this.handleUserConnect(value.client, value);
+      //   this.handleGetCurrentGames(value.client);
+      // });
     }, SET_INTERVAL_MILISECONDS);
   }
 
