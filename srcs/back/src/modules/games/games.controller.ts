@@ -28,6 +28,7 @@ export class GamesController {
   @Get(':id')
   async findbyUsers(@Param('id') id: number): Promise<Games[]> {
     const users = await this.gamesService.find(id);
+    users.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
     return users;
   }
 }

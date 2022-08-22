@@ -36,7 +36,7 @@ export class GamesService {
       relations: ['players'],
     });
     if (!found.length) {
-      throw new BadRequestException('없는 유저입니다.');
+      return [];
     }
     return found;
   }
