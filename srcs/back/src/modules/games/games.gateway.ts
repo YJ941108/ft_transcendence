@@ -92,6 +92,11 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
         this.createNewRoom(players);
       }
+      const users = this.connectedUsers.findAll();
+      users.map((value) => {
+        this.handleUserConnect(value.client, value);
+        this.handleGetCurrentGames(value.client);
+      });
     }, SET_INTERVAL_MILISECONDS);
   }
 
@@ -176,6 +181,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       newUser = new User(dbUser.id, dbUser.nickname, dbUser.photo, dbUser.wins, dbUser.losses, dbUser.ratio, client.id);
     } else {
       newUser.setSocketId(client.id);
+      newUser.setClient(client);
       newUser.setNickname(user.nickname);
     }
     newUser.setUserStatus(UserStatus.IN_HUB);

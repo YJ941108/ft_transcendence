@@ -1,3 +1,4 @@
+import { Socket } from 'socket.io';
 import { GameMode, UserStatus } from '../../../enums/games.enum';
 
 /**
@@ -14,6 +15,7 @@ export class User {
   socketId?: string;
   roomId?: string;
   mode?: GameMode;
+  client?: Socket;
 
   /**
    * @constructor
@@ -30,6 +32,7 @@ export class User {
     losses?: number,
     ratio?: number,
     socketId?: string,
+    client?: Socket,
   ) {
     this.id = id;
     this.nickname = nickname;
@@ -38,6 +41,7 @@ export class User {
     this.losses = losses;
     this.ratio = ratio;
     this.socketId = socketId;
+    this.client = client;
   }
 
   /**
@@ -63,6 +67,10 @@ export class User {
    */
   setSocketId(socketId: string) {
     this.socketId = socketId;
+  }
+
+  setClient(client: Socket) {
+    this.client = client;
   }
 
   /**
