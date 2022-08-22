@@ -162,20 +162,44 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @return connectedUsers
    */
   @SubscribeMessage('handleUserConnect')
-  handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): User[] | Object {
+  async handleUserConnect(@ConnectedSocket() client: Socket, @MessageBody() user: User): Promise<User[] | Object> {
     if (user && !user.id) {
+      this.logger.log(`handleUserConnect: user: ${user}`);
+      this.logger.log(`handleUserConnect: user.id: ${user.id}`);
       return this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
     }
 
     /** 유저 생성 */
     let newUser: User = this.connectedUsers.getUserById(user.id);
     if (!newUser) {
-      newUser = new User(user.id, user.nickname, client.id, user.ratio);
+      const dbUser = await this.usersService.getUserWithoutFriends(user.id);
+      newUser = new User(dbUser.id, dbUser.nickname, dbUser.photo, dbUser.wins, dbUser.losses, dbUser.ratio, client.id);
     } else {
       newUser.setSocketId(client.id);
       newUser.setNickname(user.nickname);
     }
     newUser.setUserStatus(UserStatus.IN_HUB);
+
+    /* Verify that player is not already in a game */
+    this.rooms.forEach((room: Room) => {
+      console.log('방 전체 조회 후 joinroom을 위한 room: ', room);
+      console.log('isPlayer', room.isAPlayer(newUser));
+      console.log('roomState', room.gameState);
+      if (
+        room.isAPlayer(newUser) &&
+        room.gameState !== GameState.PLAYER_ONE_WIN &&
+        room.gameState !== GameState.PLAYER_TWO_WIN
+      ) {
+        newUser.setUserStatus(UserStatus.PLAYING);
+        newUser.setRoomId(room.roomId);
+
+        this.server.to(client.id).emit('newRoom', room);
+        if (room.gameState === GameState.PAUSED) {
+          room.resume();
+        }
+        return;
+      }
+    });
 
     /** 접속중인 유저에 추가 */
     const isConnected = this.connectedUsers.getUserById(newUser.id);
@@ -185,6 +209,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     /** 접속중인 유저 반환 */
     const users = this.connectedUsers.findAll();
+    this.logger.log(`handleUserConnect: users: ${users}`);
     return this.returnMessage('handleUserConnect', 200, '성공', users);
   }
 
@@ -212,7 +237,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
     }
 
-    if (mode !== 'DEFAULT') {
+    if (mode !== 'DEFAULT' && mode !== 'BIG') {
       return this.returnMessage('joinQueue', 400, '모드가 올바르지 않습니다.');
     } else if (user && this.queue.isInQueue(user)) {
       return this.returnMessage('joinQueue', 400, '이미 큐에 들어왔습니다');
@@ -249,11 +274,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param client 소켓에 접속한 클라이언트
    */
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
+  async handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     const user = this.connectedUsers.getUserBySocketId(client.id);
     if (!user) {
       return this.returnMessage('joinRoom', 400, '유저가 없습니다.');
     }
+    await this.usersService.setIsPlaying(user.id, true);
 
     const room: Room = this.rooms.get(roomId);
     if (!room) {
@@ -268,11 +294,15 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
      * 관전자인 경우
      * 플레이어인 경우
      */
-    if (user.status === UserStatus.IN_HUB) {
-      this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
-    } else if (room.isAPlayer(user)) {
+    if (room.isAPlayer(user)) {
+      if (room.gameState === GameState.PAUSED) {
+        room.resume();
+      }
       room.addUser(user);
+    } else if (user.status === UserStatus.IN_HUB) {
+      this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
     }
+    console.log(room);
     this.server.to(client.id).emit('joinedRoom');
     this.server.to(client.id).emit('updateRoom', JSON.stringify(room.serialize()));
     return this.returnMessage('joinRoom', 200, '방에 들어왔습니다.');
@@ -283,19 +313,21 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param client 소켓에 접속한 클라이언트
    */
   @SubscribeMessage('leaveRoom')
-  handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
-    const user: User = this.connectedUsers.getUserBySocketId(client.id);
-    if (!user) {
+  async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
+    const memoryUser: User = this.connectedUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
       return this.returnMessage('leaveRoom', 400, '유저가 없습니다.');
     }
+    await this.usersService.setIsPlaying(memoryUser.id, false);
 
     const room: Room = this.rooms.get(roomId);
     if (!room) {
+      this.server.to(client.id).emit('leavedRoom');
       return this.returnMessage('leaveRoom', 400, 'room이 없습니다.', roomId);
-    } else if (!room.isAPlayer(user)) {
+    } else if (!room.isAPlayer(memoryUser)) {
       return this.returnMessage('leaveRoom', 400, '이미 방을 나갔습니다.');
     }
-    room.removeUser(user);
+    room.removeUser(memoryUser);
 
     /** 방에 아무도 없다면 */
     if (room.players.length === 0) {
@@ -311,7 +343,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     /** 게임이 진행중이었다면 일시정지 */
     if (
-      room.isAPlayer(user) &&
+      room.isAPlayer(memoryUser) &&
       room.gameState !== GameState.PLAYER_ONE_WIN &&
       room.gameState !== GameState.PLAYER_TWO_WIN
     ) {
@@ -461,7 +493,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param data
    */
   @SubscribeMessage('keyDown')
-  async handleKeyUp(
+  async handleKeyDown(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomId: string; key: string; nickname: string },
   ) {
@@ -474,12 +506,30 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowDown') {
         room.paddleOne.down = true;
       }
+      if (data.key === 'ArrowLeft') {
+        room.paddleOne.left = true;
+      }
+      if (data.key === 'ArrowRight') {
+        room.paddleOne.right = true;
+      }
+      if (data.key === ' ') {
+        room.paddleOne.flash = true;
+      }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') {
         room.paddleTwo.up = true;
       }
       if (data.key === 'ArrowDown') {
         room.paddleTwo.down = true;
+      }
+      if (data.key === 'ArrowLeft') {
+        room.paddleTwo.left = true;
+      }
+      if (data.key === 'ArrowRight') {
+        room.paddleTwo.right = true;
+      }
+      if (data.key === ' ') {
+        room.paddleTwo.flash = true;
       }
     }
   }
@@ -491,7 +541,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @param data
    */
   @SubscribeMessage('keyUp')
-  async handleKeyDown(
+  async handleKeyUp(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomId: string; key: string; nickname: string },
   ) {
@@ -504,12 +554,30 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowDown') {
         room.paddleOne.down = false;
       }
+      if (data.key === 'ArrowLeft') {
+        room.paddleOne.left = false;
+      }
+      if (data.key === 'ArrowRight') {
+        room.paddleOne.right = false;
+      }
+      if (data.key === ' ') {
+        room.paddleOne.flash = false;
+      }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') {
         room.paddleTwo.up = false;
       }
       if (data.key === 'ArrowDown') {
         room.paddleTwo.down = false;
+      }
+      if (data.key === 'ArrowLeft') {
+        room.paddleTwo.left = false;
+      }
+      if (data.key === 'ArrowRight') {
+        room.paddleTwo.right = false;
+      }
+      if (data.key === ' ') {
+        room.paddleTwo.flash = false;
       }
     }
   }
@@ -526,31 +594,29 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
     }
 
-    if (!room.isAPlayer(user)) {
-      this.server.to(client.id).emit('newRoom', room);
-      return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
-    }
+    this.server.to(client.id).emit('newRoom', room);
+    return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
   }
 
   /** 게임 초대 */
-  setInviteRoomToReady(client: Socket, userId: number, roomId: string) {
+  setInviteRoomToReady(roomId: string) {
     const room = this.rooms.get(roomId);
     if (!room) {
       throw new Error('Game is over');
     }
-
-    this.handleJoinRoom(client, roomId);
     room.changeGameState(GameState.STARTING);
+    return room;
   }
 
-  createInvitedUser(id: number, username: string) {
+  async createInvitedUser(id: number, username: string) {
     /**
      * 게임 메모리에 유저가 존재하는지 확인
      * 없으면 만들기
      */
     let newUser: User = this.connectedUsers.getUserById(id);
     if (!newUser) {
-      newUser = new User(id, username);
+      const dbUser = await this.usersService.getUserWithoutFriends(id);
+      newUser = new User(id, username, dbUser.photo, dbUser.wins, dbUser.losses, dbUser.ratio);
       this.connectedUsers.addUser(newUser);
     }
     return newUser;
@@ -560,7 +626,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     const sender = this.connectedUsers.getUserById(senderId);
     const receiver = this.connectedUsers.getUserById(receiverId);
 
-    if (!sender || !receiver) return;
+    if (!sender || !receiver) {
+      return;
+    }
 
     this.rooms.forEach((room: Room) => {
       if (room.isAPlayer(sender)) {
@@ -574,16 +642,17 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
   async createInviteRoom(sender: User, receiverId: number) {
     /** 유저 관리 */
-    const firstPlayer: User = this.createInvitedUser(sender.id, sender.nickname);
-    const receiverData = await this.usersService.getUserWithFriends(receiverId);
-    const secondPlayer: User = this.createInvitedUser(receiverData.id, receiverData.nickname);
+    const firstPlayer: User = await this.createInvitedUser(sender.id, sender.nickname);
+    const receiverData = await this.usersService.getUserWithoutFriends(receiverId);
+    const secondPlayer: User = await this.createInvitedUser(receiverData.id, receiverData.nickname);
 
     /** 게임방 만들기 */
-    const roomId: string = `${Date.now()}${firstPlayer.nickname}&${secondPlayer.nickname}`;
+    const roomId: string = `${firstPlayer.nickname}&${secondPlayer.nickname}`;
     let room: Room = new Room(roomId, [firstPlayer, secondPlayer]);
     room.gameState = GameState.WAITING;
     this.rooms.set(roomId, room);
     this.currentGames.push(room);
+    console.log('firstPlayer', firstPlayer);
 
     /** 게임 알리기 */
     this.server.emit('updateCurrentGames', this.currentGames);

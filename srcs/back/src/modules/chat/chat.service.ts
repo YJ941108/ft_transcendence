@@ -29,7 +29,7 @@ export class ChatService {
   async userIsInChannel(channelId: number, userId: number) {
     const channel = await this.channelService.findOne(channelId);
     if (!channel) {
-      throw new Error('No channel found.');
+      throw new Error('채널을 찾을 수 없습니다');
     }
 
     const isInChan = !!channel.users.find((user) => {
@@ -41,7 +41,7 @@ export class ChatService {
   async checkChannelPassword(channelId: number, password: string) {
     const channel = await this.channelService.findOne(channelId);
     if (!channel) {
-      throw new Error('No channel found.');
+      throw new Error('채널을 찾을 수 없습니다');
     }
     if (!(channel.privacy === 'protected')) {
       throw new Error('Protected가 아닙니다.');
@@ -53,7 +53,7 @@ export class ChatService {
     console.log(password);
     console.log(passIsValid);
     if (!passIsValid) {
-      throw new Error('Invalid password');
+      throw new Error('비밀번호가 틀립니다');
     }
   }
 
@@ -61,7 +61,7 @@ export class ChatService {
     const isBanned = await this.channelService.findOutIfUserIsBanned(channelId, userId);
 
     if (isBanned) {
-      throw new Error('You were banned from this group.');
+      throw new Error('밴 되셨습니다');
     }
 
     return isBanned;
@@ -70,7 +70,7 @@ export class ChatService {
   async checkIfUserIsMuted(channelId: number, userId: number) {
     const isMuted = await this.channelService.findOutIfUserIsMuted(channelId, userId);
     if (isMuted) {
-      throw new Error('Muted users are not allowed to post.');
+      throw new Error('벙어리되셨습니다');
     }
   }
 
@@ -78,7 +78,7 @@ export class ChatService {
   async getUserChannels(userId: number) {
     const channels = await this.channelService.findAll();
     if (!channels) {
-      throw new Error('No channel found.');
+      throw new Error('채널을 찾을 수 없습니다');
     }
 
     const userChannels = channels.filter(
@@ -154,7 +154,7 @@ export class ChatService {
       return admin.id === userId;
     });
     if (isAdmin) {
-      throw new Error('User is already administrator');
+      throw new Error('이미 관리자입니다');
     }
 
     const newAdmin = await this.usersService.getUserWithoutFriends(userId);
@@ -169,19 +169,18 @@ export class ChatService {
     const isAdmin = !!channel.admins.find((admin) => {
       return admin.id === userId;
     });
-
-    if (isAdmin) {
-      const formerAdmin = await this.usersService.getUserWithFriends(userId);
-      const filteredAdmins = channel.admins.filter((chanAdmin) => {
-        return chanAdmin.id !== formerAdmin.id;
-      });
-
-      await this.channelService.update(channel.id, {
-        admins: filteredAdmins,
-      });
-      return formerAdmin;
+    if (!isAdmin) {
+      throw new Error('관리자가 아닙니다');
     }
-    throw new Error('User is not an administrator');
+    const formerAdmin = await this.usersService.getUserWithFriends(userId);
+    const filteredAdmins = channel.admins.filter((chanAdmin) => {
+      return chanAdmin.id !== formerAdmin.id;
+    });
+
+    await this.channelService.update(channel.id, {
+      admins: filteredAdmins,
+    });
+    return formerAdmin;
   }
 
   /* Admin operations */
@@ -190,9 +189,8 @@ export class ChatService {
       return admin.id === adminId;
     });
     if (channel.owner.id != adminId && !isAdmin) {
-      throw new Error('Insufficient Privileges');
+      throw new Error('권한이 없어요');
     }
-
     return await this.removeUserFromChannel(channel, userId);
   }
 
@@ -201,7 +199,7 @@ export class ChatService {
       return admin.id === adminId;
     });
     if (channel.owner.id !== adminId && !isAdmin) {
-      throw new Error('Insufficient Privileges');
+      throw new Error('권한이 없어요');
     }
 
     const user = await this.usersService.getUserWithoutFriends(userId);
@@ -224,7 +222,7 @@ export class ChatService {
     const dms = await this.directMessageService.findAll();
 
     if (!dms) {
-      throw new Error('No DM found.');
+      throw new Error('DM을 찾을 수 없습니다');
     }
     const userDms = dms.filter(
       (dm) =>

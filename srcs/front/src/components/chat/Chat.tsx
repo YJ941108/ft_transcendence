@@ -81,6 +81,7 @@ function Chat() {
 	};
 
 	useEffect(() => {
+		console.log(userData, 'chat User Data');
 		if (isLoading || error || !userData) return () => {};
 		emitJoinChat(socket, userData.id, userData.nickname);
 		console.log(userData, 'chatUserData');

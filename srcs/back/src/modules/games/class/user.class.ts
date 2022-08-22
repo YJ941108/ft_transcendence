@@ -6,7 +6,10 @@ import { GameMode, UserStatus } from '../../../enums/games.enum';
 export class User {
   id: number;
   nickname: string;
+  wins?: number;
+  losses?: number;
   ratio?: number;
+  photo?: string;
   status?: UserStatus;
   socketId?: string;
   roomId?: string;
@@ -19,9 +22,20 @@ export class User {
    * @param socketId
    * @param ratio
    */
-  constructor(id: number, nickname: string, socketId?: string, ratio?: number) {
+  constructor(
+    id: number,
+    nickname: string,
+    photo: string,
+    wins?: number,
+    losses?: number,
+    ratio?: number,
+    socketId?: string,
+  ) {
     this.id = id;
     this.nickname = nickname;
+    this.photo = photo;
+    this.wins = wins;
+    this.losses = losses;
     this.ratio = ratio;
     this.socketId = socketId;
   }
@@ -64,8 +78,8 @@ export class User {
    * @param mode
    */
   setMode(mode: string) {
-    if (mode === 'timer') {
-      this.mode = GameMode.TIMER;
+    if (mode === 'BIG') {
+      this.mode = GameMode.BIG;
     } else {
       this.mode = GameMode.DEFAULT;
     }

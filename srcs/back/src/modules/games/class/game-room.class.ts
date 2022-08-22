@@ -112,9 +112,9 @@ export default class Room implements IRoom {
     this.roomId = roomId;
     this.gameState = GameState.STARTING;
     this.players = [];
-    this.paddleOne = new Paddle(users[0], 10);
-    this.paddleTwo = new Paddle(users[1], CANVAS_WIDTH - 40);
-    this.ball = new Ball();
+    this.paddleOne = new Paddle(users[0], 10, customisation.mode);
+    this.paddleTwo = new Paddle(users[1], CANVAS_WIDTH - 40, customisation.mode);
+    this.ball = new Ball(customisation.mode);
     this.timestampStart = Date.now();
     this.lastUpdate = Date.now();
     this.goalTimestamp = Date.now();
@@ -145,6 +145,10 @@ export default class Room implements IRoom {
    */
   addUser(user: User) {
     this.players.push(user);
+  }
+
+  getUsers(): User[] {
+    return this.players;
   }
 
   /**
@@ -202,7 +206,7 @@ export default class Room implements IRoom {
    */
   resume(): void {
     this.changeGameState(GameState.RESUMED);
-    this.pauseTime[this.pauseTime.length - 1].resume = Date.now();
+    this.pauseTime.push({ pause: Date.now(), resume: Date.now() });
   }
 
   /**
@@ -211,7 +215,7 @@ export default class Room implements IRoom {
   resetPosition(): void {
     this.paddleOne.reset();
     this.paddleTwo.reset();
-    this.ball.reset();
+    this.ball.reset(this.mode);
   }
 
   /**
@@ -238,7 +242,7 @@ export default class Room implements IRoom {
        * 그렇지 않으면 -> PLAYER_SCORED
        */
       if (
-        this.mode === GameMode.DEFAULT &&
+        (this.mode === GameMode.DEFAULT || this.mode === GameMode.BIG) &&
         (this.paddleOne.goal === this.maxGoal || this.paddleTwo.goal === this.maxGoal)
       ) {
         if (this.paddleOne.goal === this.maxGoal) {

@@ -65,7 +65,7 @@ function PlayerInfo({ leftPlayer, rightPlayer }: IPlayerInfo) {
 				<PlayerDataDivStyleC>
 					<PlayerDataPStyleC>{rightPlayer.user.nickname}</PlayerDataPStyleC>
 					<PlayerDataPStyleC>
-						{rightPlayer.user.wins}W{rightPlayer.user.losses}L{rightPlayer.user.ratio}pts
+						{rightPlayer.user.wins}W {rightPlayer.user.losses}L {rightPlayer.user.ratio}pts
 					</PlayerDataPStyleC>
 				</PlayerDataDivStyleC>
 			</PlayerInfoStyleC>

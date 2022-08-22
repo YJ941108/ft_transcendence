@@ -73,7 +73,7 @@ export class UsersService {
   async getUserWithoutFriends(id: number): Promise<Users> {
     const user = await this.usersRepository.findOne({ id });
     if (!user) {
-      throw new BadRequestException('유저가 없습니다.');
+      throw new BadRequestException(`${id}: 유저가 없습니다.`);
     }
     return user;
   }
@@ -265,6 +265,12 @@ export class UsersService {
     };
   }
 
+  async setIsPlaying(id: number, status: boolean): Promise<void> {
+    const user = await this.getUserWithoutFriends(id);
+    user.isPlaying = status;
+    await this.usersRepository.save(user);
+  }
+
   /**
    * 유저 게임 점수
    * @param user
@@ -298,8 +304,6 @@ export class UsersService {
     user.ratio = this.updateUserRatio(user);
 
     const updatedUser = await this.usersRepository.save(user);
-    // await this.achievementsService.checkUserAchievement(user, 'wins', user.wins);
-    // await this.achievementsService.checkUserAchievement(user, 'games', user.games.length + 1);
     return updatedUser;
   }
 
@@ -312,7 +316,7 @@ export class UsersService {
     const { id, nickname, action } = userActionDto;
 
     if (!action) {
-      throw new BadRequestException();
+      throw new Error('액션이 없습니다');
     } else if (action === 'request') {
       return this.usersRepository.friendRequest(userActionDto);
     } else if (action === 'accept') {
@@ -326,17 +330,10 @@ export class UsersService {
     } else if (action === 'release') {
       return this.usersRepository.userRelease(userActionDto);
     } else {
-      throw new BadRequestException('없는 명령어입니다.');
+      throw new Error('없는 명령어입니다.');
     }
   }
 
-  /**
-   * Get a Direct Message between two users
-   *
-   * @param id - The id of the user to which the result will be send back to
-   * @param friendId - The id of the user's friend
-   * @returns A Direct Message
-   */
   async getDirectMessage(id: number, friendId: number) {
     const user = await this.usersRepository.findOne(id, {
       relations: [
@@ -359,13 +356,6 @@ export class UsersService {
     throw new Error('User sent no DM');
   }
 
-  /**
-   * Get a Direct Message between two users
-   *
-   * @param id - The id of the user to which the result will be send back to
-   * @param friendId - The id of the user's friend
-   * @returns A Direct Message
-   */
   async getUserWithDirectMessages(id: number): Promise<DirectMessage[]> {
     const user = await this.usersRepository.findOne(id, {
       relations: [
