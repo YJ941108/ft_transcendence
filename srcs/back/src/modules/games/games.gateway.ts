@@ -506,15 +506,16 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowDown') {
         room.paddleOne.down = true;
       }
-      if (data.key === 'ArrowLeft') {
+      if (room.paddleOne.mode === GameMode.BIG && data.key === 'ArrowLeft') {
         room.paddleOne.left = true;
       }
-      if (data.key === 'ArrowRight') {
+      if (room.paddleOne.mode === GameMode.BIG && data.key === 'ArrowRight') {
         room.paddleOne.right = true;
       }
-      if (data.key === 'Q') {
+      if (room.paddleOne.mode === GameMode.BIG && data.key === 'Q') {
         room.paddleOne.flash = true;
         room.paddleTwo.flash = true;
+        room.ball.flash = true;
       }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') {
@@ -523,15 +524,16 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowDown') {
         room.paddleTwo.down = true;
       }
-      if (data.key === 'ArrowLeft') {
+      if (room.paddleOne.mode === GameMode.BIG && data.key === 'ArrowLeft') {
         room.paddleTwo.left = true;
       }
-      if (data.key === 'ArrowRight') {
+      if (room.paddleOne.mode === GameMode.BIG && data.key === 'ArrowRight') {
         room.paddleTwo.right = true;
       }
-      if (data.key === 'Q') {
+      if (room.paddleOne.mode === GameMode.BIG && data.key === 'Q') {
         room.paddleOne.flash = true;
         room.paddleTwo.flash = true;
+        room.ball.flash = true;
       }
     }
   }
@@ -562,9 +564,10 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowRight') {
         room.paddleOne.right = false;
       }
-      if (data.key === ' ') {
+      if (data.key === 'Q') {
         room.paddleOne.flash = false;
         room.paddleTwo.flash = false;
+        room.ball.flash = false;
       }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') {
@@ -579,9 +582,10 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowRight') {
         room.paddleTwo.right = false;
       }
-      if (data.key === ' ') {
+      if (data.key === 'Q') {
         room.paddleOne.flash = false;
         room.paddleTwo.flash = false;
+        room.ball.flash = false;
       }
     }
   }

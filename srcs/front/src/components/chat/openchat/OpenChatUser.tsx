@@ -123,7 +123,7 @@ function OpenChatUser({ isOwner, isAdmin, isMeAdmin, user, channelInfo, myInfo }
 		});
 	};
 
-	const setKickUser = () => {};
+	// const setKickUser = () => {};
 
 	return (
 		<UserStyleC>
