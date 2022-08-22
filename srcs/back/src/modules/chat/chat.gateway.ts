@@ -1337,6 +1337,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       let admin = await this.usersService.getUserWithoutFriends(adminId);
       let dbChannel = await this.chatService.getChannelData(channelId);
 
+      const isInUser = await this.chatService.userIsInChannel(channelId, userId);
+      if (!isInUser) {
+        throw Error('유저가 채널에 없습니다.');
+      }
+
       /** 추방 */
       const user = await this.chatService.kickUser(dbChannel, adminId, userId);
       const roomId = `channel_${channelId}`;
@@ -1368,19 +1373,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         },
       });
 
-      this.listeningChannelList(memoryUser.socketId, memoryUser.id);
-
       /** 다른 사람에게 공개적으로 알려줄 때 */
       if (dbChannel.privacy !== 'private') {
         this.server.socketsJoin(roomId);
+        this.listeningChannelList(memoryUser.socketId, memoryUser.id);
       }
 
       /** 방에 속한 사람에게 리스트 보내주기 */
+      const memoryAnother = this.chatUsers.getUserById(userId);
       const memoryUsers = this.chatUsers.getUsers();
       dbChannel = await this.chatService.getChannelData(channelId);
       for (let i = 0; i < memoryUsers.length; i++) {
-        this.listeningChannelList(roomId, memoryUsers[i].id);
-        this.listeningChannelInfo(dbChannel, roomId);
+        this.listeningChannelList(memoryUsers[i].socketId, memoryUsers[i].id);
+        if (memoryAnother && memoryUsers[i].socketId !== memoryAnother.socketId)
+          this.listeningChannelInfo(dbChannel, memoryUsers[i].socketId);
       }
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
