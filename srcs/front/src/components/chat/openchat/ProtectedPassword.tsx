@@ -26,7 +26,7 @@ function ProtectedPassword() {
 	useEffect(() => {
 		chatSocket.on('listeningChannelInfo', (response: IChannelResponse) => {
 			setChannelInfo(response.data);
-			if (response.code === 200) setContent('OpenChatRoom');
+			if (response.code === myInfo.id) setContent('OpenChatRoom');
 		});
 		return () => {
 			chatSocket.off('listeningChannelInfo');

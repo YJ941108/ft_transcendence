@@ -25,7 +25,7 @@ import NewOpenChatRoom from './openchat/NewOpenChatRoom';
 import OpenChatRoom from './openchat/OpenChatRoom';
 import DirectMessageList from './DirectMessageList';
 import IUserData from '../../modules/Interfaces/userInterface';
-import { IMyData, IMyDataResponse, IErr, IDMRoom, IChannel } from '../../modules/Interfaces/chatInterface';
+import { IMyData, IMyDataResponse, IDMRoom, IChannel } from '../../modules/Interfaces/chatInterface';
 import { emitJoinChat } from './Emit';
 import OpenChatInvite from './openchat/OpenChatInvite';
 import EditOpenChatRoom from './openchat/EditOpenChatRoom';
@@ -104,8 +104,8 @@ function Chat() {
 		socket.on('listeningChannelList', (response: { data: IChannel[] }) => {
 			setChannelList(response.data);
 		});
-		socket.on('chatError', (message: IErr) => {
-			alert(message.message);
+		socket.on('chatError', (message: string) => {
+			alert(message);
 		});
 		return () => {
 			socket.off('connect');

@@ -7,6 +7,8 @@ import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
 import { IChannel, IMyData, IMessageResponse, IMessages, IUserBanned } from '../../../modules/Interfaces/chatInterface';
 import { getChannelInfo } from '../../../modules/api';
 import { useChatSocket } from '../SocketContext';
+import OpenChatMessage from './OpenChatMessage';
+import OpenChatNoti from './OpenChatNoti';
 
 const ChatLogStyleC = styled.ul`
 	min-height: 720px;
@@ -72,6 +74,7 @@ function OpenChatRoom() {
 		});
 		setChatContent('OpenChatList');
 	};
+
 	useEffect(() => {
 		chatSocket.on('listeningMessage', (response: IMessageResponse) => {
 			setMessageList((prevMessages) => {
@@ -83,9 +86,10 @@ function OpenChatRoom() {
 			setChatContent('OpenChatList');
 		});
 		chatSocket.on('listeningChannelInfo', (response: { data: IChannel }) => {
-			setChannelInfo(response.data);
+			if (response.data.id === basicChannelInfo.id) setChannelInfo(response.data);
 		});
 		chatSocket.on('listeningBan', (response: IUserBanned) => {
+			console.log('listeningBan', response);
 			if (myInfo.id === response.data.id) setChatContent('OpenChatList');
 		});
 		return () => {
@@ -95,12 +99,14 @@ function OpenChatRoom() {
 			chatSocket.off('listeningBan');
 		};
 	}, [chatSocket]);
+
 	useEffect(() => {
 		chatSocket.emit('joinChannel', {
 			channelId: channelInfo.id,
 			userId: myInfo.id,
 		});
 	}, []);
+
 	useEffect(() => {
 		if (!isLoading && !error && basicChannelInfo) {
 			const newMessages = basicChannelInfo?.data.messages;
@@ -118,9 +124,11 @@ function OpenChatRoom() {
 	if (error) return <h1>Error</h1>;
 	return (
 		<div>
-			<button type="button" onClick={joinChat}>
-				joinChat
-			</button>
+			{isOwner ? (
+				<button type="button" onClick={joinChat}>
+					joinChat
+				</button>
+			) : null}
 			{isOwner ? (
 				<button type="button" onClick={editChat}>
 					editChat
@@ -129,14 +137,17 @@ function OpenChatRoom() {
 			<button type="button" onClick={userList}>
 				users
 			</button>
-			<button type="button" onClick={leaveChannel}>
-				leaveRoom
-			</button>
+			{!isOwner ? (
+				<button type="button" onClick={leaveChannel}>
+					leaveRoom
+				</button>
+			) : null}
 			<ChatLogStyleC>
 				{messageList?.map((message: IMessages) => {
+					if (!message.author) return <OpenChatNoti key={message.id} content={message.content} />;
 					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
-						return <li key={message.id}>BLOCKED</li>;
-					return <li key={message.id}>{message.content}</li>;
+						return <OpenChatMessage key={message.id} author={message.author} content="BLOCKED" />;
+					return <OpenChatMessage key={message.id} author={message.author} content={message.content} />;
 				})}
 			</ChatLogStyleC>
 			<form onSubmit={handleSubmit(onSubmit)}>
