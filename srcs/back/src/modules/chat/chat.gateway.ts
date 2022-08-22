@@ -1241,7 +1241,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const message = await this.chatService.addMessageToChannel({
         content: `${owner.nickname}은 admin입니다`,
         channel: dbChannel,
-        author: owner,
       });
 
       /** 방 정보 보내기 */
@@ -1302,7 +1301,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const message = await this.chatService.addMessageToChannel({
         content: `${admin.nickname}은 더 이상 admin이 아닙니다`,
         channel: dbChannel,
-        author: owner,
       });
 
       /** 방 정보 보내기 */
@@ -1372,9 +1370,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       /** 처벌 메시지 보내기 */
       const message = await this.chatService.addMessageToChannel({
-        content: `${admin.nickname}이 ${user.username}를 차버렸습니당`,
+        content: `${admin.nickname}이 ${user.username}를 차버렸습니다`,
         channel: dbChannel,
-        author: admin,
       });
       this.server.to(`channel_${dbChannel.id}`).emit('listeningMessage', {
         func: 'sendMessage',
@@ -1460,7 +1457,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const message = await this.chatService.addMessageToChannel({
         content: content,
         channel: dbChannel,
-        author: admin,
       });
 
       /** 메시지 보내기 */
