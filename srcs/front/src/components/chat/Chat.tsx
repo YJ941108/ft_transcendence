@@ -25,7 +25,7 @@ import NewOpenChatRoom from './openchat/NewOpenChatRoom';
 import OpenChatRoom from './openchat/OpenChatRoom';
 import DirectMessageList from './DirectMessageList';
 import IUserData from '../../modules/Interfaces/userInterface';
-import { IMyData, IMyDataResponse, IErr, IDMRoom, IChannel } from '../../modules/Interfaces/chatInterface';
+import { IMyData, IMyDataResponse, IDMRoom, IChannel } from '../../modules/Interfaces/chatInterface';
 import { emitJoinChat } from './Emit';
 import OpenChatInvite from './openchat/OpenChatInvite';
 import EditOpenChatRoom from './openchat/EditOpenChatRoom';
@@ -55,7 +55,7 @@ interface ISelectComponent {
 	OpenChatUsers: React.ReactNode;
 }
 function Chat() {
-	const { isLoading, data: userData, error } = useQuery<IMyData>('user', getUserData);
+	const { isLoading, data: userData, error } = useQuery<IMyData>('me', getUserData);
 	const content = useRecoilValue(chatContent);
 	const socket = useChatSocket();
 	const [, setMyInfo] = useRecoilState<IMyData>(MyInfo);
@@ -83,6 +83,7 @@ function Chat() {
 	useEffect(() => {
 		if (isLoading || error || !userData) return () => {};
 		emitJoinChat(socket, userData.id, userData.nickname);
+		console.log(userData, 'chatUserData');
 		return () => {};
 	}, [userData]);
 
@@ -102,8 +103,8 @@ function Chat() {
 		socket.on('listeningChannelList', (response: { data: IChannel[] }) => {
 			setChannelList(response.data);
 		});
-		socket.on('chatError', (message: IErr) => {
-			alert(message.message);
+		socket.on('chatError', (message: string) => {
+			alert(message);
 		});
 		return () => {
 			socket.off('connect');
@@ -115,6 +116,13 @@ function Chat() {
 			socket.off('chatError');
 		};
 	}, [isLoading, error, userData]);
+
+	// useEffect(() => {
+	// 	if (isLoading || error || !userData) return;
+	// 	console.log('여기 들어오면 안되는데');
+	// 	const socketIo: Socket = io('http://3.39.20.24:3032/api/chat');
+	// 	setSocket(socketIo);
+	// }, [isLoading, error, setSocket]);
 
 	return isLoading ? null : (
 		<ChatC>

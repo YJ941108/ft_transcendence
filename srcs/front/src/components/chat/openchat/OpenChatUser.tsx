@@ -112,9 +112,16 @@ function OpenChatUser({ isOwner, isAdmin, isMeAdmin, user, channelInfo, myInfo }
 			userId,
 			type,
 		});
+		alert(`${type} succeed`);
 	};
 
-	const setKickUser = () => {};
+	const setKickUser = (userId: number) => {
+		chatSocket.emit('kickUser', {
+			channelId: channelInfo.id,
+			adminId: myInfo.id,
+			userId,
+		});
+	};
 
 	return (
 		<UserStyleC>
@@ -132,7 +139,7 @@ function OpenChatUser({ isOwner, isAdmin, isMeAdmin, user, channelInfo, myInfo }
 				<AdminButtonStyleC isOwner={isOwner} isMeAdmin={isMeAdmin} onClick={() => setPunishUser(user.id, 'mute')}>
 					MUTE
 				</AdminButtonStyleC>
-				<AdminButtonStyleC isOwner={isOwner} isMeAdmin={isMeAdmin} onClick={() => setKickUser()}>
+				<AdminButtonStyleC isOwner={isOwner} isMeAdmin={isMeAdmin} onClick={() => setKickUser(user.id)}>
 					KICK
 				</AdminButtonStyleC>
 			</UserInfoDivStyleC>

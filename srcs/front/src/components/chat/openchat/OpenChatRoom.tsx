@@ -74,6 +74,7 @@ function OpenChatRoom() {
 		});
 		setChatContent('OpenChatList');
 	};
+
 	useEffect(() => {
 		chatSocket.on('listeningMessage', (response: IMessageResponse) => {
 			setMessageList((prevMessages) => {
@@ -85,9 +86,10 @@ function OpenChatRoom() {
 			setChatContent('OpenChatList');
 		});
 		chatSocket.on('listeningChannelInfo', (response: { data: IChannel }) => {
-			setChannelInfo(response.data);
+			if (response.data.id === basicChannelInfo.id) setChannelInfo(response.data);
 		});
 		chatSocket.on('listeningBan', (response: IUserBanned) => {
+			console.log('listeningBan', response);
 			if (myInfo.id === response.data.id) setChatContent('OpenChatList');
 		});
 		return () => {
@@ -97,12 +99,14 @@ function OpenChatRoom() {
 			chatSocket.off('listeningBan');
 		};
 	}, [chatSocket]);
+
 	useEffect(() => {
 		chatSocket.emit('joinChannel', {
 			channelId: channelInfo.id,
 			userId: myInfo.id,
 		});
 	}, []);
+
 	useEffect(() => {
 		if (!isLoading && !error && basicChannelInfo) {
 			const newMessages = basicChannelInfo?.data.messages;
@@ -120,9 +124,11 @@ function OpenChatRoom() {
 	if (error) return <h1>Error</h1>;
 	return (
 		<div>
-			<button type="button" onClick={joinChat}>
-				joinChat
-			</button>
+			{isOwner ? (
+				<button type="button" onClick={joinChat}>
+					joinChat
+				</button>
+			) : null}
 			{isOwner ? (
 				<button type="button" onClick={editChat}>
 					editChat
@@ -131,9 +137,11 @@ function OpenChatRoom() {
 			<button type="button" onClick={userList}>
 				users
 			</button>
-			<button type="button" onClick={leaveChannel}>
-				leaveRoom
-			</button>
+			{!isOwner ? (
+				<button type="button" onClick={leaveChannel}>
+					leaveRoom
+				</button>
+			) : null}
 			<ChatLogStyleC>
 				{messageList?.map((message: IMessages) => {
 					if (!message.author) return <OpenChatNoti key={message.id} content={message.content} />;

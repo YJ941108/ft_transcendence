@@ -6,7 +6,7 @@ import { getUserData } from '../../modules/api';
 import IUserData from '../../modules/Interfaces/userInterface';
 
 function Tfa() {
-	const { isLoading, data, error } = useQuery<IUserData>('user', getUserData);
+	const { isLoading, data, error } = useQuery<IUserData>('me', getUserData);
 	const [input, setInput] = useState('');
 	const [isTfa, setIsTfa] = useState(true);
 	const [isTfaSucceed, setIsTfaSucceed] = useState(false);
