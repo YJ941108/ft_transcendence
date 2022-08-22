@@ -1,8 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useResetRecoilState } from 'recoil';
 import styled from 'styled-components';
+import { MyInfo } from '../../modules/atoms';
 import { deleteToken } from '../../modules/login/login';
 import { useChatSocket } from './SocketContext';
+import { IMyData } from '../../modules/Interfaces/chatInterface';
 
 const UserPhotoDivStyleC = styled.div`
 	width: 70px;
@@ -26,6 +29,8 @@ const UserInfoDivStyleC = styled.div`
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
+	white-space: no-wrap;
+	max-width: 150px;
 	text-overflow: ellipsis;
 	overflow: hidden;
 `;
@@ -44,31 +49,34 @@ const RequestUserStyleC = styled.li`
 	}
 `;
 export interface IMyInfo {
-	nickname: string;
-	photo: string;
+	user: IMyData;
 }
 
-function MyUserInfo({ nickname, photo }: IMyInfo) {
+function MyUserInfo({ user }: IMyInfo) {
 	const socket = useChatSocket();
 	const navigate = useNavigate();
+	console.log(user, 'myData');
+	const Logout = () => {
+		deleteToken();
+		socket.disconnect();
+		navigate('/');
+		useResetRecoilState(MyInfo);
+	};
 	return (
 		<RequestUserStyleC>
 			<UserPhotoDivStyleC>
-				<UserPhotoStyleC src={photo} alt={nickname} />
+				<UserPhotoStyleC src={user.photo} alt={user.nickname} />
 			</UserPhotoDivStyleC>
 			<UserInfoDivStyleC>
-				<UserNickNameStyleC>{nickname}</UserNickNameStyleC>
+				<UserNickNameStyleC>{user.nickname}</UserNickNameStyleC>
+				<UserNickNameStyleC
+					onClick={() => {
+						Logout();
+					}}
+				>
+					LOGOUT
+				</UserNickNameStyleC>
 			</UserInfoDivStyleC>
-			<button
-				type="button"
-				onClick={() => {
-					deleteToken();
-					socket.disconnect();
-					navigate('/');
-				}}
-			>
-				LOGOUT
-			</button>
 		</RequestUserStyleC>
 	);
 }
