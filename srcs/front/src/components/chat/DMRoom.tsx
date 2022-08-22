@@ -160,7 +160,7 @@ function DMRoom() {
 		<DMRoomStyleC>
 			<ChatLogStyleC ref={messageBoxRef}>
 				{messageList?.map((msg: IMessages) => {
-					if (msg.type === 'invite') {
+					if (msg.type === 'invite' && Info.nickname !== msg.author.nickname) {
 						return (
 							<ChatMessageStyleC key={msg.id}>
 								<Link to={`/main/another/${msg.author.nickname}`}>{msg.author.nickname}</Link> : {msg.content}
