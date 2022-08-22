@@ -14,7 +14,7 @@ function Game() {
 	const [room, setRoom] = useState<IRoom | null>(null);
 	const [queue, setQueue] = useState(false);
 	const [gameRooms, setGameRooms] = useState<IRoom[]>([]);
-	const { isLoading, data: userData, error } = useQuery<IMyData>('user', getUserData);
+	const { isLoading, data: userData, error } = useQuery<IMyData>('me', getUserData);
 	const joinQueue = (event: React.MouseEvent<HTMLButtonElement>) => {
 		socket.emit('joinQueue', event.currentTarget.value);
 	};
