@@ -198,6 +198,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           room.resume();
         }
         return;
+      } else if (room.isASpectator(newUser)) {
+        this.server.to(client.id).emit('newRoom', room);
       }
     });
 
@@ -324,8 +326,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (!room) {
       this.server.to(client.id).emit('leavedRoom');
       return this.returnMessage('leaveRoom', 400, 'room이 없습니다.', roomId);
-    } else if (!room.isAPlayer(memoryUser)) {
-      return this.returnMessage('leaveRoom', 400, '이미 방을 나갔습니다.');
+    } else if (room.isASpectator(memoryUser)) {
+      room.removeSpectator(memoryUser);
+      return this.returnMessage('leaveRoom', 200, '관전에서 나왔습니다.', roomId);
     }
     room.removeUser(memoryUser);
 
@@ -602,6 +605,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
     }
 
+    if (!room.isASpectator(user)) {
+      room.addSpectator(user);
+    }
     this.server.to(client.id).emit('newRoom', room);
     return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
   }
@@ -640,10 +646,10 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     this.rooms.forEach((room: Room) => {
       if (room.isAPlayer(sender)) {
-        throw Error('You already have a pending game. Finish it or leave the room.');
+        throw Error('게임 방에 접속해 있습니다.');
       }
       if (room.isAPlayer(receiver)) {
-        throw Error('User already in a game.');
+        throw Error('게임 방에 접속해 있습니다.');
       }
     });
   }
