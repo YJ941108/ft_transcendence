@@ -512,8 +512,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowRight') {
         room.paddleOne.right = true;
       }
-      if (data.key === ' ') {
+      if (data.key === 'Q') {
         room.paddleOne.flash = true;
+        room.paddleTwo.flash = true;
       }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') {
@@ -528,7 +529,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowRight') {
         room.paddleTwo.right = true;
       }
-      if (data.key === ' ') {
+      if (data.key === 'Q') {
+        room.paddleOne.flash = true;
         room.paddleTwo.flash = true;
       }
     }
@@ -562,6 +564,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       }
       if (data.key === ' ') {
         room.paddleOne.flash = false;
+        room.paddleTwo.flash = false;
       }
     } else if (room && room.paddleTwo.user.nickname === data.nickname) {
       if (data.key === 'ArrowUp') {
@@ -577,6 +580,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         room.paddleTwo.right = false;
       }
       if (data.key === ' ') {
+        room.paddleOne.flash = false;
         room.paddleTwo.flash = false;
       }
     }
