@@ -13,6 +13,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UserStatus } from 'src/enums/games.enum';
 import { CreateChannelDto } from '../channel/dto/create-channel.dto';
+import { UpdateChannelDto } from '../channel/dto/update-channel.dto';
 import { Channel } from '../channel/entities/channel.entity';
 import { CreateDirectMessageDto } from '../direct-message/dto/create-direct-message.dto';
 import { DirectMessage } from '../direct-message/entities/direct-message.entity';
@@ -845,21 +846,24 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       /** 데이터 정제 */
       const dbChannel = await this.chatService.getChannelData(data.channelId);
-      let createChannelDto: CreateChannelDto = {
+      let updateChannelDto: UpdateChannelDto = {
         name: data.name,
         privacy: data.privacy,
         owner: dbChannel.owner,
         users: dbChannel.users,
+        admins: dbChannel.admins,
+        messages: dbChannel.messages,
+        punishments: dbChannel.punishments,
       };
       if (data.password) {
-        createChannelDto.password = data.password;
+        updateChannelDto.password = data.password;
       }
       if (data.restrictionDuration) {
-        createChannelDto.restrictionDuration = data.restrictionDuration;
+        updateChannelDto.restrictionDuration = data.restrictionDuration;
       }
 
       /** 채널 수정 */
-      const channel = await this.chatService.updateChannel(data.channelId, createChannelDto);
+      const channel = await this.chatService.updateChannel(data.channelId, updateChannelDto);
       const roomId = `channel_${channel.id}`;
 
       /** client.id에게 방 전체 정보 보내기 */
