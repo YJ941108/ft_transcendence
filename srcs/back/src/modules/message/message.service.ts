@@ -20,7 +20,7 @@ export class MessageService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: number) {
     const message = await this.messagesRepository.findOne(id, {
       relations: ['author', 'channel'],
     });
@@ -52,12 +52,22 @@ export class MessageService {
     return this.messagesRepository.save(message);
   }
 
-  async remove(id: string) {
+  async remove(id: number) {
     const message = await this.findOne(id);
 
     if (!message) {
       throw new Error(`Message [${id}] not found`);
     }
     return this.messagesRepository.remove(message);
+  }
+
+  async setType(id: number, type: string) {
+    const message = await this.findOne(id);
+    if (!message) {
+      throw new Error(`Message [${id}] not found`);
+    }
+
+    message.type = type;
+    await this.messagesRepository.save(message);
   }
 }

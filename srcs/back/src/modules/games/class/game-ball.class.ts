@@ -1,3 +1,4 @@
+import { GameMode } from 'src/enums/games.enum';
 import {
   BALL_ACCELERATION,
   BALL_MAX_SPEED,
@@ -48,12 +49,20 @@ export class Ball implements IBall {
   /**
    * velocity의 Math.random()에 의해 공이 시작할 때 왼쪽으로 갈지, 오른쪽으로 갈지 정해진다.
    */
-  constructor() {
+  constructor(mode: GameMode) {
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
     this.r = BALL_DEFAULT_RADIUS;
-    this.speed = BALL_DEFAULT_SPEED;
-    this.acceleration = BALL_ACCELERATION;
+    if (mode === GameMode.BIG) {
+      this.speed = BALL_DEFAULT_SPEED * 1;
+    } else {
+      this.speed = BALL_DEFAULT_SPEED;
+    }
+    if (mode === GameMode.BIG) {
+      this.acceleration = BALL_ACCELERATION * 1;
+    } else {
+      this.acceleration = BALL_ACCELERATION;
+    }
     this.velocity = { dx: this.speed * (Math.random() < 0.5 ? 1 : -1), dy: 0 };
     this.goal = false;
     this.color = 'white';
@@ -62,11 +71,20 @@ export class Ball implements IBall {
   /**
    * 공 초기화
    */
-  reset() {
+  reset(mode: GameMode) {
     let dir = this.x < CANVAS_WIDTH / 2 ? -1 : 1;
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
-    this.speed = BALL_DEFAULT_SPEED;
+    if (mode === GameMode.BIG) {
+      this.speed = BALL_DEFAULT_SPEED * 1;
+    } else {
+      this.speed = BALL_DEFAULT_SPEED;
+    }
+    if (mode === GameMode.BIG) {
+      this.acceleration = BALL_ACCELERATION * 1;
+    } else {
+      this.acceleration = BALL_ACCELERATION;
+    }
     this.velocity = {
       dx: dir * this.speed,
       dy: 0,

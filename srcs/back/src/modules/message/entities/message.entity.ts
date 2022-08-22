@@ -30,6 +30,18 @@ export class Message {
   @Column({ length: 640 })
   content: string;
 
+  @Column({
+    nullable: true,
+    default: 'text',
+  })
+  type: string;
+
+  @Column({
+    nullable: true,
+    default: 'text',
+  })
+  roomId: string;
+
   @CreateDateColumn({
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',

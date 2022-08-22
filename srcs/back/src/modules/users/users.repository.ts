@@ -85,17 +85,21 @@ export class UsersRepository extends Repository<Users> {
    * @returns
    */
   async friendRequest(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 중복 처리 */
     another.friendsRequest.map((e: { id: number }) => {
       if (e.id === user.id) {
-        throw new BadRequestException('이미 요청을 했습니다');
+        throw new Error('이미 요청을 했습니다');
       }
     });
     user.friends.map((e: { id: number }) => {
       if (e.id === another.id) {
-        throw new BadRequestException('이미 친구입니다');
+        throw new Error('이미 친구입니다');
       }
     });
 
@@ -112,12 +116,16 @@ export class UsersRepository extends Repository<Users> {
    * @returns
    */
   async friendAccept(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 친구인지 확인 */
     user.friends.map((e: { id: number }) => {
       if (e.id === another.id) {
-        throw new BadRequestException('이미 친구입니다');
+        throw new Error('이미 친구입니다');
       }
     });
 
@@ -131,7 +139,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 친구 요청이 없는 경우 */
     if (!hasFriendRequest) {
-      throw new BadRequestException('요청이 오지 않았습니다.');
+      throw new Error('요청이 오지 않았습니다.');
     }
 
     /** 데이터 삽입 */
@@ -163,12 +171,16 @@ export class UsersRepository extends Repository<Users> {
   }
 
   async friendDeny(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 친구인지 확인 */
     user.friends.map((e: { id: number }) => {
       if (e.id === another.id) {
-        throw new BadRequestException('이미 친구입니다');
+        throw new Error('이미 친구입니다');
       }
     });
 
@@ -182,7 +194,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 친구 요청이 없는 경우 */
     if (!hasFriendRequest) {
-      throw new BadRequestException('요청이 오지 않았습니다.');
+      throw new Error('요청이 오지 않았습니다.');
     }
 
     /** 데이터 삭제 */
@@ -193,7 +205,11 @@ export class UsersRepository extends Repository<Users> {
   }
 
   async frinedDelete(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['friendsRequest', 'friends']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 친구등록이 되어있는지 확인 */
     let isFriend = false;
@@ -205,7 +221,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 예외 처리 */
     if (!isFriend) {
-      throw new BadRequestException('친구가 아닙니다');
+      throw new Error('친구가 아닙니다');
     }
 
     /** 삭제 */
@@ -222,7 +238,11 @@ export class UsersRepository extends Repository<Users> {
   }
 
   async userBlock(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['blockedUsers']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 차단되어 있는지 확인 */
     let isBlocked = false;
@@ -234,7 +254,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 예외 처리 */
     if (isBlocked) {
-      throw new BadRequestException('이미 차단되어 있습니다.');
+      throw new Error('이미 차단되어 있습니다.');
     }
 
     user.blockedUsers.push(another);
@@ -243,7 +263,11 @@ export class UsersRepository extends Repository<Users> {
   }
 
   async userRelease(actionFriendsDto: UserActionDto): Promise<Users> {
-    let { user, another } = await this.preProcessForFriends(actionFriendsDto, ['blockedUsers']);
+    let { user, another } = await this.preProcessForFriends(actionFriendsDto, [
+      'friendsRequest',
+      'friends',
+      'blockedUsers',
+    ]);
 
     /** 이미 차단되어 있는지 확인 */
     let isBlocked = false;
@@ -255,7 +279,7 @@ export class UsersRepository extends Repository<Users> {
 
     /** 예외 처리 */
     if (!isBlocked) {
-      throw new BadRequestException('차단 목록에 없습니다');
+      throw new Error('차단 목록에 없습니다');
     }
 
     const index = user.blockedUsers.findIndex((e) => e.id === another.id);

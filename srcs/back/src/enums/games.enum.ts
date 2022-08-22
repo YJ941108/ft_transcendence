@@ -52,6 +52,5 @@ export enum GameState {
  */
 export enum GameMode {
   DEFAULT,
-  TIMER,
-  LIFE,
+  BIG,
 }
