@@ -7,6 +7,8 @@ import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
 import { IChannel, IMyData, IMessageResponse, IMessages, IUserBanned } from '../../../modules/Interfaces/chatInterface';
 import { getChannelInfo } from '../../../modules/api';
 import { useChatSocket } from '../SocketContext';
+import OpenChatMessage from './OpenChatMessage';
+import OpenChatNoti from './OpenChatNoti';
 
 const ChatLogStyleC = styled.ul`
 	min-height: 720px;
@@ -134,9 +136,10 @@ function OpenChatRoom() {
 			</button>
 			<ChatLogStyleC>
 				{messageList?.map((message: IMessages) => {
+					if (!message.author) return <OpenChatNoti key={message.id} content={message.content} />;
 					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
-						return <li key={message.id}>BLOCKED</li>;
-					return <li key={message.id}>{message.content}</li>;
+						return <OpenChatMessage key={message.id} author={message.author} content="BLOCKED" />;
+					return <OpenChatMessage key={message.id} author={message.author} content={message.content} />;
 				})}
 			</ChatLogStyleC>
 			<form onSubmit={handleSubmit(onSubmit)}>

@@ -83,7 +83,6 @@ function Chat() {
 	useEffect(() => {
 		if (isLoading || error || !userData) return () => {};
 		emitJoinChat(socket, userData.id, userData.nickname);
-		console.log(userData, 'chatUserData');
 		return () => {};
 	}, [userData]);
 
@@ -116,13 +115,6 @@ function Chat() {
 			socket.off('chatError');
 		};
 	}, [isLoading, error, userData]);
-
-	// useEffect(() => {
-	// 	if (isLoading || error || !userData) return;
-	// 	console.log('여기 들어오면 안되는데');
-	// 	const socketIo: Socket = io('http://3.39.20.24:3032/api/chat');
-	// 	setSocket(socketIo);
-	// }, [isLoading, error, setSocket]);
 
 	return isLoading ? null : (
 		<ChatC>
