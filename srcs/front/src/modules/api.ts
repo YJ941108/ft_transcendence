@@ -14,6 +14,11 @@ export const getUsersData = async () => {
 	return response.data;
 };
 
+export const getAnotherUserData = async (nickname: string | undefined) => {
+	const response = await axios.get(`api/users/another/${nickname}`);
+	return response.data;
+};
+
 export const postEmailData = async (email: IEmail) => {
 	const response = await axios.post('/api/auth/email', email);
 	return response;

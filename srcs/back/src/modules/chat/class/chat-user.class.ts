@@ -4,7 +4,7 @@ export class ChatUser extends User {
   joinedRooms: string[];
 
   constructor(id: number, nickname: string, socketId: string) {
-    super(id, nickname, socketId);
+    super(id, nickname, '', 0, 0, 0, socketId);
     this.joinedRooms = [];
   }
 

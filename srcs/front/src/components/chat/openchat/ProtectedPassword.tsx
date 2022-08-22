@@ -3,12 +3,14 @@ import { useForm } from 'react-hook-form';
 import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import { IMyData, IChannel, IChannelResponse } from '../../../modules/Interfaces/chatInterface';
 import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
+import { useChatSocket } from '../SocketContext';
 
 interface IFormInput {
 	password: string | number;
 }
 
-function ProtectedPassword({ chatSocket }: any) {
+function ProtectedPassword() {
+	const chatSocket = useChatSocket();
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 	const [channelInfo, setChannelInfo] = useRecoilState<IChannel>(channelInfoData);
 	const setContent = useSetRecoilState(chatContent);
@@ -24,18 +26,19 @@ function ProtectedPassword({ chatSocket }: any) {
 	useEffect(() => {
 		chatSocket.on('listeningChannelInfo', (response: IChannelResponse) => {
 			setChannelInfo(response.data);
-			if (response.code === 200) setContent('OpenChatRoom');
+			if (response.code === myInfo.id) setContent('OpenChatRoom');
 		});
 		return () => {
 			chatSocket.off('listeningChannelInfo');
 		};
 	}, [chatSocket]);
+
 	return (
 		<div>
 			<h1>Protected Password</h1>
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<h2>Press Password</h2>
-				<input {...register('password')} />
+				<input {...register('password', { required: true, maxLength: 20 })} />
 				<button type="submit">Enter</button>
 			</form>
 		</div>

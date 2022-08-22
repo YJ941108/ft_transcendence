@@ -4,6 +4,7 @@ import { useSetRecoilState, useRecoilValue } from 'recoil';
 import { channelInfoData, chatContent, chatUserList } from '../../../modules/atoms';
 import { IChannel } from '../../../modules/Interfaces/chatInterface';
 import IUserData from '../../../modules/Interfaces/userInterface';
+import { useChatSocket } from '../SocketContext';
 
 const UserListStyleC = styled.ul`
 	/* min-height: 600px; */
@@ -39,7 +40,8 @@ const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
 `;
 
-function OpenChatInvite({ chatSocket }: any) {
+function OpenChatInvite() {
+	const chatSocket = useChatSocket();
 	const userList = useRecoilValue<IUserData[]>(chatUserList);
 	const channelInfo = useRecoilValue<IChannel>(channelInfoData);
 	const setChatContent = useSetRecoilState(chatContent);

@@ -9,8 +9,9 @@ interface INavbarListProps {
 const NavbarC = styled.ul`
 	text-transform: uppercase;
 	border-right: 2px solid ${(props) => props.theme.textColor};
-	height: 100vh;
+	/* height: 100vh; */
 	padding: 4rem;
+	font-family: RetroGaming, serif;
 `;
 
 const NavbarListC = styled.li<INavbarListProps>`

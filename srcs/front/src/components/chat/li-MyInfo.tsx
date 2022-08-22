@@ -26,6 +26,8 @@ const UserInfoDivStyleC = styled.div`
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
+	text-overflow: ellipsis;
+	overflow: hidden;
 `;
 
 const RequestUserStyleC = styled.li`
@@ -42,15 +44,13 @@ const RequestUserStyleC = styled.li`
 	}
 `;
 export interface IMyInfo {
-	id: number;
 	nickname: string;
 	photo: string;
 }
 
-function MyUserInfo({ id, nickname, photo }: IMyInfo) {
+function MyUserInfo({ nickname, photo }: IMyInfo) {
 	const socket = useChatSocket();
 	const navigate = useNavigate();
-	console.log(id);
 	return (
 		<RequestUserStyleC>
 			<UserPhotoDivStyleC>
@@ -64,7 +64,6 @@ function MyUserInfo({ id, nickname, photo }: IMyInfo) {
 				onClick={() => {
 					deleteToken();
 					socket.disconnect();
-					console.log(socket);
 					navigate('/');
 				}}
 			>

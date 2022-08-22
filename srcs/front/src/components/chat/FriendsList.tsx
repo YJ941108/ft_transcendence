@@ -8,12 +8,7 @@ import FriendUserInfo from './li-FriendUser';
 import RequestUserInfo from './li-RequestUser';
 import BlockedUserInfo from './li-BlockedUser';
 import { useChatSocket } from './SocketContext';
-
-const SectionTitleStyleC = styled.li`
-	background-color: rgba(255, 255, 255, 0.1);
-	margin: 3px 0;
-	/* border: 1px solid rgba(255, 255, 255, 0.5); */
-`;
+import ListSection from './ListSection';
 
 const FriendsListStyleC = styled.ul`
 	min-height: 800px;
@@ -51,44 +46,18 @@ function FriendsList() {
 
 	return (
 		<FriendsListStyleC>
-			<SectionTitleStyleC>request</SectionTitleStyleC>
+			<ListSection title="REQUEST" />
 			{requestUser?.map((element: IUserData) => {
-				return (
-					<RequestUserInfo
-						key={element.id}
-						id={element.id}
-						nickname={element.nickname}
-						photo={element.photo}
-						chatSocket={chatSocket}
-						isOnline={element.isOnline}
-					/>
-				);
+				return <RequestUserInfo key={element.id} user={element} />;
 			})}
-			<SectionTitleStyleC>friends</SectionTitleStyleC>
+			<ListSection title="FRIENDS" />
 			{users?.map((element: IUserData) => {
-				return (
-					<FriendUserInfo
-						key={element.id}
-						id={element.id}
-						nickname={element.nickname}
-						photo={element.photo}
-						chatSocket={chatSocket}
-						isOnline={element.isOnline}
-					/>
-				);
+				console.log(users.length, '길이');
+				return <FriendUserInfo key={element.id} user={element} />;
 			})}
-			<SectionTitleStyleC>block</SectionTitleStyleC>
+			<ListSection title="BLOCK" />
 			{blockedUsers?.map((element: IUserData) => {
-				return (
-					<BlockedUserInfo
-						key={element.id}
-						id={element.id}
-						nickname={element.nickname}
-						photo={element.photo}
-						chatSocket={chatSocket}
-						isOnline={element.isOnline}
-					/>
-				);
+				return <BlockedUserInfo key={element.id} user={element} />;
 			})}
 		</FriendsListStyleC>
 	);

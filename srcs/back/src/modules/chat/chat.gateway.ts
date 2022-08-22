@@ -20,6 +20,7 @@ import { User } from '../games/class/user.class';
 import { GamesGateway } from '../games/games.gateway';
 import { CreateMessageDto } from '../message/dto/create-message.dto';
 import { Message } from '../message/entities/message.entity';
+import { MessageService } from '../message/message.service';
 import { Users } from '../users/entities/users.entity';
 import { UsersService } from '../users/users.service';
 import { BadRequestTransformationFilter } from './chat.filter';
@@ -51,6 +52,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private readonly chatService: ChatService,
     private readonly usersService: UsersService,
     private readonly pongGateway: GamesGateway,
+    private readonly messageService: MessageService,
   ) {}
 
   /**
@@ -76,17 +78,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     };
   }
 
-  async listeningGetUsers(socketId: string, functionName: string, dbUser?: Users): Promise<void> {
+  async listeningGetUsers(socketId: string, functionName: string, dbUser: Users): Promise<void> {
     const memoryUser = this.chatUsers.getUserBySocketId(socketId);
-    let nickname;
+    let nickname = '';
     if (memoryUser) {
       nickname = memoryUser.nickname;
     }
     const dbUsers = await this.usersService.getUsersWithFriendsRequest();
-
-    if (!dbUser) {
-      dbUser = await this.usersService.getUserWithFriends(memoryUser.id);
-    }
 
     for (let j = 0; j < dbUsers.length; j++) {
       /** 친구인지 아닌지 변환 */
@@ -98,17 +96,35 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
       }
 
-      // dbUsers[j].friendsRequest.forEach((value, index, array) => {
-      //   if (value.id === memoryUser.id) {
-      //     dbUsers[j].isRequest = true;
-      //   }
-      // });
+      const requestIdx = dbUsers[j].friendsRequest.findIndex((value) => {
+        return value.id === dbUser.id;
+      });
+      if (requestIdx !== -1) {
+        dbUsers[j].isRequest = true;
+      }
+
+      const blockIdx = dbUser.blockedUsers.findIndex((value) => {
+        return value.id === dbUsers[j].id;
+      });
+      if (blockIdx !== -1) {
+        dbUsers[j].isBlocked = true;
+      }
 
       /** 온라인인지 오프라인인지 변환 */
       if (this.chatUsers.getUserByNickname(dbUsers[j].nickname)) {
         dbUsers[j].isOnline = true;
       }
     }
+    dbUsers.sort((a, b) => {
+      if (a.nickname < b.nickname) {
+        return -1;
+      }
+    });
+    dbUsers.sort((a, b) => {
+      if (a.isOnline === true && b.isOnline === false) {
+        return -1;
+      }
+    });
 
     this.server.emit('listeningGetUsers', {
       func: 'listeningGetUsers',
@@ -182,7 +198,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     try {
-      await this.listeningGetUsers(client.id, 'joinChat');
+      const dbUser = await this.usersService.getUserWithFriends(newUser.id);
+      await this.listeningGetUsers(client.id, 'joinChat', dbUser);
       await this.listeningMe(client.id, 'joinChat');
       await this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'joinChat');
       await this.listeningChannelList(client.id, memoryUser.id);
@@ -194,6 +211,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         `${client.id}: ${memoryUser.nickname}이 joinChat 성공. 서버에서 listeningGetUsers && listeningMe를 emit함`,
       );
     } catch (e) {
+      console.log(e);
       this.chatUsers.removeUser(memoryUser);
       this.server.to(client.id).emit('chatError', {
         func: 'joinChat',
@@ -224,10 +242,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     try {
       /** 어떤 액션을 할 것이냐 */
-      await this.usersService.userAction({ id: memoryUser.id, nickname: data.who, action: data.action });
+      const dbUser = await this.usersService.userAction({ id: memoryUser.id, nickname: data.who, action: data.action });
 
       /** 액션을 한 사람에게 전달 */
       await this.listeningMe(client.id, 'userAction');
+      await this.listeningGetUsers(client.id, 'userAction', dbUser);
 
       /** who에게 전달 */
       const memoryAnother = this.chatUsers.getUserByNickname(data.who);
@@ -293,6 +312,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       another = dm.users[0];
     }
 
+    dm.messages.sort((a, b) => a.id - b.id);
+
     const response = {
       id: dm.id,
       me: user,
@@ -323,7 +344,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     const dbUser = await this.usersService.getUserWithoutFriends(dbId);
 
-    let response: Array<{ id: number; me: Users; another: Users; createdAt: Date; message: Message[] }> = [];
+    let response: Array<{
+      id: number;
+      me: Users;
+      another: Users;
+      createdAt: Date;
+      message: Message[];
+    }> = [];
     for (let i = 0; i < DMRooms.length; i++) {
       let another: Users;
       if (dbUser.nickname === DMRooms[i].users[0].nickname) {
@@ -331,6 +358,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       } else {
         another = DMRooms[i].users[0];
       }
+
+      DMRooms[i].messages.sort((a, b) => a.id - b.id);
 
       response.push({
         id: DMRooms[i].id,
@@ -350,6 +379,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if (roomIndex !== -1) {
         response.splice(roomIndex, 1);
       }
+
+      // /** 온라인인지 오프라인인지 변환 */
+      // if (this.chatUsers.getUserByNickname(dbUserWithBlockedUsers[i].nickname)) {
+      //   dbUserWithBlockedUsers[i].isOnline = true;
+      // }
     }
 
     this.server.to(socketId).emit('listeningDMRoomList', {
@@ -406,9 +440,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         }
       }
 
+      const orderedDM = await this.chatService.getDmData(dm.id);
+
       /** 나는 DM방에 들어가야 함 */
       this.userJoinRoom(client.id, `dm_${dm.id}`);
-      this.listeningDMRoomInfo(client.id, 'createDMRoom', memoryUser, dm);
+      this.listeningDMRoomInfo(client.id, 'createDMRoom', memoryUser, orderedDM);
 
       // /** 상대방에게 리스트 갱신하기 */
       // const memoryUsers = this.chatUsers.getUsers();
@@ -484,17 +520,26 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
     const DM = await this.chatService.getDmData(data.DMId);
     const author = await this.usersService.getUserWithoutFriends(data.authorId);
+    DM.users[0].id;
 
     const message: CreateMessageDto = { DM, author, content: data.message };
 
+    if (data.type === 'invite') {
+      message.type = data.type;
+    }
+    if (data.roomId) {
+      message.roomId = data.roomId;
+    }
+
     try {
       const sendMessage = await this.chatService.addMessageToDm(message);
-      const emitData = {
+      const emitData: { id: number; content: string; createdAt: Date; author: Users; type: string; roomId: string } = {
         id: sendMessage.id,
         content: sendMessage.content,
         createdAt: sendMessage.createdAt,
         author: author,
-        type: 'text',
+        type: sendMessage.type,
+        roomId: sendMessage.roomId,
       };
       // const refactorMessage = {
       //   content: sendMessage.content,
@@ -511,6 +556,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
       // const NewDM = await this.chatService.getDmData(data.DMId);
       // this.listeningDMRoomInfo(`dm_${message.DM.id}`, 'sendDMMessage', memoryUser, NewDM);
+
+      let anotherId = DM.users[0].id;
+      if (anotherId === memoryUser.id) {
+        anotherId = DM.users[1].id;
+      }
+
+      const memoryAnother = this.chatUsers.getUserById(anotherId);
+      if (memoryAnother) {
+        this.listeningDMRoomList(memoryAnother.socketId, memoryAnother.id, memoryAnother.nickname, 'sendDMMessage');
+      }
       this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'sendDMMessage');
 
       return this.returnMessage('sendDMMessage', 200, '메시지 보내기 성공');
@@ -569,11 +624,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
-  async listeningChannelInfo(channel: Channel, roomId?: string) {
+  async listeningChannelInfo(channel: Channel, roomId?: string, type?: string, id?: number) {
     if (!roomId) {
       this.server.emit('listeningChannelInfo', {
         func: 'listeningChannelInfo',
         code: 200,
+        message: `채팅 방 정보를 보냈습니다.`,
+        data: channel,
+      });
+    } else if (type == 'protected') {
+      this.server.to(roomId).emit('listeningChannelInfo', {
+        func: 'listeningChannelInfo',
+        code: id,
         message: `채팅 방 정보를 보냈습니다.`,
         data: channel,
       });
@@ -892,10 +954,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     try {
       const isBanned = await this.chatService.checkIfUserIsBanned(channelId, userId);
+      const channel = await this.chatService.getChannelData(channelId);
       this.server.to(client.id).emit('listeningJoinPossible', {
         func: 'isJoinPossible',
         code: 200,
         message: `입장 가능합니다`,
+        data: channel,
       });
     } catch (e) {
       this.chatError(client, e);
@@ -906,6 +970,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleJoinChannel(
     @ConnectedSocket() client: Socket,
     @MessageBody() { channelId, userId }: { channelId: number; userId: number },
+    type?: string,
   ) {
     let memoryUser = this.chatUsers.getUserBySocketId(client.id);
     if (!memoryUser) {
@@ -924,7 +989,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
         /** 이미 초대가 됐는데 리스트에서 접속한다면 */
         this.userJoinRoom(client.id, roomId);
-        this.listeningChannelInfo(channel, roomId);
+        if (type === 'protected') {
+          this.listeningChannelInfo(channel, roomId, type, memoryUser.id);
+        } else {
+          this.listeningChannelInfo(channel, roomId);
+        }
         return this.returnMessage('joinChannel', 200, '이미 채널에 들어왔습니다');
       }
 
@@ -937,8 +1006,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.userJoinRoom(client.id, roomId);
       /** client.id에게 방 전체 정보 보내기 */
       channel = await this.chatService.getChannelData(channelId);
-      this.listeningChannelInfo(channel, roomId);
-
+      if (type === 'protected') {
+        this.listeningChannelInfo(channel, roomId, type, memoryUser.id);
+      } else {
+        this.listeningChannelInfo(channel, roomId);
+      }
       /** 다른 모든 사람에게 알리기 */
       if (channel.privacy !== 'private') {
         this.server.socketsJoin(roomId);
@@ -981,7 +1053,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       /* If password is wrong, raise an Error */
       await this.chatService.checkChannelPassword(channelId, password);
-      this.handleJoinChannel(client, { channelId, userId });
+      this.handleJoinChannel(client, { channelId, userId }, 'protected');
       return this.returnMessage('joinProtected', 200, '비밀번호가 일치합니다.');
     } catch (e) {
       this.chatError(client, e);
@@ -1169,7 +1241,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const message = await this.chatService.addMessageToChannel({
         content: `${owner.nickname}은 admin입니다`,
         channel: dbChannel,
-        author: owner,
       });
 
       /** 방 정보 보내기 */
@@ -1230,7 +1301,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const message = await this.chatService.addMessageToChannel({
         content: `${admin.nickname}은 더 이상 admin이 아닙니다`,
         channel: dbChannel,
-        author: owner,
       });
 
       /** 방 정보 보내기 */
@@ -1274,32 +1344,63 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return this.returnMessage('getChannels', 400, '채팅 소켓에 유저가 없습니다');
     }
     if (adminId === userId) {
-      throw new WsException('If you want to leave the channel, go to Channel settings.');
+      throw new Error('어드민은 나갈 수 없어요');
     }
     try {
-      const admin = this.chatUsers.getUserById(adminId);
-      const channel = await this.chatService.getChannelData(channelId);
+      let admin = await this.usersService.getUserWithoutFriends(adminId);
+      let dbChannel = await this.chatService.getChannelData(channelId);
+
+      const isInUser = await this.chatService.userIsInChannel(channelId, userId);
+      if (!isInUser) {
+        throw Error('유저가 채널에 없습니다.');
+      }
 
       /** 추방 */
-      const user = await this.chatService.kickUser(channel, adminId, userId);
-      const message = await this.chatService.addMessageToChannel({
-        content: `${admin.nickname} kicked ${user.username}`,
-        channel,
-      });
-
+      const user = await this.chatService.kickUser(dbChannel, adminId, userId);
       const roomId = `channel_${channelId}`;
       const chatUser = this.chatUsers.getUserById(userId);
       if (chatUser) {
-        this.server.to(chatUser.socketId).emit('kickedFromChannel', `You have been kicked from ${channel.name}.`);
+        this.server.to(chatUser.socketId).emit('listeningBan', {
+          func: 'punishUser',
+          code: 200,
+          message: `관리자가 내보냈습니다.`,
+          data: chatUser,
+        });
         this.userLeaveRoom(chatUser.socketId, roomId);
       }
 
-      this.server.to(roomId).emit('userKicked', message);
-      /* If the channel is visible to everyone, inform every client */
-      if (channel.privacy !== 'private') {
-        this.server.emit('peopleCountChanged', channel);
+      /** 처벌 메시지 보내기 */
+      const message = await this.chatService.addMessageToChannel({
+        content: `${admin.nickname}이 ${user.username}를 차버렸습니다`,
+        channel: dbChannel,
+      });
+      this.server.to(`channel_${dbChannel.id}`).emit('listeningMessage', {
+        func: 'sendMessage',
+        code: 200,
+        message: `메시지를 보냈습니다.`,
+        data: {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          author: admin,
+        },
+      });
+
+      /** 다른 사람에게 공개적으로 알려줄 때 */
+      if (dbChannel.privacy !== 'private') {
+        this.server.socketsJoin(roomId);
+        this.listeningChannelList(memoryUser.socketId, memoryUser.id);
       }
-      this.logger.log(`User [${userId}] was kicked from Channel [${channelId}]`);
+
+      /** 방에 속한 사람에게 리스트 보내주기 */
+      const memoryAnother = this.chatUsers.getUserById(userId);
+      const memoryUsers = this.chatUsers.getUsers();
+      dbChannel = await this.chatService.getChannelData(channelId);
+      for (let i = 0; i < memoryUsers.length; i++) {
+        this.listeningChannelList(memoryUsers[i].socketId, memoryUsers[i].id);
+        if (memoryAnother && memoryUsers[i].socketId !== memoryAnother.socketId)
+          this.listeningChannelInfo(dbChannel, memoryUsers[i].socketId);
+      }
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
@@ -1357,7 +1458,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const message = await this.chatService.addMessageToChannel({
         content: content,
         channel: dbChannel,
-        author: admin,
       });
 
       /** 메시지 보내기 */
@@ -1421,17 +1521,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    * @param param1
    */
   @SubscribeMessage('acceptPongInvite')
-  async handleAcceptPongInvite(@ConnectedSocket() client: Socket, @MessageBody() { roomId }: { roomId: string }) {
+  async handleAcceptPongInvite(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() { roomId, messageId }: { roomId: string; messageId: number },
+  ) {
     try {
-      this.pongGateway.setInviteRoomToReady(roomId);
-      this.server.to(client.id).emit('listeningInviteGame', {
-        func: 'sendPongInvite',
-        code: 200,
-        message: `메시지를 보냈습니다.`,
-        data: {
-          roomId,
-        },
-      });
+      /** 게임 확인 */
+      const room = this.pongGateway.setInviteRoomToReady(roomId);
+
+      /** 수락 후 */
+      await this.messageService.setType(messageId, 'text');
+
+      return this.returnMessage('acceptPongInvite', 200, '게임 초대를 수락했습니다.');
     } catch (e) {
       this.server.to(client.id).emit('chatError', e.message);
     }
@@ -1452,19 +1553,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         { id: memorySender.id, nickname: memorySender.nickname } as User,
         anotherId,
       );
-
-      /** 방 정보 */
-      this.server.to(client.id).emit('listeningInviteGame', {
-        func: 'sendPongInvite',
-        code: 200,
-        message: `메시지를 보냈습니다.`,
-        data: {
-          roomId,
-        },
-      });
+      this.logger.log(`sendPongInvite: createInviteRoom: ${roomId}`);
 
       /** DM 보내기 */
-      const dm: any = await this.handleCreateDm(client, { anotherId: memoryReceiver.id });
+      const dm: any = await this.handleCreateDm(client, { anotherId });
       await this.handleDmSubmit(client, {
         DMId: dm.data,
         authorId: memorySender.id,
@@ -1472,6 +1564,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         type: 'invite',
         roomId: roomId,
       });
+
+      return this.returnMessage('sendPongInvite', 200, '게임 초대를 보냈습니다.');
 
       // /** DM방 생성 */
       // let DM = await this.chatService.checkIfDmExists(senderId, anotherId);
@@ -1501,6 +1595,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       // } as CreateMessageDto);
       // this.server.to(`dm_${DM.id}`).emit('newPongInvite', { message });
     } catch (e) {
+      console.log(e);
       this.server.to(client.id).emit('chatError', e.message);
     }
   }

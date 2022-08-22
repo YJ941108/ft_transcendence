@@ -25,7 +25,7 @@ import NewOpenChatRoom from './openchat/NewOpenChatRoom';
 import OpenChatRoom from './openchat/OpenChatRoom';
 import DirectMessageList from './DirectMessageList';
 import IUserData from '../../modules/Interfaces/userInterface';
-import { IMyData, IMyDataResponse, IErr, IDMRoom, IChannel } from '../../modules/Interfaces/chatInterface';
+import { IMyData, IMyDataResponse, IDMRoom, IChannel } from '../../modules/Interfaces/chatInterface';
 import { emitJoinChat } from './Emit';
 import OpenChatInvite from './openchat/OpenChatInvite';
 import EditOpenChatRoom from './openchat/EditOpenChatRoom';
@@ -37,6 +37,8 @@ const ChatC = styled.div`
 	/* height: 100%;
 	position: absolute; */
 	border: solid white 2px;
+	font-family: ${(props) => props.theme.font};
+	font-size: 16px;
 `;
 interface ISelectComponent {
 	[index: string]: React.ReactNode;
@@ -53,10 +55,9 @@ interface ISelectComponent {
 	OpenChatUsers: React.ReactNode;
 }
 function Chat() {
-	const { isLoading, data: userData, error } = useQuery<IMyData>('user', getUserData);
+	const { isLoading, data: userData, error } = useQuery<IMyData>('me', getUserData);
 	const content = useRecoilValue(chatContent);
 	const socket = useChatSocket();
-	// console.log(socket.connected);
 	const [, setMyInfo] = useRecoilState<IMyData>(MyInfo);
 	const [, setRooms] = useRecoilState<IDMRoom[]>(DMRoomList);
 	const [, setUsers] = useRecoilState<IUserData[]>(chatUserList);
@@ -67,21 +68,27 @@ function Chat() {
 
 	const selectComponent: ISelectComponent = {
 		UserList: <UserList />,
-		OpenChatList: <OpenChatList chatSocket={socket} />,
+		OpenChatList: <OpenChatList />,
 		FriendsList: <FriendsList />,
 		DirectMessageList: <DirectMessageList />,
 		DMRoom: <DMRoom />,
-		NewOpenChatRoom: <NewOpenChatRoom chatSocket={socket} />,
-		OpenChatRoom: <OpenChatRoom chatSocket={socket} />,
-		OpenChatInvite: <OpenChatInvite chatSocket={socket} />,
-		EditOpenChatRoom: <EditOpenChatRoom chatSocket={socket} />,
-		ProtectedPassword: <ProtectedPassword chatSocket={socket} />,
-		OpenChatUsers: <OpenChatUsers chatSocket={socket} />,
+		NewOpenChatRoom: <NewOpenChatRoom />,
+		OpenChatRoom: <OpenChatRoom />,
+		OpenChatInvite: <OpenChatInvite />,
+		EditOpenChatRoom: <EditOpenChatRoom />,
+		ProtectedPassword: <ProtectedPassword />,
+		OpenChatUsers: <OpenChatUsers />,
 	};
 
 	useEffect(() => {
+		console.log(userData, 'chat User Data');
 		if (isLoading || error || !userData) return () => {};
 		emitJoinChat(socket, userData.id, userData.nickname);
+		console.log(userData, 'chatUserData');
+		return () => {};
+	}, [userData]);
+
+	useEffect(() => {
 		socket.on('listeningMe', (response: IMyDataResponse) => {
 			setMyInfo(response.data);
 			setRequestUsers(response.data.friendsRequest);
@@ -97,7 +104,7 @@ function Chat() {
 		socket.on('listeningChannelList', (response: { data: IChannel[] }) => {
 			setChannelList(response.data);
 		});
-		socket.on('chatError', (message: IErr) => {
+		socket.on('chatError', (message: string) => {
 			alert(message);
 		});
 		return () => {

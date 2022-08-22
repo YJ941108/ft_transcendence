@@ -1,22 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { emitUserAction } from './Emit';
-import { IUserList } from '../../modules/Interfaces/userInterface';
-
-const UserPhotoDivStyleC = styled.div`
-	width: 70px;
-	height: 70px;
-	overflow: hidden;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	margin: 0 5px;
-`;
-
-const UserPhotoStyleC = styled.img`
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: center;
-`;
+import { IUserInfo } from '../../modules/Interfaces/userInterface';
+import { useChatSocket } from './SocketContext';
+import ListStyle from './UserInfoStyle';
+// import PlayButton from './PlayButton';
+import UserStatus from './UserStatus';
 
 const UserInfoDivStyleC = styled.div`
 	max-width: 70%;
@@ -32,36 +21,20 @@ const UserInteractionStyleC = styled.span`
 	cursor: pointer;
 `;
 
-const FriendUserStyleC = styled.li`
-	display: flex;
-	align-items: center;
-	height: 85px;
-	border-bottom: 1px solid rgba(255, 255, 255, 1);
-	overflow: hidden;
-	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
-	&:last-of-type {
-		border: none;
-	}
-`;
+function FriendUserInfo({ user }: IUserInfo) {
+	const chatSocket = useChatSocket();
 
-function FriendUserInfo({ id, nickname, photo, chatSocket, isOnline }: IUserList) {
-	console.log(id);
 	return (
-		<FriendUserStyleC>
-			<UserPhotoDivStyleC>
-				<UserPhotoStyleC src={photo} alt={nickname} />
-			</UserPhotoDivStyleC>
+		<ListStyle user={user}>
 			<UserInfoDivStyleC>
-				<UserNickNameStyleC>{nickname}</UserNickNameStyleC>
-				{isOnline ? <UserNickNameStyleC>ONLINE</UserNickNameStyleC> : <UserNickNameStyleC>OFFLINE</UserNickNameStyleC>}
-				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, nickname, 'delete')}>
+				<UserNickNameStyleC>{user.nickname}</UserNickNameStyleC>
+				<UserStatus user={user} />
+				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'delete')}>
 					DEL
 				</UserInteractionStyleC>
-				<UserInteractionStyleC>PLAY</UserInteractionStyleC>
+				{/* <PlayButton user={user} /> */}
 			</UserInfoDivStyleC>
-		</FriendUserStyleC>
+		</ListStyle>
 	);
 }
 

@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useQuery } from 'react-query';
 import { getUserData } from '../../modules/api';
 import { IUser } from './UserInterface';
+import '../styles/Modal.css';
 
 const ModalStyledDiv = styled.div`
 	display: grid;
@@ -61,7 +62,7 @@ function ProfileModal() {
 		else alert('수정을 위해 입력을 해주세요.');
 	};
 	return (
-		<div>
+		<div hidden={show}>
 			<Button variant="info" onClick={handleShow}>
 				User Edit
 			</Button>
