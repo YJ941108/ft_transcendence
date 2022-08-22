@@ -1364,6 +1364,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           func: 'punishUser',
           code: 200,
           message: `관리자가 내보냈습니다.`,
+          data: chatUser,
         });
         this.userLeaveRoom(chatUser.socketId, roomId);
       }
