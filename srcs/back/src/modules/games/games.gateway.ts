@@ -221,7 +221,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     /** 접속중인 유저 반환 */
     const users = this.connectedUsers.findAll();
     this.logger.log(`handleUserConnect: users: ${users}`);
-    return this.returnMessage('handleUserConnect', 200, '성공', users);
+    // return this.returnMessage('handleUserConnect', 200, '성공', users);
   }
 
   /**
