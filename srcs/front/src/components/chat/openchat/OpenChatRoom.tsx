@@ -86,10 +86,9 @@ function OpenChatRoom() {
 			setChatContent('OpenChatList');
 		});
 		chatSocket.on('listeningChannelInfo', (response: { data: IChannel }) => {
-			if (response.data.id === basicChannelInfo.id) setChannelInfo(response.data);
+			if (response.data.id === channelInfo.id) setChannelInfo(response.data);
 		});
 		chatSocket.on('listeningBan', (response: IUserBanned) => {
-			console.log('listeningBan', response);
 			if (myInfo.id === response.data.id) setChatContent('OpenChatList');
 		});
 		return () => {
