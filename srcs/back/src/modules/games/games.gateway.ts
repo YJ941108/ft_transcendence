@@ -49,9 +49,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
   returnMessage(func: string, code: number, message: string, data?: Object[] | Object): Object {
     this.logger.log(`${func} [${code}]: ${message}`);
-    if (data) {
-      this.logger.log(`data: ${JSON.stringify(data)}`);
-    }
     return {
       func,
       code,
@@ -92,14 +89,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
         this.createNewRoom(players);
       }
-      // const users = this.connectedUsers.findAll();
-      // users.map((value) => {
-      //   if (value.client) {
-
-      //   }
-      //   this.handleUserConnect(value.client, value);
-      //   this.handleGetCurrentGames(value.client);
-      // });
     }, SET_INTERVAL_MILISECONDS);
   }
 
@@ -272,7 +261,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (!user) {
       return this.returnMessage('leaveQueue', 400, '유저가 없습니다.');
     } else if (!this.queue.isInQueue(user)) {
-      return this.returnMessage('leaveQueue', 400, '큐에 유저가 없습니다.', user);
+      return this.returnMessage('leaveQueue', 400, '큐에 유저가 없습니다.');
     } else {
       this.queue.removeUser(user);
       this.server.to(client.id).emit('leavedQueue');
