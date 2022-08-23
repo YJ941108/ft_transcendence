@@ -13,7 +13,6 @@ const ProfileHistoryBox = styled.div`
 	grid-template-areas:
 		'title title title'
 		'winDiv loseDiv ratioDiv';
-	grid-gap: 1rem;
 	padding: 2rem;
 `;
 
