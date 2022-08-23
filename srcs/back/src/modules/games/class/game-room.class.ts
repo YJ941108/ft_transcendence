@@ -160,6 +160,7 @@ export default class Room implements IRoom {
   }
 
   addSpectator(user: User) {
+    user.client = null;
     this.spectators.push(user);
   }
 
