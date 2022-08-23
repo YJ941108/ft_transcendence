@@ -111,7 +111,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
    * @function
    * @param client 소켓에 접속한 클라이언트
    */
-  handleDisconnect(@ConnectedSocket() client: Socket): void {
+  async handleDisconnect(@ConnectedSocket() client: Socket): Promise<void> {
     const user: User = this.connectedUsers.getUserBySocketId(client.id);
     if (!user) {
       this.returnMessage('handleUserConnect', 400, '유저 데이터가 없습니다.');
@@ -151,9 +151,10 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         return;
       }
     });
-
+    await this.usersService.setIsPlaying(user.id, false);
     this.queue.removeUser(user);
     this.connectedUsers.removeUser(user);
+    await this.chatGateway.announceGame();
   }
 
   /**
