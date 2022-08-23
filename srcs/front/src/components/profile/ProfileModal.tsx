@@ -16,7 +16,6 @@ const ModalStyledDiv = styled.div`
 	padding: 20px;
 	grid-gap: 20px;
 	width: 100%;
-	height: 100%;
 	grid-template-areas:
 		'imgBody formBody formBody'
 		'editBtn editBtn editBtn';
