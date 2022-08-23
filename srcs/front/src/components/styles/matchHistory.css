@@ -15,9 +15,9 @@
 }
 
 .matchImg {
-    max-width: 80px;
-    max-height: 80px;
-    object-fit: fill;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
     border-radius: 50%;
 }
 
