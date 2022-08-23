@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { forwardRef, Inject, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -18,6 +18,7 @@ import { GameMode, GameState, UserStatus } from '../../enums/games.enum';
 import { SET_INTERVAL_MILISECONDS } from 'src/constants/games.constant';
 import { GamesService } from './games.service';
 import { UsersService } from '../users/users.service';
+import { ChatGateway } from '../chat/chat.gateway';
 
 /**
  * @decorator WebSocketGateway
@@ -35,8 +36,12 @@ import { UsersService } from '../users/users.service';
 export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   /** Logger */
   private logger: Logger = new Logger('gameGateway');
-
-  constructor(private readonly gamesService: GamesService, private readonly usersService: UsersService) {}
+  constructor(
+    private readonly gamesService: GamesService,
+    private readonly usersService: UsersService,
+    @Inject(forwardRef(() => ChatGateway))
+    private readonly pongGateway: ChatGateway,
+  ) {}
 
   /** @type server */
   @WebSocketServer()
@@ -613,21 +618,30 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
   }
 
-  pushSpectatorToRoom(id: number, roomId: string) {
+  async createSpectateUser(id: number, username?: string) {
+    /**
+     * 게임 메모리에 유저가 존재하는지 확인
+     * 없으면 만들기
+     */
+    let newUser: User = this.connectedUsers.getUserById(id);
+    if (!newUser) {
+      const dbUser = await this.usersService.getUserWithoutFriends(id);
+      newUser = new User(id, dbUser.nickname, dbUser.photo, dbUser.wins, dbUser.losses, dbUser.ratio);
+      this.connectedUsers.addUser(newUser);
+    }
+    return newUser;
+  }
+
+  async pushSpectatorToRoom(id: number, roomId: string) {
     const room: Room = this.rooms.get(roomId);
     if (!room) {
       return this.returnMessage('spectateRoom', 400, '방이 없습니다.');
     }
-
-    const user = this.connectedUsers.getUserById(id);
-    if (!user) {
-      return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
-    }
+    const user = await this.createSpectateUser(id);
 
     if (!room.isASpectator(user)) {
       room.addSpectator(user);
     }
-    this.server.to(user.socketId).emit('newRoom', room);
     return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
   }
 
