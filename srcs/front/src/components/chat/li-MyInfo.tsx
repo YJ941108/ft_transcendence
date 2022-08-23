@@ -55,7 +55,6 @@ export interface IMyInfo {
 function MyUserInfo({ user }: IMyInfo) {
 	const socket = useChatSocket();
 	const navigate = useNavigate();
-	console.log(user, 'myData');
 	const Logout = () => {
 		deleteToken();
 		socket.disconnect();
