@@ -45,12 +45,16 @@ function ProfileMatchHistory({ id }: Props) {
 	const { data: matches } = useQuery<IMatch[]>(['matchHistory', id], () => getGameMatchHistory(id));
 	const matchImgList = matches?.slice(0, 6).map((match) => (
 		<InnerDiv key={match.id}>
-			<img src={match.winner.photo} alt="winner" className="matchImg" id="matchImgA" />
+			<div className="matchImgDiv">
+				<img src={match.winner.photo} alt="winner" className="matchImg" id="matchImgA" />
+			</div>
 			<span className="innerSpan" id="matchNameA">
 				{match.winner.nickname}
 			</span>
 			<p id="vs">VS</p>
-			<img src={match.loser.photo} alt="loser" className="matchImg" id="matchImgB" />
+			<div className="matchImgDiv">
+				<img src={match.loser.photo} alt="loser" className="matchImg" id="matchImgB" />
+			</div>
 			<span className="innerSpan" id="matchNameB">
 				{match.loser.nickname}
 			</span>
