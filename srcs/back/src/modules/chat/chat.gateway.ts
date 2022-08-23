@@ -297,8 +297,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     for (let i = 0; i < users.length; i++) {
       const dbUser = await this.usersService.getUserWithFriends(users[i].id);
-      await this.listeningMe(users[i].socketId, 'announceGame');
-      await this.listeningGetUsers(users[i].socketId, 'announceGame', dbUser);
+      if (users[i].socketId) {
+        await this.listeningMe(users[i].socketId, 'announceGame');
+        await this.listeningGetUsers(users[i].socketId, 'announceGame', dbUser);
+      }
     }
   }
 
@@ -725,6 +727,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     try {
+      if (data.name.length > 10) {
+        throw new Error('채팅방 길이가 깁니다');
+      }
+
       /** 방 정보 생성 */
       const dbUser = await this.usersService.getUserWithoutFriends(data.userId);
       const createChannelDto: CreateChannelDto = {
