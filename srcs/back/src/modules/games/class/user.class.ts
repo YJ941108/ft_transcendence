@@ -1,3 +1,4 @@
+import { Socket } from 'socket.io';
 import { GameMode, UserStatus } from '../../../enums/games.enum';
 
 /**
