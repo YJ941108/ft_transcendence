@@ -1,0 +1,36 @@
+#matchImgA {
+    grid-area: matchImgA;
+}
+
+#matchImgB {
+    grid-area: matchImgB;
+}
+
+#matchNameA {
+    grid-area: matchNicknameA;
+}
+
+#matchNameB {
+    grid-area: matchNicknameB;
+}
+
+.matchImg {
+    max-width: 80px;
+    max-height: 80px;
+    object-fit: fill;
+    border-radius: 50%;
+}
+
+.innerSpan {
+    padding: 0.2rem;
+    max-width: 80px;
+    overflow: hidden;
+}
+
+#vs {
+    font-size: 70%;
+    padding:0.2rem;
+    line-height: 80px;
+    grid-area: vs;
+}
+
