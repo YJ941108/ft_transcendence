@@ -80,6 +80,7 @@ function ProfileModal() {
 									<input
 										type="text"
 										id="nickName"
+										maxLength={20}
 										placeholder="수정할 이름을 입력해주세요!"
 										onChange={(e) => setInputValue(e.target.value)}
 									/>
