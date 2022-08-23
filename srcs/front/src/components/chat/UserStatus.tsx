@@ -1,8 +1,7 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { IUserInfo } from '../../modules/Interfaces/userInterface';
-import { useGameSocket } from '../game/GameSocketContext';
 import { emitUserAction } from './Emit';
 import { useChatSocket } from './SocketContext';
 
@@ -76,21 +75,14 @@ export function Nickname({ nickname }: INickName) {
 }
 
 function UserStatus({ user }: IUserInfo) {
-	const gameSocket = useGameSocket();
-	const navigate = useNavigate();
-	const url = window.location.href.split('/').pop();
-	// const chatSocket = useChatSocket();
+	const chatSocket = useChatSocket();
+
 	if (user.isPlaying) {
 		return (
 			<UserStatusStyleC
 				onClick={() => {
-					gameSocket.emit('spectateRoom', user.roomId, () => {
-						if (url !== 'game') {
-							navigate('/main/game');
-						} else {
-							window.location.reload();
-						}
-					});
+					console.log(user.roomId);
+					chatSocket.emit('spectateRoom', user.roomId);
 				}}
 			>
 				PLAYING

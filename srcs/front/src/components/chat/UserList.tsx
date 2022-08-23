@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import UserInfo from './li-AllUser';
 import { chatUserList, MyInfo } from '../../modules/atoms';
@@ -17,6 +18,7 @@ const UserListStyleC = styled.ul`
 
 function UserList() {
 	const chatSocket = useChatSocket();
+	const navigate = useNavigate();
 	const [users, setUsers] = useRecoilState<IUserData[]>(chatUserList);
 	const info = useRecoilValue(MyInfo);
 
@@ -24,9 +26,18 @@ function UserList() {
 		if (chatSocket) {
 			chatSocket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
 				setUsers(response.data);
-				console.log(response.data, '여기요');
+			});
+			chatSocket.on('listeningSpectateRoom', () => {
+				console.log('here?');
+				const url = window.location.href.split('/').pop();
+				if (url !== 'game') {
+					navigate('/main/game');
+				} else {
+					window.location.reload();
+				}
 			});
 			return () => {
+				chatSocket.off('listeningGetUsers');
 				chatSocket.off('listeningGetUsers');
 			};
 		}
