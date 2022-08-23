@@ -89,6 +89,7 @@ export default class Room implements IRoom {
   roomId: string;
   gameState: GameState;
   players: User[];
+  spectators: User[];
   paddleOne: Paddle;
   paddleTwo: Paddle;
   ball: Ball;
@@ -112,6 +113,7 @@ export default class Room implements IRoom {
     this.roomId = roomId;
     this.gameState = GameState.STARTING;
     this.players = [];
+    this.spectators = [];
     this.paddleOne = new Paddle(users[0], 10, customisation.mode);
     this.paddleTwo = new Paddle(users[1], CANVAS_WIDTH - 40, customisation.mode);
     this.ball = new Ball(customisation.mode);
@@ -135,6 +137,16 @@ export default class Room implements IRoom {
     return this.paddleOne.user.nickname === user.nickname || this.paddleTwo.user.nickname === user.nickname;
   }
 
+  isASpectator(users: User): boolean {
+    const index = this.spectators.findIndex((value) => {
+      return value.id === users.id;
+    });
+    if (index === -1) {
+      return false;
+    }
+    return true;
+  }
+
   findOne(user: User): number {
     return this.players.findIndex((element) => element.id === user.id);
   }
@@ -147,17 +159,26 @@ export default class Room implements IRoom {
     this.players.push(user);
   }
 
+  addSpectator(user: User) {
+    this.spectators.push(user);
+  }
+
   getUsers(): User[] {
     return this.players;
   }
 
   /**
    *
-   * @param userRm
+   * @param user
    */
-  removeUser(userRm: User) {
-    const userIndex: number = this.players.findIndex((user) => user.nickname === userRm.nickname);
+  removeUser(user: User) {
+    const userIndex: number = this.players.findIndex((value) => value.nickname === user.nickname);
     if (userIndex !== -1) this.players.splice(userIndex, 1);
+  }
+
+  removeSpectator(user: User) {
+    const userIndex: number = this.spectators.findIndex((value) => value.nickname === user.nickname);
+    if (userIndex !== -1) this.spectators.splice(userIndex, 1);
   }
 
   /**

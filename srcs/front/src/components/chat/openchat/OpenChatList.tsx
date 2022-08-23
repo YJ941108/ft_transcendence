@@ -10,15 +10,15 @@ import { useChatSocket } from '../SocketContext';
 const OpenChatListStyleC = styled.ul`
 	background-color: black;
 	width: 100%;
-	min-height: 600px;
-	max-height: 600px;
+	min-height: 800px;
+	max-height: 800px;
 `;
 
 const OpenChatListC = styled.ul`
 	list-style: none;
 	width: 100%;
-	min-height: 600px;
-	max-height: 600px;
+	min-height: 800px;
+	max-height: 800px;
 	padding: 5px;
 	vertical-align: baseline;
 	box-sizing: border-box;

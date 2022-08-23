@@ -75,7 +75,7 @@ export class Paddle implements IPaddle {
    * @param secondPassed
    */
   update(secondPassed: number): void {
-    const flash_distance = 5;
+    const flash_distance = 0.5;
 
     if (this.color !== 'rgba(255, 255, 255, 0.8)' && this.step <= TIMING) {
       this.color =

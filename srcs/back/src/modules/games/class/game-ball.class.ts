@@ -31,6 +31,7 @@ export interface IBall {
   };
   goal: boolean;
   color: string;
+  flash: boolean;
 }
 
 export class Ball implements IBall {
@@ -45,6 +46,7 @@ export class Ball implements IBall {
   };
   goal: boolean;
   color: string;
+  flash: boolean;
 
   /**
    * velocity의 Math.random()에 의해 공이 시작할 때 왼쪽으로 갈지, 오른쪽으로 갈지 정해진다.
@@ -54,18 +56,19 @@ export class Ball implements IBall {
     this.y = CANVAS_HEIGHT / 2;
     this.r = BALL_DEFAULT_RADIUS;
     if (mode === GameMode.BIG) {
-      this.speed = BALL_DEFAULT_SPEED * 1;
+      this.speed = BALL_DEFAULT_SPEED;
     } else {
       this.speed = BALL_DEFAULT_SPEED;
     }
     if (mode === GameMode.BIG) {
-      this.acceleration = BALL_ACCELERATION * 1;
+      this.acceleration = BALL_ACCELERATION;
     } else {
       this.acceleration = BALL_ACCELERATION;
     }
     this.velocity = { dx: this.speed * (Math.random() < 0.5 ? 1 : -1), dy: 0 };
     this.goal = false;
     this.color = 'white';
+    this.flash = false;
   }
 
   /**
@@ -76,12 +79,12 @@ export class Ball implements IBall {
     this.x = CANVAS_WIDTH / 2;
     this.y = CANVAS_HEIGHT / 2;
     if (mode === GameMode.BIG) {
-      this.speed = BALL_DEFAULT_SPEED * 1;
+      this.speed = BALL_DEFAULT_SPEED;
     } else {
       this.speed = BALL_DEFAULT_SPEED;
     }
     if (mode === GameMode.BIG) {
-      this.acceleration = BALL_ACCELERATION * 1;
+      this.acceleration = BALL_ACCELERATION;
     } else {
       this.acceleration = BALL_ACCELERATION;
     }
@@ -89,6 +92,7 @@ export class Ball implements IBall {
       dx: dir * this.speed,
       dy: 0,
     };
+    this.flash = false;
   }
 
   /**
@@ -177,8 +181,13 @@ export class Ball implements IBall {
     }
 
     if (!this.handleCollision(secondPassed, p1, p2)) {
-      this.x += this.velocity.dx * secondPassed;
-      this.y += this.velocity.dy * secondPassed;
+      if (this.flash === false) {
+        this.x += this.velocity.dx * secondPassed;
+        this.y += this.velocity.dy * secondPassed;
+      } else {
+        this.x += this.velocity.dx * secondPassed * 0.5;
+        this.y += this.velocity.dy * secondPassed * 0.5;
+      }
     }
 
     /** Goal Paddle */

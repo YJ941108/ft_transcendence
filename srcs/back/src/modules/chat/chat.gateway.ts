@@ -1,4 +1,4 @@
-import { Logger, UseFilters } from '@nestjs/common';
+import { forwardRef, Inject, Logger, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -13,6 +13,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UserStatus } from 'src/enums/games.enum';
 import { CreateChannelDto } from '../channel/dto/create-channel.dto';
+import { UpdateChannelDto } from '../channel/dto/update-channel.dto';
 import { Channel } from '../channel/entities/channel.entity';
 import { CreateDirectMessageDto } from '../direct-message/dto/create-direct-message.dto';
 import { DirectMessage } from '../direct-message/entities/direct-message.entity';
@@ -51,6 +52,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   constructor(
     private readonly chatService: ChatService,
     private readonly usersService: UsersService,
+    @Inject(forwardRef(() => GamesGateway))
     private readonly pongGateway: GamesGateway,
     private readonly messageService: MessageService,
   ) {}
@@ -126,7 +128,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       }
     });
 
-    this.server.emit('listeningGetUsers', {
+    this.server.to(socketId).emit('listeningGetUsers', {
       func: 'listeningGetUsers',
       code: 200,
       message: `[${socketId}][${nickname}]: ${functionName}->listeningGetUsers`,
@@ -193,14 +195,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.chatUsers.addUser(memoryUser);
     } else {
       memoryUser.setSocketId(client.id);
-      // const nickname = memoryUser.nickname;
-      // return this.returnMessage('joinChat', 400, `${client.id}: ${nickname}:가 채팅 소켓에 이미 접속했습니다`);
     }
 
     try {
       const dbUser = await this.usersService.getUserWithFriends(newUser.id);
-      await this.listeningGetUsers(client.id, 'joinChat', dbUser);
-      await this.listeningMe(client.id, 'joinChat');
+
+      this.announceGame();
       await this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'joinChat');
       await this.listeningChannelList(client.id, memoryUser.id);
 
@@ -252,6 +252,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const memoryAnother = this.chatUsers.getUserByNickname(data.who);
       if (memoryAnother) {
         await this.listeningMe(memoryAnother.socketId, 'userAction');
+        if (data.action === 'accept' || data.action === 'delete') {
+          const dbAnother = await this.usersService.getUserWithFriends(memoryAnother.id);
+          await this.listeningGetUsers(memoryAnother.socketId, 'userAction', dbAnother);
+        }
       }
 
       return this.returnMessage('userAction', 200, `${data.action} 성공`);
@@ -267,13 +271,35 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('requestMyData')
-  async handleGetUsers(@ConnectedSocket() client: Socket) {
+  async handleGetUser(@ConnectedSocket() client: Socket) {
     let memoryUser = this.chatUsers.getUserBySocketId(client.id);
     if (!memoryUser) {
       return this.returnMessage('createDMRoom', 400, '채팅 소켓에 유저가 없습니다');
     }
 
     await this.listeningMe(client.id, 'requestMyData');
+  }
+
+  @SubscribeMessage('requestGetUsers')
+  async handleGetUserList(@ConnectedSocket() client: Socket) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
+      return this.returnMessage('createDMRoom', 400, '채팅 소켓에 유저가 없습니다');
+    }
+
+    const dbUser = await this.usersService.getUserWithoutFriends(memoryUser.id);
+
+    await this.listeningGetUsers(client.id, 'requestMyData', dbUser);
+  }
+
+  async announceGame() {
+    const users = this.chatUsers.getUsers();
+
+    for (let i = 0; i < users.length; i++) {
+      const dbUser = await this.usersService.getUserWithFriends(users[i].id);
+      await this.listeningMe(users[i].socketId, 'announceGame');
+      await this.listeningGetUsers(users[i].socketId, 'announceGame', dbUser);
+    }
   }
 
   @SubscribeMessage('requestMyDMList')
@@ -379,11 +405,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if (roomIndex !== -1) {
         response.splice(roomIndex, 1);
       }
-
-      // /** 온라인인지 오프라인인지 변환 */
-      // if (this.chatUsers.getUserByNickname(dbUserWithBlockedUsers[i].nickname)) {
-      //   dbUserWithBlockedUsers[i].isOnline = true;
-      // }
     }
 
     this.server.to(socketId).emit('listeningDMRoomList', {
@@ -446,16 +467,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.userJoinRoom(client.id, `dm_${dm.id}`);
       this.listeningDMRoomInfo(client.id, 'createDMRoom', memoryUser, orderedDM);
 
-      // /** 상대방에게 리스트 갱신하기 */
-      // const memoryUsers = this.chatUsers.getUsers();
-      // for (let i = 0; i < memoryUsers.length; i++) {
-      //   this.listeningDMRoomList(
-      //     memoryUsers[i].socketId,
-      //     memoryUsers[i].id,
-      //     memoryUsers[i].nickname,
-      //     'listeningDMRoomList',
-      //   );
-      // }
       return this.returnMessage('createDMRoom', 200, 'listeningDMRoomInfo, listeningDMRoomList', dm.id);
     } catch (e) {
       console.log(e);
@@ -575,29 +586,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
    * Channels
    */
   async listeningChannelList(clientId?: string, dbUserId?: number) {
@@ -721,41 +709,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
    * createChannel 방 생성
    * updateChannel 방 업데이트
    * deleteChannel 방 삭제
@@ -833,21 +786,24 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     try {
       /** 데이터 정제 */
       const dbChannel = await this.chatService.getChannelData(data.channelId);
-      let createChannelDto: CreateChannelDto = {
+      let updateChannelDto: UpdateChannelDto = {
         name: data.name,
         privacy: data.privacy,
         owner: dbChannel.owner,
         users: dbChannel.users,
+        admins: dbChannel.admins,
+        messages: dbChannel.messages,
+        punishments: dbChannel.punishments,
       };
       if (data.password) {
-        createChannelDto.password = data.password;
+        updateChannelDto.password = data.password;
       }
       if (data.restrictionDuration) {
-        createChannelDto.restrictionDuration = data.restrictionDuration;
+        updateChannelDto.restrictionDuration = data.restrictionDuration;
       }
 
       /** 채널 수정 */
-      const channel = await this.chatService.updateChannel(data.channelId, createChannelDto);
+      const channel = await this.chatService.updateChannel(data.channelId, updateChannelDto);
       const roomId = `channel_${channel.id}`;
 
       /** client.id에게 방 전체 정보 보내기 */
@@ -916,28 +872,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
    * openChannel 방 열기
    * joinChannel 방 접속
    * leaveChannel 방 떠나기
@@ -1111,28 +1045,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
    * 채널에 메시지 보내기
    */
   @UseFilters(new BadRequestTransformationFilter())
@@ -1192,18 +1104,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
-   *
-   *
-   *
-
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
    * 채널에 규칙 설정
    */
   @SubscribeMessage('makeAdmin')
@@ -1447,13 +1347,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         });
       }
 
-      /** 알리기 */
-      // const chatUser = this.chatUsers.getUserById(userId);
-      // this.server.to(client.id).emit('userPunished');
-      // if (chatUser) {
-      //   this.server.to(chatUser.socketId).emit('punishedInChannel', content);
-      // }
-
       /** 처벌 메시지 보내기 */
       const message = await this.chatService.addMessageToChannel({
         content: content,
@@ -1478,24 +1371,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   /**
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
    * Game-related
    */
   @SubscribeMessage('userGameStatus')
@@ -1538,6 +1413,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  @SubscribeMessage('spectateRoom')
+  async handlespectateRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
+    const memoryUser = this.chatUsers.getUser(client.id);
+    this.pongGateway.pushSpectatorToRoom(memoryUser.id, roomId);
+    this.server.to(client.id).emit('listeningSpectateRoom', 'success');
+    return this.returnMessage('spectateRoom', 200, '게임 관전 성공했습니다.');
+  }
+
   @SubscribeMessage('sendPongInvite')
   async handleSendPongInvite(@ConnectedSocket() client: Socket, @MessageBody() { anotherId }: { anotherId: number }) {
     try {
@@ -1566,34 +1449,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       });
 
       return this.returnMessage('sendPongInvite', 200, '게임 초대를 보냈습니다.');
-
-      // /** DM방 생성 */
-      // let DM = await this.chatService.checkIfDmExists(senderId, anotherId);
-      // if (!DM) {
-      //   DM = await this.chatService.createDm({
-      //     users: [{ id: senderId }, { id: anotherId }],
-      //   } as CreateDirectMessageDto);
-
-      //   if (memoryReceiver) {
-      //     this.userJoinRoom(memoryReceiver.socketId, `dm_${DM.id}`);
-      //     this.server.to(memoryReceiver.socketId).emit('dmCreated');
-      //   }
-      // }
-      // if (memoryReceiver) {
-      //   this.server
-      //     .to(memoryReceiver.socketId)
-      //     .emit('chatInfo', `${memorySender.nickname} wants to play Pong! Open your DM and accept the challenge!`);
-      // }
-
-      // /** 메시지 보내기 */
-      // const message = await this.chatService.addMessageToDm({
-      //   content: "Let's play!",
-      //   author: { id: senderId },
-      //   type: 'invite',
-      //   roomId,
-      //   DM,
-      // } as CreateMessageDto);
-      // this.server.to(`dm_${DM.id}`).emit('newPongInvite', { message });
     } catch (e) {
       console.log(e);
       this.server.to(client.id).emit('chatError', e.message);

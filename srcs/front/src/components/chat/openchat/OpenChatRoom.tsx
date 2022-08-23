@@ -11,8 +11,8 @@ import OpenChatMessage from './OpenChatMessage';
 import OpenChatNoti from './OpenChatNoti';
 
 const ChatLogStyleC = styled.ul`
-	min-height: 720px;
-	max-height: 720px; // 수정해야함
+	min-height: 800px;
+	max-height: 800px;
 	border-bottom: solid white 2px;
 	height: 100%;
 	overflow-wrap: break-word;
