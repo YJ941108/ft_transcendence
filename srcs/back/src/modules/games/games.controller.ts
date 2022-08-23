@@ -27,8 +27,25 @@ export class GamesController {
    */
   @Get(':id')
   async findbyUsers(@Param('id') id: number): Promise<Games[]> {
-    const users = await this.gamesService.find(id);
-    users.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    return users;
+    const games = await this.gamesService.find(id);
+    games.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+    let response = [];
+
+    for (let i = 0; i < games.length; i++) {
+      const winnerId = games[i].winnerId;
+      const loserId = games[i].loserId;
+      const winner = games[i].players.find((value) => value.id === winnerId);
+      const loser = games[i].players.find((value) => value.id === loserId);
+
+      response.push({
+        id: games[i].id,
+        winner: winner,
+        loser: loser,
+        createdAt: games[i].createdAt,
+      });
+    }
+
+    return response;
   }
 }
