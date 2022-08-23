@@ -333,6 +333,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     }
     await this.usersService.setIsPlaying(memoryUser.id, false);
     await this.usersService.setRoomId(memoryUser.id, '');
+    await this.chatGateway.announceGame();
 
     room.removeUser(memoryUser);
 
