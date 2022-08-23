@@ -128,7 +128,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       }
     });
 
-    this.server.emit('listeningGetUsers', {
+    this.server.to(socketId).emit('listeningGetUsers', {
       func: 'listeningGetUsers',
       code: 200,
       message: `[${socketId}][${nickname}]: ${functionName}->listeningGetUsers`,
@@ -199,8 +199,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     try {
       const dbUser = await this.usersService.getUserWithFriends(newUser.id);
-      await this.listeningGetUsers(client.id, 'joinChat', dbUser);
-      await this.listeningMe(client.id, 'joinChat');
+
+      this.announceGame();
       await this.listeningDMRoomList(client.id, memoryUser.id, memoryUser.nickname, 'joinChat');
       await this.listeningChannelList(client.id, memoryUser.id);
 
