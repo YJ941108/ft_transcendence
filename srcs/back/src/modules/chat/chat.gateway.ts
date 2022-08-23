@@ -252,8 +252,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const memoryAnother = this.chatUsers.getUserByNickname(data.who);
       if (memoryAnother) {
         await this.listeningMe(memoryAnother.socketId, 'userAction');
-        const dbAnother = await this.usersService.getUserWithFriends(memoryAnother.id);
-        await this.listeningGetUsers(memoryAnother.socketId, 'userAction', dbAnother);
+        if (data.action === 'accept') {
+          const dbAnother = await this.usersService.getUserWithFriends(memoryAnother.id);
+          await this.listeningGetUsers(memoryAnother.socketId, 'userAction', dbAnother);
+        }
       }
 
       return this.returnMessage('userAction', 200, `${data.action} 성공`);
