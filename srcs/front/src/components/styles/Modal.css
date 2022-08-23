@@ -30,7 +30,7 @@ label > div {
 }
 
 input {
-    margin-top: 10px;
+    min-width: 50%;
     background-color: black;
     text-align: center;
     color: white;
@@ -56,17 +56,22 @@ input[type=file]{
 }
 
 input[type=file]::file-selector-button {
-    width: 150px;
-    height: 30px;
-    background: #fff;
-    border: 1px solid #fff;
-    border-radius: 10px;
+    color: white;
+    background: black;
+    border: 1px dashed white;
+    border-radius: 5rem;
+    margin-top: 1rem;
+    width: 50%;
+    height: 2rem;
+    line-height: 1rem;
+    text-align: center;
+    font-size: 1rem;
     cursor: pointer;
 }
 
 input[type=file]::file-selector-button:hover {
-     background: black;
-     color: white;
+    background: white;
+    color: black;
 }
 
 .editButton {

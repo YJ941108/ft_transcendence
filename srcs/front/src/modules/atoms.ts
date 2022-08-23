@@ -75,6 +75,7 @@ export const DMRoomInfo = atom<IDMRoom>({
 			achievement: 0,
 			createdAt: '',
 			updatedAt: '',
+			roomId: '',
 		},
 		another: {
 			id: 0,
@@ -95,6 +96,7 @@ export const DMRoomInfo = atom<IDMRoom>({
 			achievement: 0,
 			createdAt: '',
 			updatedAt: '',
+			roomId: '',
 		},
 		message: [],
 	},
@@ -142,6 +144,7 @@ export const channelInfoData = atom<IChannel>({
 			achievement: 0,
 			createdAt: '',
 			updatedAt: '',
+			roomId: '',
 		},
 		users: [],
 		admins: [],

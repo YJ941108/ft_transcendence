@@ -16,7 +16,9 @@ function GameRooms({ gameRooms, socket }: IGameRoomsProps) {
 			{gameRooms.map((gameRoom) => {
 				return (
 					<li key={gameRoom.roomId}>
-						<span>{gameRoom.roomId}</span>
+						<span>
+							{gameRoom.paddleOne.user.nickname} VS {gameRoom.paddleTwo.user.nickname}
+						</span>
 						<button onClick={onEnterGameRoom} type="button" value={gameRoom.roomId}>
 							<span>Spectate</span>
 						</button>

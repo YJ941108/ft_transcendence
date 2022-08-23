@@ -10,14 +10,14 @@ const NavbarC = styled.ul`
 	text-transform: uppercase;
 	border-right: 2px solid ${(props) => props.theme.textColor};
 	/* height: 100vh; */
-	padding: 4rem;
+	padding: 5rem 3rem;
 	font-family: RetroGaming, serif;
 `;
 
 const NavbarListC = styled.li<INavbarListProps>`
 	margin-bottom: 4rem;
 	a {
-		font-size: 1.5em;
+		font-size: 1.2em;
 		color: ${(props) => (props.current ? props.theme.accentColor : props.theme.textColor)};
 	}
 `;

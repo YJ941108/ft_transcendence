@@ -20,7 +20,7 @@ const FriendsListStyleC = styled.ul`
 function FriendsList() {
 	const chatSocket = useChatSocket();
 	const [requestUser, setRequestUsers] = useRecoilState<IUserData[]>(requestList);
-	const [users, setUsers] = useRecoilState<IUserData[]>(friendsList);
+	const [friendUsers, setFriendUsers] = useRecoilState<IUserData[]>(friendsList);
 	const [blockedUsers, setBlockedUsers] = useRecoilState<IUserData[]>(blockedList);
 
 	useEffect(() => {
@@ -33,7 +33,7 @@ function FriendsList() {
 		if (chatSocket) {
 			chatSocket.on('listeningMe', (response: IMyDataResponse) => {
 				setRequestUsers(response.data.friendsRequest);
-				setUsers(response.data.friends);
+				setFriendUsers(response.data.friends);
 				setBlockedUsers(response.data.blockedUsers);
 				console.log(response.data);
 			});
@@ -51,8 +51,8 @@ function FriendsList() {
 				return <RequestUserInfo key={element.id} user={element} />;
 			})}
 			<ListSection title="FRIENDS" />
-			{users?.map((element: IUserData) => {
-				console.log(users.length, '길이');
+			{friendUsers?.map((element: IUserData) => {
+				console.log(friendUsers.length, '길이');
 				return <FriendUserInfo key={element.id} user={element} />;
 			})}
 			<ListSection title="BLOCK" />

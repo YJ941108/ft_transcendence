@@ -13,6 +13,7 @@ interface IGameScreenProps {
 const Canvas = styled.canvas`
 	width: 100%;
 	box-sizing: border-box;
+	border: 3px solid white;
 `;
 
 function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
