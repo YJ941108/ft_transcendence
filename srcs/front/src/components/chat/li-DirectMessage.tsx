@@ -6,6 +6,7 @@ import { chatContent } from '../../modules/atoms';
 import { IDMRoom } from '../../modules/Interfaces/chatInterface';
 import { useChatSocket } from './SocketContext';
 import ListStyle from './UserInfoStyle';
+import { Nickname } from './UserStatus';
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
@@ -30,7 +31,8 @@ function DirectMessageInfo({ DMRoom }: IDMRoomList) {
 	const createDMRoom = useSetRecoilState(chatContent);
 	return (
 		<ListStyle user={DMRoom.another}>
-			<UserNickNameStyleC>{DMRoom.another.nickname}</UserNickNameStyleC>
+			<Nickname nickname={DMRoom.another.nickname} />
+			{/* <UserNickNameStyleC>{DMRoom.another.nickname}</UserNickNameStyleC> */}
 			<LastMessageDivStyleC>{lastMessage}</LastMessageDivStyleC>
 			{DMRoom.another.isOnline ? (
 				<UserNickNameStyleC>ONLINE</UserNickNameStyleC>

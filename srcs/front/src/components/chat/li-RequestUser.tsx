@@ -4,6 +4,7 @@ import { emitUserAction } from './Emit';
 import { useChatSocket } from './SocketContext';
 import { IUserInfo } from '../../modules/Interfaces/userInterface';
 import ListStyle from './UserInfoStyle';
+import { Nickname } from './UserStatus';
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
@@ -18,7 +19,8 @@ function RequestUserInfo({ user }: IUserInfo) {
 	const chatSocket = useChatSocket();
 	return (
 		<ListStyle user={user}>
-			<UserNickNameStyleC>{user.nickname}</UserNickNameStyleC>
+			<Nickname nickname={user.nickname} />
+			{/* <UserNickNameStyleC>{user.nickname}</UserNickNameStyleC> */}
 			{user.isOnline ? (
 				<UserNickNameStyleC>ONLINE</UserNickNameStyleC>
 			) : (
