@@ -5,6 +5,7 @@ import { useQuery } from 'react-query';
 // import UserInfo from '../chat/li-AllUser';
 import { getUsersData } from '../../modules/api';
 import IUserData from '../../modules/Interfaces/userInterface';
+import LeaderBoardUserInfo from './LeaderBoardUserInfo';
 
 const LeaderBoardStyleC = styled.ul`
 	background-color: black;
@@ -12,6 +13,12 @@ const LeaderBoardStyleC = styled.ul`
 
 const LeaderBoardUserStyleC = styled.li`
 	list-style: none;
+	display: flex;
+	max-width: 100%;
+	/* justify-content: space-between; */
+	/* border: 1px solid white; */
+	padding: 5px;
+	margin: 5px;
 `;
 
 function LeaderBoard() {
@@ -23,10 +30,10 @@ function LeaderBoard() {
 	usersData?.sort(compareNumbers);
 	return (
 		<LeaderBoardStyleC>
-			{usersData?.map((element: IUserData) => {
+			{usersData?.map((element: IUserData, index: number) => {
 				return (
 					<LeaderBoardUserStyleC>
-						{element.nickname} {element.wins}승 {element.losses}패 {element.ratio}
+						{index}. <LeaderBoardUserInfo key={element.id} user={element} />
 					</LeaderBoardUserStyleC>
 				);
 			})}

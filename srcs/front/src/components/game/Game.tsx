@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import { useQuery } from 'react-query';
 import { GameState, IRoom } from './GameInterfaces';
 import GameScreen from './GameScreen';
@@ -28,14 +28,17 @@ function Game() {
 			return [...currentGameRooms];
 		});
 	};
+
 	useEffect(() => {
 		if (isLoading || !userData || error) return () => {};
 		socket = io('http://3.39.20.24:3032/api/games');
 		socket = socket.on('connect', () => {
+			console.log('connect here');
 			socket.emit('handleUserConnect', userData);
 			socket.emit('getCurrentGames');
 		});
 		socket.on('updateCurrentGames', (currentGamesData: IRoom[]) => {
+			console.log(currentGamesData, 'gamesData');
 			updateCurrentGames(currentGamesData);
 		});
 		socket.on('newRoom', (newRoomData: IRoom) => {
@@ -75,7 +78,6 @@ function Game() {
 	if (isLoading || error) return null;
 	return (
 		<div>
-			<h1>GAME</h1>
 			{isDisplayGame ? (
 				<GameScreen socketProps={socket} roomDataProps={room} />
 			) : (
@@ -87,10 +89,10 @@ function Game() {
 					) : (
 						<div>
 							<button type="button" onClick={joinQueue} value="DEFAULT">
-								Default
+								DEFAULT
 							</button>
 							<button type="button" onClick={joinQueue} value="BIG">
-								BigBall
+								ACTIVE
 							</button>
 						</div>
 					)}

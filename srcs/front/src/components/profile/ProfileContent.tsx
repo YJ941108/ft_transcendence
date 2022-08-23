@@ -4,6 +4,7 @@ import { IUser } from './UserInterface';
 import ProfileAchievement from './ProfileAchievement';
 import ProfileHistory from './ProfileHistory';
 import '../styles/ProfileContent.css';
+import ProfileMatchHistory from './ProfileMatchHistory';
 
 type Props = {
 	data: IUser | undefined;
@@ -12,7 +13,6 @@ type Props = {
 const ProfileContentBox = styled.div`
 	grid-area: ProfileContent;
 	display: grid;
-	grid-template-rows: repeat(3, 1fr);
 `;
 
 function ProfileContent({ data }: Props) {
@@ -20,6 +20,7 @@ function ProfileContent({ data }: Props) {
 		<ProfileContentBox>
 			<ProfileHistory wins={data?.wins} losses={data?.losses} ratio={data?.ratio} />
 			<ProfileAchievement achievement={data!.achievement} />
+			<ProfileMatchHistory id={data!.id} />
 		</ProfileContentBox>
 	);
 }

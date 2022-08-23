@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styled from 'styled-components';
 import axios from 'axios';
 import { useQuery } from 'react-query';
+import DefaultButton from '../styles/button';
 import { getUserData } from '../../modules/api';
 import { IUser } from './UserInterface';
 import '../styles/Modal.css';
@@ -16,14 +16,13 @@ const ModalStyledDiv = styled.div`
 	padding: 20px;
 	grid-gap: 20px;
 	width: 100%;
-	height: 100%;
 	grid-template-areas:
 		'imgBody formBody formBody'
 		'editBtn editBtn editBtn';
 `;
 
 function ProfileModal() {
-	const { data } = useQuery<IUser>('user', getUserData);
+	const { data } = useQuery<IUser>('me', getUserData);
 	const [show, setShow] = useState(false);
 	const [inputValue, setInputValue] = useState('');
 	const [inputPhoto, setInputPhoto] = useState('');
@@ -39,8 +38,7 @@ function ProfileModal() {
 	const handleClose = () => setShow(false);
 	const handleShow = () => setShow(true);
 
-	const handleSubmit = async (event: any) => {
-		event.preventDefault();
+	const handleSubmit = async () => {
 		const formData = new FormData();
 		formData.append('nickname', inputValue);
 		formData.append('file', inputPhoto);
@@ -63,9 +61,9 @@ function ProfileModal() {
 	};
 	return (
 		<div hidden={show}>
-			<Button variant="info" onClick={handleShow}>
+			<DefaultButton type="button" onClick={handleShow}>
 				User Edit
-			</Button>
+			</DefaultButton>
 
 			<Modal className="custom_modal" show={show} onHide={handleClose} centered>
 				<Modal.Header>
@@ -81,6 +79,7 @@ function ProfileModal() {
 									<input
 										type="text"
 										id="nickName"
+										maxLength={20}
 										placeholder="수정할 이름을 입력해주세요!"
 										onChange={(e) => setInputValue(e.target.value)}
 									/>
@@ -99,9 +98,11 @@ function ProfileModal() {
 							</div>
 						</form>
 					</div>
-					<Button className="editButton" onClick={handleSubmit}>
-						Save Change
-					</Button>
+					<div className="editButton">
+						<DefaultButton type="submit" onClick={handleSubmit}>
+							Save Change
+						</DefaultButton>
+					</div>
 				</ModalStyledDiv>
 			</Modal>
 		</div>

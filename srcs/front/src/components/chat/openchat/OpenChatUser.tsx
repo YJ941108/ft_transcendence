@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { IChannel, IMyData } from '../../../modules/Interfaces/chatInterface';
 import IUserData from '../../../modules/Interfaces/userInterface';
@@ -123,15 +124,15 @@ function OpenChatUser({ isOwner, isAdmin, isMeAdmin, user, channelInfo, myInfo }
 		});
 	};
 
-	// const setKickUser = () => {};
-
 	return (
 		<UserStyleC>
 			<UserPhotoDivStyleC>
 				<UserPhotoStyleC src={user.photo} alt={user.nickname} />
 			</UserPhotoDivStyleC>
 			<UserInfoDivStyleC>
-				<UserNickNameStyleC>{user.nickname}</UserNickNameStyleC>
+				<Link to={`/main/another/${user.nickname}`}>
+					<UserNickNameStyleC>{user.nickname}</UserNickNameStyleC>
+				</Link>
 				<OwnerButtonStyleC isOwner={isOwner} isAdmin={isAdmin} onClick={() => setAdmin(user.id)}>
 					ADMIN
 				</OwnerButtonStyleC>

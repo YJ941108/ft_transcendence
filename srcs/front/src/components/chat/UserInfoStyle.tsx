@@ -16,7 +16,7 @@ export const UserPhotoDivStyleC = styled.div`
 	height: 70px;
 	overflow: hidden;
 	border: 1px solid rgba(255, 255, 255, 0.2);
-	margin: 0 5px;
+	margin: auto 5px;
 `;
 
 export const UserPhotoStyleC = styled.img`
@@ -27,11 +27,11 @@ export const UserPhotoStyleC = styled.img`
 `;
 
 export const UserDataDivStyleC = styled.div`
-	margin: 5px;
+	margin: auto 5px;
 `;
 
 const UserStyleC = styled.li`
-	cursor: pointer;
+	/* cursor: pointer; */
 	display: flex;
 	align-items: center;
 	height: 85px;
