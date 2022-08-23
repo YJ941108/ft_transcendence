@@ -39,7 +39,7 @@ export class GamesController {
       const loser = games[i].players.find((value) => value.id === loserId);
 
       response.push({
-        id: games[i].id,
+        id: id,
         winner: winner,
         loser: loser,
         createdAt: games[i].createdAt,
