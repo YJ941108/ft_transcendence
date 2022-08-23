@@ -40,7 +40,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     private readonly gamesService: GamesService,
     private readonly usersService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
-    private readonly pongGateway: ChatGateway,
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   /** @type server */
@@ -300,6 +300,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       }
       await this.usersService.setIsPlaying(user.id, true);
       await this.usersService.setRoomId(user.id, roomId);
+
+      await this.chatGateway.announceGame();
+
       room.addUser(user);
     } else if (user.status === UserStatus.IN_HUB) {
       this.connectedUsers.changeUserStatus(client.id, UserStatus.SPECTATING);
