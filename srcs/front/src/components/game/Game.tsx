@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { Socket, io } from 'socket.io-client';
 import { useQuery } from 'react-query';
 import { GameState, IRoom } from './GameInterfaces';
 import GameScreen from './GameScreen';
 import GameRooms from './GameRooms';
 import { IMyData } from '../../modules/Interfaces/chatInterface';
 import { getUserData } from '../../modules/api';
-import { useGameSocket } from './GameSocketContext';
+
+let socket: Socket;
 
 function Game() {
 	const [isDisplayGame, setIsDisplayGame] = useState(false);
 	const [room, setRoom] = useState<IRoom | null>(null);
 	const [queue, setQueue] = useState(false);
 	const [gameRooms, setGameRooms] = useState<IRoom[]>([]);
-	const socket = useGameSocket();
 	const { isLoading, data: userData, error } = useQuery<IMyData>('me', getUserData);
 	const joinQueue = (event: React.MouseEvent<HTMLButtonElement>) => {
 		socket.emit('joinQueue', event.currentTarget.value);
@@ -27,11 +28,16 @@ function Game() {
 			return [...currentGameRooms];
 		});
 	};
+
 	useEffect(() => {
 		if (isLoading || !userData || error) return () => {};
-		socket.emit('handleUserConnect', userData);
-		socket.emit('getCurrentGames');
+		socket = io('http://3.39.20.24:3032/api/games');
+		socket = socket.on('connect', () => {
+			socket.emit('handleUserConnect', userData);
+			socket.emit('getCurrentGames');
+		});
 		socket.on('updateCurrentGames', (currentGamesData: IRoom[]) => {
+			console.log(currentGamesData, 'gamesData');
 			updateCurrentGames(currentGamesData);
 		});
 		socket.on('newRoom', (newRoomData: IRoom) => {
