@@ -36,7 +36,7 @@ function UserList() {
 	return (
 		<UserListStyleC>
 			<ListSection title="MY INFO" />
-			<MyUserInfo key={info.id} nickname={info.nickname} photo={info.photo} />
+			<MyUserInfo key={info.id} user={info} />
 			<ListSection title="ONLINE" />
 			{users?.map((element: IUserData) => {
 				if (element.id !== info.id && element.isOnline) {

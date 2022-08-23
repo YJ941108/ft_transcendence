@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import TopBar from '../../TopBar';
 
 const ContentBoxC = styled.div`
 	//width: 68rem;
@@ -14,7 +15,12 @@ const defaultProps = {
 };
 
 function ContentBox({ children }: IContentBoxProps) {
-	return <ContentBoxC>{children}</ContentBoxC>;
+	return (
+		<ContentBoxC>
+			<TopBar />
+			{children}
+		</ContentBoxC>
+	);
 }
 ContentBox.defaultProps = defaultProps;
 

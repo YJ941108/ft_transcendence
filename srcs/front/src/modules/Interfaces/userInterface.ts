@@ -16,6 +16,7 @@ export default interface IUserData {
 	isOnline: boolean;
 	isRequest: boolean;
 	isPlaying: boolean;
+	roomId: string;
 	achievement: number;
 	createdAt: string;
 	updatedAt: string;

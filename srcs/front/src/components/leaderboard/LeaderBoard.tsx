@@ -12,6 +12,18 @@ const LeaderBoardStyleC = styled.ul`
 
 const LeaderBoardUserStyleC = styled.li`
 	list-style: none;
+	display: flex;
+	justify-content: space-between;
+	/* border: 1px solid white; */
+	padding: 5px;
+	margin: 5px;
+`;
+
+const UserNameStyleC = styled.span`
+	/* width: 10px; */
+	/* background-color: red; */
+	overflow: hidden;
+	text-overflow: ellipsis;
 `;
 
 function LeaderBoard() {
@@ -23,10 +35,15 @@ function LeaderBoard() {
 	usersData?.sort(compareNumbers);
 	return (
 		<LeaderBoardStyleC>
-			{usersData?.map((element: IUserData) => {
+			{usersData?.map((element: IUserData, index: number) => {
 				return (
 					<LeaderBoardUserStyleC>
-						{element.nickname} {element.wins}승 {element.losses}패 {element.ratio}
+						<UserNameStyleC>
+							#{index}. {element.nickname}
+						</UserNameStyleC>
+						<UserNameStyleC>
+							{element.wins}W {element.losses}L {element.ratio}pts
+						</UserNameStyleC>
 					</LeaderBoardUserStyleC>
 				);
 			})}

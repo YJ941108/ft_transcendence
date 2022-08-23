@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { emitSendDMMessage, IDebug } from './Emit';
 import { IDMRoom, IMessageResponse, IMessages } from '../../modules/Interfaces/chatInterface';
@@ -14,6 +14,7 @@ const DMRoomStyleC = styled.div`
 
 const ChatLogStyleC = styled.ul`
 	min-height: 720px;
+	max-height: 720px;
 	border-bottom: solid white 2px;
 	height: 100%;
 	overflow-wrap: break-word;
@@ -32,8 +33,8 @@ const DMInputStyleC = styled.textarea`
 	width: 80%;
 	height: 100%;
 	resize: none;
-	font-family: 'Galmuri7', 'sans-serif';
-	/* border: 1px solid rgba(0, 0, 0, 0.1); */
+	background-color: black;
+	color: white;
 	border: none;
 	&:hover {
 		border: 1px solid rgba(0, 0, 0, 0.3);
@@ -46,12 +47,13 @@ const DMInputStyleC = styled.textarea`
 `;
 
 const DMSendButtonStyleC = styled.button`
-	background-color: white;
-	color: black;
-	height: 100%;
+	background-color: black;
+	color: white;
+	/* height: 100%; */
 	width: 20%;
-	/* border: 1px solid rgba(0, 0, 0, 0.1); */
-	border: none;
+	border: 1px solid white;
+	margin: 10px;
+	/* border: none; */
 `;
 
 const AcceptButtonStyleC = styled.button`
@@ -158,10 +160,10 @@ function DMRoom() {
 		<DMRoomStyleC>
 			<ChatLogStyleC ref={messageBoxRef}>
 				{messageList?.map((msg: IMessages) => {
-					if (msg.type === 'invite') {
+					if (msg.type === 'invite' && Info.nickname !== msg.author.nickname) {
 						return (
 							<ChatMessageStyleC key={msg.id}>
-								{msg.author.nickname} : {msg.content}
+								<Link to={`/main/another/${msg.author.nickname}`}>{msg.author.nickname}</Link> : {msg.content}
 								<AcceptButtonStyleC
 									onClick={() => {
 										emitAcceptPongInvite(msg.roomId, msg.id);
@@ -172,7 +174,7 @@ function DMRoom() {
 					}
 					return (
 						<ChatMessageStyleC key={msg.id}>
-							{msg.author.nickname} : {msg.content}
+							<Link to={`/main/another/${msg.author.nickname}`}>{msg.author.nickname}</Link> : {msg.content}
 						</ChatMessageStyleC>
 					);
 				})}
@@ -190,7 +192,8 @@ function DMRoom() {
 						sendMessage();
 					}}
 				>
-					<img src="/img/send.png" width="16px" alt="send" />
+					SEND
+					{/* <img src="/img/send.png" width="16px" alt="send" /> */}
 				</DMSendButtonStyleC>
 			</DMDivStyleC>
 		</DMRoomStyleC>
