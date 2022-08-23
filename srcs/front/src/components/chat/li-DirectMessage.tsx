@@ -33,12 +33,12 @@ function DirectMessageInfo({ DMRoom }: IDMRoomList) {
 		<ListStyle user={DMRoom.another}>
 			<Nickname nickname={DMRoom.another.nickname} />
 			{/* <UserNickNameStyleC>{DMRoom.another.nickname}</UserNickNameStyleC> */}
-			<LastMessageDivStyleC>{lastMessage}</LastMessageDivStyleC>
 			{DMRoom.another.isOnline ? (
 				<UserNickNameStyleC>ONLINE</UserNickNameStyleC>
 			) : (
 				<UserNickNameStyleC>OFFLINE</UserNickNameStyleC>
 			)}
+			<LastMessageDivStyleC>{lastMessage}</LastMessageDivStyleC>
 			<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, DMRoom.another.nickname, 'request')}>
 				ADD
 			</UserInteractionStyleC>
