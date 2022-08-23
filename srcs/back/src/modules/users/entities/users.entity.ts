@@ -144,6 +144,12 @@ export class Users extends BaseEntity {
   })
   achievement: string;
 
+  @Column({
+    nullable: true,
+    default: '',
+  })
+  roomId: string;
+
   /**
    * src/modules/games/game.entity.ts 참고
    * @see https://typeorm.io/many-to-many-relations

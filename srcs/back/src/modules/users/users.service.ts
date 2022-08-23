@@ -271,6 +271,12 @@ export class UsersService {
     await this.usersRepository.save(user);
   }
 
+  async setRoomId(id: number, roomId: string): Promise<void> {
+    const user = await this.getUserWithoutFriends(id);
+    user.roomId = roomId;
+    await this.usersRepository.save(user);
+  }
+
   /**
    * 유저 게임 점수
    * @param user
