@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import isAdmin from '../../modules/login/isAdmin';
 
 const HomeC = styled.div`
 	display: flex;
@@ -33,12 +34,17 @@ const LoginC = styled.div`
 `;
 
 function HomePage() {
-	const token = localStorage.getItem('token');
+	const [admin, setAdmin] = useState(false);
+
+	useEffect(() => {
+		if (isAdmin()) setAdmin(true);
+		else setAdmin(false);
+	}, []);
 	return (
 		<HomeC>
 			<HeaderC>PONG</HeaderC>
 			<LoginC>
-				<Link to={token ? '/main/game' : '/login'}>Play</Link>
+				<Link to={admin ? '/main/game' : '/login'}>{admin ? 'Play' : 'Login'}</Link>
 			</LoginC>
 		</HomeC>
 	);
