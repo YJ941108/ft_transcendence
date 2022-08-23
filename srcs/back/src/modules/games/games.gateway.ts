@@ -178,7 +178,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       newUser = new User(dbUser.id, dbUser.nickname, dbUser.photo, dbUser.wins, dbUser.losses, dbUser.ratio, client.id);
     } else {
       newUser.setSocketId(client.id);
-      newUser.setClient(client);
       newUser.setNickname(user.nickname);
     }
     newUser.setUserStatus(UserStatus.IN_HUB);
