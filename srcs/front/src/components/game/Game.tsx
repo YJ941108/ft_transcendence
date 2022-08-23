@@ -76,7 +76,6 @@ function Game() {
 	if (isLoading || error) return null;
 	return (
 		<div>
-			<h1>GAME</h1>
 			{isDisplayGame ? (
 				<GameScreen socketProps={socket} roomDataProps={room} />
 			) : (

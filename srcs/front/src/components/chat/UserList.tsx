@@ -37,7 +37,7 @@ function UserList() {
 			});
 			return () => {
 				chatSocket.off('listeningGetUsers');
-				chatSocket.off('listeningGetUsers');
+				chatSocket.off('listeningSpectateRoom');
 			};
 		}
 		return () => {};

@@ -51,6 +51,7 @@ const DMSendButtonStyleC = styled.button`
 	color: white;
 	/* height: 100%; */
 	width: 20%;
+	font-size: 0.8rem;
 	border: 1px solid white;
 	margin: 10px;
 	/* border: none; */
