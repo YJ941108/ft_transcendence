@@ -624,6 +624,24 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
   }
 
+  pushSpectatorToRoom(id: number, roomId: string) {
+    const room: Room = this.rooms.get(roomId);
+    if (!room) {
+      return this.returnMessage('spectateRoom', 400, '방이 없습니다.');
+    }
+
+    const user = this.connectedUsers.getUserById(id);
+    if (!user) {
+      return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
+    }
+
+    if (!room.isASpectator(user)) {
+      room.addSpectator(user);
+    }
+    this.server.to(user.socketId).emit('newRoom', room);
+    return this.returnMessage('spectateRoom', 200, '방 정보 전송 성공');
+  }
+
   /** 게임 초대 */
   setInviteRoomToReady(roomId: string) {
     const room = this.rooms.get(roomId);

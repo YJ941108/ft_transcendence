@@ -1554,6 +1554,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   }
 
+  @SubscribeMessage('spectateRoom')
+  async handlespectateRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
+    const memoryUser = this.chatUsers.getUser(client.id);
+    this.pongGateway.pushSpectatorToRoom(memoryUser.id, roomId);
+  }
+
   @SubscribeMessage('sendPongInvite')
   async handleSendPongInvite(@ConnectedSocket() client: Socket, @MessageBody() { anotherId }: { anotherId: number }) {
     try {
