@@ -28,7 +28,6 @@ function UserList() {
 				setUsers(response.data);
 			});
 			chatSocket.on('listeningSpectateRoom', () => {
-				console.log('here?');
 				const url = window.location.href.split('/').pop();
 				if (url !== 'game') {
 					navigate('/main/game');
