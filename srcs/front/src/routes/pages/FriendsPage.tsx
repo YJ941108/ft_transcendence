@@ -9,7 +9,7 @@ import UsersNavbar from '../../components/users/UsersNavbar';
 import Friends from '../../components/users/Friends';
 
 function FriendsPage() {
-	if (!isAdmin()) return <Navigate to="/login" />;
+	if (!isAdmin()) return <Navigate to="/" />;
 	return (
 		<MainBox>
 			<Navbar />

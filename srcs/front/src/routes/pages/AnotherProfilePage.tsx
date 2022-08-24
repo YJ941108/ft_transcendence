@@ -26,7 +26,7 @@ function AnotherProfilePage() {
 	const IsMyNickname = window.localStorage.getItem('nickname') !== params.nickname;
 	const { isLoading, data } = useQuery<IUser>([`user`, params.nickname], () => getAnotherUserData(params.nickname));
 	React.useEffect(() => {}, [data]);
-	if (!isAdmin()) return <Navigate to="/login" />;
+	if (!isAdmin()) return <Navigate to="/" />;
 	if (isLoading) return null;
 
 	return (
