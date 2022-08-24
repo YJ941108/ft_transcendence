@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useEffect, useState, useRef, KeyboardEvent } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
 import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
@@ -36,6 +36,7 @@ function OpenChatRoom() {
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 	const [channelInfo, setChannelInfo] = useRecoilState<IChannel>(channelInfoData);
 	const [isOwner, setIsOwner] = useState(false);
+	const messageBoxRef = useRef<HTMLUListElement>(null);
 	const {
 		isLoading,
 		data: basicChannelInfo,
@@ -43,12 +44,13 @@ function OpenChatRoom() {
 	} = useQuery(['channel', channelInfo.id], () => getChannelInfo(channelInfo.id));
 	const setChatContent = useSetRecoilState<string>(chatContent);
 
-	const onSubmit = (data: IFormInput) => {
+	const onSubmit: SubmitHandler<IFormInput> = (data: IFormInput) => {
 		const message: ISendMessage = {
 			message: data.message,
 			channelId: channelInfo.id,
 			userId: myInfo.id,
 		};
+
 		chatSocket.emit('sendMessage', message);
 		reset({
 			message: '',
@@ -65,6 +67,15 @@ function OpenChatRoom() {
 
 	const userList = () => {
 		setChatContent('OpenChatUsers');
+	};
+
+	const onEnterPress = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+		if (event.key === 'Enter' && event.shiftKey === false) {
+			event.preventDefault();
+			const data: IFormInput = { message: event.currentTarget.value };
+			if (event.currentTarget.value) return handleSubmit(onSubmit(data));
+		}
+		return null;
 	};
 
 	const leaveChannel = () => {
@@ -104,6 +115,25 @@ function OpenChatRoom() {
 			channelId: channelInfo.id,
 			userId: myInfo.id,
 		});
+		const scrollToBottom = (e: Event) => {
+			e.stopPropagation();
+			e.preventDefault();
+			const target = e.currentTarget as HTMLUListElement;
+
+			target.scroll({
+				top: target.scrollHeight,
+				// behavior: 'smooth',
+			});
+		};
+		if (messageBoxRef.current) {
+			messageBoxRef.current.addEventListener('DOMNodeInserted', scrollToBottom);
+		}
+
+		return () => {
+			if (messageBoxRef.current) {
+				messageBoxRef.current.removeEventListener('DOMNodeInserted', scrollToBottom);
+			}
+		};
 	}, []);
 
 	useEffect(() => {
@@ -141,7 +171,7 @@ function OpenChatRoom() {
 					leaveRoom
 				</button>
 			) : null}
-			<ChatLogStyleC>
+			<ChatLogStyleC ref={messageBoxRef}>
 				{messageList?.map((message: IMessages) => {
 					if (!message.author) return <OpenChatNoti key={message.id} content={message.content} />;
 					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
@@ -150,7 +180,11 @@ function OpenChatRoom() {
 				})}
 			</ChatLogStyleC>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<input {...register('message')} />
+				<textarea
+					placeholder="chat here..."
+					onKeyDown={onEnterPress}
+					{...register('message', { required: 'This is required.' })}
+				/>
 				<button type="submit">send</button>
 			</form>
 		</div>

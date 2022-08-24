@@ -19,7 +19,11 @@ const EditOpenChatRoomC = styled.div`
 `;
 
 function EditOpenChatRoom() {
-	const { register, handleSubmit } = useForm<IFormInput>();
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<IFormInput>();
 	const chatSocket = useChatSocket();
 	const [isPassword, setIsPassword] = useState(false);
 	const setContent = useSetRecoilState(chatContent);
@@ -53,7 +57,8 @@ function EditOpenChatRoom() {
 				exit
 			</button>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<input {...register('openChatName', { required: true, maxLength: 10 })} />
+				<input type="text" placeholder="name..." maxLength={10} {...register('openChatName', { required: true })} />
+				{errors.openChatName && errors.openChatName.type === 'required' && <span>This is required</span>}
 				<select {...register('openChatVisibility')} onChange={openChatVisibilityChange}>
 					<option value="private">private</option>
 					<option value="public">public</option>
@@ -62,7 +67,13 @@ function EditOpenChatRoom() {
 				{isPassword ? (
 					<div>
 						<h2>Password</h2>
-						<input {...register('password')} />
+						<input
+							type="text"
+							placeholder="password..."
+							maxLength={20}
+							{...(register('password'), { required: true })}
+						/>
+						{errors.password && errors.password.type === 'required' && <span>This is required</span>}
 					</div>
 				) : null}
 				<button type="submit">Edit OpenChat</button>
