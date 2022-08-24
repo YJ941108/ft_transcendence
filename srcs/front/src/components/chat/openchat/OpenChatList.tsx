@@ -2,10 +2,12 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import OpenChatNewButton from './OpenChatNewButton';
-import { IChannel } from '../../../modules/Interfaces/chatInterface';
-import OpenChatInfo from './OpenChatInfo';
-import { channelInfoData, chatContent, channelIdData, channelListInfo } from '../../../modules/atoms';
+import { IChannel, IMyData } from '../../../modules/Interfaces/chatInterface';
+// import OpenChatInfo from './OpenChatInfo';
+import { channelInfoData, chatContent, channelIdData, channelListInfo, MyInfo } from '../../../modules/atoms';
 import { useChatSocket } from '../SocketContext';
+import ListStyle from '../UserInfoStyle';
+import ListSection from '../ListSection';
 
 const OpenChatListStyleC = styled.ul`
 	background-color: black;
@@ -14,12 +16,20 @@ const OpenChatListStyleC = styled.ul`
 	max-height: 800px;
 `;
 
+const OpenChatDataStyleC = styled.div`
+	margin: 5px 0;
+`;
+
+const OpenChatDataPStyleC = styled.p`
+	margin: 5px 0;
+`;
+
 const OpenChatListC = styled.ul`
 	list-style: none;
 	width: 100%;
 	min-height: 800px;
 	max-height: 800px;
-	padding: 5px;
+	/* padding: 5px; */
 	vertical-align: baseline;
 	box-sizing: border-box;
 	overflow-y: scroll;
@@ -38,6 +48,8 @@ function OpenChatList() {
 	const setChannelInfo = useSetRecoilState<IChannel>(channelInfoData);
 	const setContent = useSetRecoilState<string>(chatContent);
 	const setChannelId = useSetRecoilState<number>(channelIdData);
+
+	const myInfo = useRecoilValue<IMyData>(MyInfo);
 
 	useEffect(() => {
 		chatSocket.on('listeningJoinPossible', (response: IJoinPossible) => {
@@ -59,12 +71,32 @@ function OpenChatList() {
 		};
 	}, [chatSocket]);
 
+	const ChatJoin = (channelInfo: IChannel) => {
+		chatSocket.emit('isJoinPossible', {
+			channelId: channelInfo.id,
+			userId: myInfo.id,
+		});
+	};
+
 	return (
 		<OpenChatListStyleC>
-			<OpenChatNewButton />
 			<OpenChatListC>
+				<ListSection title="OPEN CHAT" />
+				<OpenChatNewButton />
 				{channelList.map((channel: IChannel) => {
-					return <OpenChatInfo key={channel.id} channelInfo={channel} />;
+					return (
+						<ListStyle user={channel.owner}>
+							<OpenChatDataStyleC
+								onClick={() => {
+									ChatJoin(channel);
+								}}
+							>
+								<OpenChatDataPStyleC>{channel.name}</OpenChatDataPStyleC>
+								<OpenChatDataPStyleC>{channel.privacy.toUpperCase()}</OpenChatDataPStyleC>
+								<OpenChatDataPStyleC>{channel.users.length}USERS</OpenChatDataPStyleC>
+							</OpenChatDataStyleC>
+						</ListStyle>
+					);
 				})}
 			</OpenChatListC>
 		</OpenChatListStyleC>
