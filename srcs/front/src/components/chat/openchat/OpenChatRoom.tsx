@@ -180,11 +180,7 @@ function OpenChatRoom() {
 				})}
 			</ChatLogStyleC>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<textarea
-					placeholder="chat here..."
-					onKeyDown={onEnterPress}
-					{...register('message', { required: 'This is required.' })}
-				/>
+				<textarea placeholder="chat here..." onKeyDown={onEnterPress} {...register('message')} />
 				<button type="submit">send</button>
 			</form>
 		</div>
