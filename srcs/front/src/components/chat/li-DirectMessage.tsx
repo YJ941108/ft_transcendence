@@ -10,10 +10,17 @@ import { Nickname } from './UserStatus';
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 `;
 
 const LastMessageDivStyleC = styled.div`
-	width: 100%;
+	width: 80%;
+	height: 1rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 `;
 
 const UserInteractionStyleC = styled.span`

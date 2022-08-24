@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 // import { useSetRecoilState } from 'recoil';
 import styled from 'styled-components';
 // import { chatContent } from '../../modules/atoms';
@@ -16,7 +17,7 @@ export const UserPhotoDivStyleC = styled.div`
 	height: 70px;
 	overflow: hidden;
 	border: 1px solid rgba(255, 255, 255, 0.2);
-	margin: auto 5px;
+	margin: auto 2px;
 `;
 
 export const UserPhotoStyleC = styled.img`
@@ -28,6 +29,7 @@ export const UserPhotoStyleC = styled.img`
 
 export const UserDataDivStyleC = styled.div`
 	margin: auto 5px;
+	width: 220px;
 `;
 
 const UserStyleC = styled.li`
@@ -57,7 +59,9 @@ function ListStyle({ user, children }: IListStyle) {
 			// }}
 			>
 				<UserPhotoDivStyleC>
-					<UserPhotoStyleC src={user.photo} alt={user.nickname} />
+					<Link to={`/main/another/${user.nickname}`}>
+						<UserPhotoStyleC src={user.photo} alt={user.nickname} />
+					</Link>
 				</UserPhotoDivStyleC>
 				<UserDataDivStyleC>{children}</UserDataDivStyleC>
 			</UserInfoDivStyleC>

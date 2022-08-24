@@ -24,7 +24,6 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 	const isPlayer: boolean = userData.id === room.paddleOne.user.id || userData.id === room.paddleTwo.user.id;
 	let animationFrameId: number;
 	const keyUpEvent = (event: KeyboardEvent) => {
-		event.preventDefault();
 		const keyData: IKey = {
 			roomId: room.roomId,
 			key: event.key,
@@ -34,7 +33,6 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 	};
 
 	const keyDownEvent = (event: KeyboardEvent) => {
-		event.preventDefault();
 		const keyData: IKey = {
 			roomId: room.roomId,
 			key: event.key,

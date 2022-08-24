@@ -29,7 +29,7 @@ const UserInfoDivStyleC = styled.div`
 
 const UserNickNameStyleC = styled.p`
 	margin: 3px 0;
-	white-space: no-wrap;
+	white-space: nowrap;
 	max-width: 150px;
 	text-overflow: ellipsis;
 	overflow: hidden;
