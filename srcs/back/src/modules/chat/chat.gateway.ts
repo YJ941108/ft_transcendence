@@ -36,6 +36,10 @@ import { ChatUsers } from './class/chat-users.class';
  * @class OnGatewayDisconnect
  */
 @WebSocketGateway({
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
   namespace: 'api/chat',
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
