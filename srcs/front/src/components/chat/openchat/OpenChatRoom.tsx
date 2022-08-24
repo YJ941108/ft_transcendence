@@ -150,8 +150,8 @@ function OpenChatRoom() {
 				})}
 			</ChatLogStyleC>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<input {...register('message')} />
-				<button type="submit">send</button>
+				<input {...register('message')}/>
+				<button type="submit" >send</button>
 			</form>
 		</div>
 	);
