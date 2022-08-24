@@ -6,7 +6,11 @@ import { IDebug } from './Emit';
 import { useChatSocket } from './SocketContext';
 
 const UserInteractionStyleC = styled.span`
+	/* font-size: 0.8rem; */
 	margin: 0 3px 3px 0;
+	&:hover {
+		color: gray;
+	}
 	cursor: pointer;
 `;
 

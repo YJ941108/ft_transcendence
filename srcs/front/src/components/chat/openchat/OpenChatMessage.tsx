@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import IUserData from '../../../modules/Interfaces/userInterface';
 
 interface IOpenChatMessageProps {
@@ -9,9 +10,7 @@ interface IOpenChatMessageProps {
 function OpenChatMessage({ author, content }: IOpenChatMessageProps) {
 	return (
 		<li>
-			<span>
-				{author?.nickname} : {content}
-			</span>
+			<Link to={`/main/another/${author?.nickname}`}>{author?.nickname}</Link> : {content}
 		</li>
 	);
 }

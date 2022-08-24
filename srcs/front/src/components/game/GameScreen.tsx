@@ -11,6 +11,7 @@ interface IGameScreenProps {
 }
 
 const Canvas = styled.canvas`
+	margin-top: 30px;
 	width: 100%;
 	box-sizing: border-box;
 	border: 3px solid white;

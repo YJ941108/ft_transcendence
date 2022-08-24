@@ -80,7 +80,7 @@ export default class GameData {
 		if (this.context) {
 			this.context.save();
 			this.context.fillStyle = color;
-			this.context.font = `${size}px serif`;
+			this.context.font = `${size}px RetroGaming`;
 			this.context.fillText(text, x, y);
 			this.context.restore();
 		}
@@ -90,7 +90,7 @@ export default class GameData {
 		if (this.context) {
 			this.context.save();
 			this.context.fillStyle = color;
-			this.context.font = `${size}px serif`;
+			this.context.font = `${size}px RetroGaming`;
 			this.context.textAlign = 'center';
 			this.context.fillText(text, x, y);
 		}

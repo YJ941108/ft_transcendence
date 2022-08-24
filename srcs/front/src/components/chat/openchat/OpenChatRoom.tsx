@@ -10,6 +10,42 @@ import { useChatSocket } from '../SocketContext';
 import OpenChatMessage from './OpenChatMessage';
 import OpenChatNoti from './OpenChatNoti';
 
+const SendDivStyleC = styled.div`
+	width: 100%;
+	height: 80px;
+	display: flex;
+	border: none;
+	margin: 0;
+`;
+
+const InputStyleC = styled.textarea`
+	width: 80%;
+	height: 100%;
+	resize: none;
+	background-color: black;
+	color: white;
+	border: none;
+	&:hover {
+		border: 1px solid rgba(0, 0, 0, 0.3);
+	}
+	&:focus {
+		outline: none;
+		/* outline: 1px solid rgba(0, 0, 0, 0.5); */
+		border: 1px solid rgba(0, 0, 0, 0.3);
+	}
+`;
+
+const SendButtonStyleC = styled.button`
+	background-color: black;
+	color: white;
+	/* height: 100%; */
+	width: 20%;
+	font-size: 0.8rem;
+	border: 1px solid white;
+	margin: 10px;
+	/* border: none; */
+`;
+
 const ChatLogStyleC = styled.ul`
 	min-height: 800px;
 	max-height: 800px;
@@ -189,8 +225,10 @@ function OpenChatRoom() {
 				})}
 			</ChatLogStyleC>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<textarea placeholder="chat here..." onKeyDown={onEnterPress} {...register('message')} />
-				<button type="submit">send</button>
+				<SendDivStyleC>
+					<InputStyleC placeholder="메시지를 입력하세요." onKeyDown={onEnterPress} {...register('message')} />
+					<SendButtonStyleC type="submit">SEND</SendButtonStyleC>
+				</SendDivStyleC>
 			</form>
 		</div>
 	);
