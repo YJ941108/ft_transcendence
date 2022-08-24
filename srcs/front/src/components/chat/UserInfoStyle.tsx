@@ -27,7 +27,7 @@ export const UserPhotoStyleC = styled.img`
 	object-position: center;
 `;
 
-export const UserDataDivStyleC = styled.div`
+export const UserDataULStyleC = styled.ul`
 	margin: auto 5px;
 	width: 220px;
 `;
@@ -63,7 +63,7 @@ function ListStyle({ user, children }: IListStyle) {
 						<UserPhotoStyleC src={user.photo} alt={user.nickname} />
 					</Link>
 				</UserPhotoDivStyleC>
-				<UserDataDivStyleC>{children}</UserDataDivStyleC>
+				<UserDataULStyleC>{children}</UserDataULStyleC>
 			</UserInfoDivStyleC>
 		</UserStyleC>
 	);

@@ -35,6 +35,12 @@ const UserNickNameStyleC = styled.p`
 	overflow: hidden;
 `;
 
+const LogoutStyleC = styled.p`
+	margin: 3px 0;
+	max-width: 150px;
+	cursor: pointer;
+`;
+
 const RequestUserStyleC = styled.li`
 	display: flex;
 	align-items: center;
@@ -68,13 +74,14 @@ function MyUserInfo({ user }: IMyInfo) {
 			</UserPhotoDivStyleC>
 			<UserInfoDivStyleC>
 				<UserNickNameStyleC>{user.nickname}</UserNickNameStyleC>
-				<UserNickNameStyleC
+				<UserNickNameStyleC>{user.ratio} pts</UserNickNameStyleC>
+				<LogoutStyleC
 					onClick={() => {
 						Logout();
 					}}
 				>
 					LOGOUT
-				</UserNickNameStyleC>
+				</LogoutStyleC>
 			</UserInfoDivStyleC>
 		</RequestUserStyleC>
 	);
