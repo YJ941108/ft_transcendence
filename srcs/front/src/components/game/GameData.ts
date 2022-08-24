@@ -1,5 +1,12 @@
 import { canvasWidth, canvasHeight, IBall, IPlayer, IRoom } from './GameInterfaces';
 
+type Net = {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+};
+
 export default class GameData {
 	canvas: HTMLCanvasElement;
 
@@ -19,6 +26,8 @@ export default class GameData {
 
 	screenHeight: number;
 
+	net: Net;
+
 	constructor(roomProps: IRoom) {
 		this.canvas = document.getElementById('pong-canvas') as HTMLCanvasElement;
 		this.context = this.canvas.getContext('2d');
@@ -29,6 +38,21 @@ export default class GameData {
 		this.paddleOne = this.room.paddleOne;
 		this.paddleTwo = this.room.paddleTwo;
 		this.ball = this.room.ball;
+		this.net = {
+			x: canvasWidth / 2 - 10,
+			y: 0,
+			width: 20,
+			height: 50,
+		};
+	}
+
+	drawRectangle(x: number, y: number, width: number, height: number, color: string) {
+		if (this.context) {
+			this.context.save();
+			this.context.fillStyle = color;
+			this.context.fillRect(x, y, width, height);
+			this.context.restore();
+		}
 	}
 
 	drawPaddle(paddleData: IPlayer) {
@@ -69,6 +93,21 @@ export default class GameData {
 			this.context.font = `${size}px serif`;
 			this.context.textAlign = 'center';
 			this.context.fillText(text, x, y);
+		}
+	}
+
+	drawNet() {
+		for (let i = 0; i <= canvasHeight / 2 - this.net.height; i += this.net.height) {
+			this.net.y = i;
+			this.drawRectangle(this.net.x, this.net.y, this.net.width, this.net.height, 'white');
+			this.drawRectangle(
+				this.net.x,
+				canvasHeight - (this.net.height + this.net.y),
+				this.net.width,
+				this.net.height,
+				'white'
+			);
+			i += 19;
 		}
 	}
 

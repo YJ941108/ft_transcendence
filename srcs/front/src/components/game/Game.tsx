@@ -33,12 +33,10 @@ function Game() {
 		if (isLoading || !userData || error) return () => {};
 		socket = io('http://3.39.20.24:3032/api/games');
 		socket = socket.on('connect', () => {
-			console.log('connect here');
 			socket.emit('handleUserConnect', userData);
 			socket.emit('getCurrentGames');
 		});
 		socket.on('updateCurrentGames', (currentGamesData: IRoom[]) => {
-			console.log(currentGamesData, 'gamesData');
 			updateCurrentGames(currentGamesData);
 		});
 		socket.on('newRoom', (newRoomData: IRoom) => {
