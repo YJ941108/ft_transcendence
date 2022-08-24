@@ -1292,6 +1292,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         },
       });
 
+      dbChannel = await this.chatService.getChannelData(channelId);
+      this.listeningChannelInfo(dbChannel, roomId);
+
       /** 다른 사람에게 공개적으로 알려줄 때 */
       if (dbChannel.privacy !== 'private') {
         this.server.socketsJoin(roomId);

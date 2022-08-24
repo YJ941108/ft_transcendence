@@ -481,7 +481,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     ) {
       room.pauseForfait();
       room.pauseTime[room.pauseTime.length - 1].resume = Date.now();
-      this.saveGame(room, currentTimestamp);
     }
 
     // if (
