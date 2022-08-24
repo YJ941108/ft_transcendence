@@ -572,7 +572,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowRight') {
         room.paddleOne.right = false;
       }
-      if (data.key === 'Q') {
+      if (data.key === ' ') {
         room.paddleOne.flash = false;
         room.paddleTwo.flash = false;
         room.ball.flash = false;
@@ -590,7 +590,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowRight') {
         room.paddleTwo.right = false;
       }
-      if (data.key === 'Q') {
+      if (data.key === ' ') {
         room.paddleOne.flash = false;
         room.paddleTwo.flash = false;
         room.ball.flash = false;

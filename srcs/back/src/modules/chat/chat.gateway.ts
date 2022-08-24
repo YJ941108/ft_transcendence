@@ -940,7 +940,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       /** 새로 채널 조인 */
       const dbAnother = await this.chatService.addUserToChannel(channel, userId);
       const message = await this.chatService.addMessageToChannel({
-        content: `${dbAnother.username} joined group`,
+        content: `${dbAnother.username}님이 참여했습니다.`,
         channel,
       });
       this.userJoinRoom(client.id, roomId);
@@ -1026,7 +1026,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       /** 나간 유저에게 리스트 돌려주기 */
       const message = await this.chatService.addMessageToChannel({
-        content: `${dbUser.username} left group`,
+        content: `${dbUser.username}님이 나갔습니다.`,
         channel,
       });
       this.listeningChannelList(memoryUser.socketId, memoryUser.id);
@@ -1452,7 +1452,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       await this.handleDmSubmit(client, {
         DMId: dm.data,
         authorId: memorySender.id,
-        message: '게임 한판 고고',
+        message: '게임에 초대했습니다.',
         type: 'invite',
         roomId: roomId,
       });
