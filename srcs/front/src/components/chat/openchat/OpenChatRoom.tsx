@@ -52,9 +52,13 @@ function OpenChatRoom() {
 		};
 
 		chatSocket.emit('sendMessage', message);
-		reset({
-			message: '',
-		});
+
+		const timer = setTimeout(() => {
+			reset({
+				message: '',
+			});
+			clearTimeout(timer);
+		}, 0);
 	};
 
 	const joinChat = () => {
@@ -69,11 +73,23 @@ function OpenChatRoom() {
 		setChatContent('OpenChatUsers');
 	};
 
+	const scrollToBottom = (e: Event) => {
+		e.stopPropagation();
+		e.preventDefault();
+		const target = e.currentTarget as HTMLUListElement;
+
+		target.scroll({
+			top: target.scrollHeight,
+			// behavior: 'smooth',
+		});
+	};
+
 	const onEnterPress = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-		if (event.key === 'Enter' && event.shiftKey === false) {
-			event.preventDefault();
+		if (event.key === 'Enter') {
 			const data: IFormInput = { message: event.currentTarget.value };
-			if (event.currentTarget.value) return handleSubmit(onSubmit(data));
+			if (event.currentTarget.value) {
+				return handleSubmit(onSubmit(data));
+			}
 		}
 		return null;
 	};
@@ -115,16 +131,9 @@ function OpenChatRoom() {
 			channelId: channelInfo.id,
 			userId: myInfo.id,
 		});
-		const scrollToBottom = (e: Event) => {
-			e.stopPropagation();
-			e.preventDefault();
-			const target = e.currentTarget as HTMLUListElement;
+	}, []);
 
-			target.scroll({
-				top: target.scrollHeight,
-				// behavior: 'smooth',
-			});
-		};
+	useEffect(() => {
 		if (messageBoxRef.current) {
 			messageBoxRef.current.addEventListener('DOMNodeInserted', scrollToBottom);
 		}
@@ -134,7 +143,7 @@ function OpenChatRoom() {
 				messageBoxRef.current.removeEventListener('DOMNodeInserted', scrollToBottom);
 			}
 		};
-	}, []);
+	}, [messageList]);
 
 	useEffect(() => {
 		if (!isLoading && !error && basicChannelInfo) {
