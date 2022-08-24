@@ -28,7 +28,7 @@ import { ChatGateway } from '../chat/chat.gateway';
  */
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],
   },
   namespace: 'api/games',
@@ -481,6 +481,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     ) {
       room.pauseForfait();
       room.pauseTime[room.pauseTime.length - 1].resume = Date.now();
+      this.saveGame(room, currentTimestamp);
     }
 
     // if (

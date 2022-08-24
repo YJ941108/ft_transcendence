@@ -23,7 +23,7 @@ import { UsersService } from './users.service';
  */
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],
   },
   namespace: 'api/users',
