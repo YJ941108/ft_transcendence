@@ -46,6 +46,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 	const drawGame = (gameData: GameData, roomData: IRoom) => {
 		gameData.clear();
 
+		gameData.drawNet();
 		gameData.drawPaddle(roomData.paddleOne);
 		gameData.drawPaddle(roomData.paddleTwo);
 		gameData.drawBall(roomData.ball);

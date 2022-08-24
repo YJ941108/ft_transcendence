@@ -1,8 +1,11 @@
 import axios from 'axios';
+import { refreshToken } from './login/login';
 
 interface IEmail {
 	email: string;
 }
+
+refreshToken();
 
 export const getUserData = async () => {
 	const { data: me } = await axios.get('/api/users/me');
