@@ -10,4 +10,4 @@ RUN		npm run build
 
 # TODO: Add API keys to the environment at BUILD time
 
-CMD		[ "npm", "run", "serve" ]
+CMD		[ "npm", "start" ]
