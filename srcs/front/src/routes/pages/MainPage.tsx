@@ -5,7 +5,7 @@ import MainBox from '../../components/styles/box/MainBox';
 import SideBox from '../../components/styles/box/SideBox';
 
 function MainPage() {
-	if (!isAdmin()) return <Navigate to="/login" />;
+	if (!isAdmin()) return <Navigate to="/" />;
 	return (
 		<MainBox>
 			<Outlet />
