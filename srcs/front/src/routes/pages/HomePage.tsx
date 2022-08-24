@@ -44,7 +44,7 @@ function HomePage() {
 		<HomeC>
 			<HeaderC>PONG</HeaderC>
 			<LoginC>
-				<Link to={admin ? '/main/game' : '/login'}>{admin ? 'Play' : 'Login'}</Link>
+				{admin ? <Link to="/main/game">Play</Link> : <a href={process.env.REACT_APP_FORTYTWO_LOGIN_API}>Login</a>}
 			</LoginC>
 		</HomeC>
 	);
