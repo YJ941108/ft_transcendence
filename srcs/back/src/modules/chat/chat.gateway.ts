@@ -1277,7 +1277,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       /** 처벌 메시지 보내기 */
       const message = await this.chatService.addMessageToChannel({
-        content: `${admin.nickname}이 ${user.username}를 차버렸습니다`,
+        content: `${admin.nickname}이 ${user.username}님을 추방했습니다.`,
         channel: dbChannel,
       });
       this.server.to(`channel_${dbChannel.id}`).emit('listeningMessage', {
