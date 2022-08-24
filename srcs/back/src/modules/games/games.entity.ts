@@ -35,6 +35,21 @@ export class Games extends BaseEntity {
   })
   loserId: number;
 
+  @Column({
+    nullable: true,
+  })
+  winnerScore: number;
+
+  @Column({
+    nullable: true,
+  })
+  loserScore: number;
+
+  @Column({
+    nullable: true,
+  })
+  mode: number;
+
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
