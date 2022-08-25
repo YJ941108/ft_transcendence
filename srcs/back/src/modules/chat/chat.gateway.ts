@@ -1166,7 +1166,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       /** 어드민 추가 메시지 보내기 */
       const message = await this.chatService.addMessageToChannel({
-        content: `${owner.nickname}은 admin입니다`,
+        content: `${admin.nickname}은 admin입니다`,
         channel: dbChannel,
       });
 
