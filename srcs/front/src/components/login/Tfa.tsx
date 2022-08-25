@@ -25,6 +25,7 @@ function Tfa() {
 
 	const getTfaCode = () => {
 		axios.post('/api/users/me/tfa');
+		alert('전송되었습니다');
 	};
 
 	const onSubmit = async (event: React.FormEvent) => {
