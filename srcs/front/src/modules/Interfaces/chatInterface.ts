@@ -38,6 +38,21 @@ export interface IMessages {
 	roomId: string;
 }
 
+export interface IChannelMessage {
+	id: number;
+	content: string;
+	createdAt: string;
+	author: IUserData;
+	channelId: number;
+}
+
+export interface IChannelMessageResponse {
+	func: string;
+	code: number;
+	message: string;
+	data: IChannelMessage;
+}
+
 export interface IMessageResponse {
 	func: string;
 	code: number;

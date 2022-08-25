@@ -4,7 +4,13 @@ import styled from 'styled-components';
 import { useQuery } from 'react-query';
 import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
-import { IChannel, IMyData, IMessageResponse, IMessages, IUserBanned } from '../../../modules/Interfaces/chatInterface';
+import {
+	IChannel,
+	IMyData,
+	IChannelMessageResponse,
+	IChannelMessage,
+	IUserBanned,
+} from '../../../modules/Interfaces/chatInterface';
 import { getChannelInfo } from '../../../modules/api';
 import { useChatSocket } from '../SocketContext';
 import OpenChatMessage from './OpenChatMessage';
@@ -68,7 +74,7 @@ interface ISendMessage {
 function OpenChatRoom() {
 	const chatSocket = useChatSocket();
 	const { register, handleSubmit, reset } = useForm<IFormInput>();
-	const [messageList, setMessageList] = useState<IMessages[]>([]);
+	const [messageList, setMessageList] = useState<IChannelMessage[]>([]);
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 	const [channelInfo, setChannelInfo] = useRecoilState<IChannel>(channelInfoData);
 	const [isOwner, setIsOwner] = useState(false);
@@ -86,8 +92,7 @@ function OpenChatRoom() {
 			channelId: channelInfo.id,
 			userId: myInfo.id,
 		};
-
-		chatSocket.emit('sendMessage', message);
+		if (data.message !== '') chatSocket.emit('sendMessage', message);
 
 		const timer = setTimeout(() => {
 			reset({
@@ -121,7 +126,7 @@ function OpenChatRoom() {
 	};
 
 	const onEnterPress = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-		if (event.key === 'Enter' && event.shiftKey === false) {
+		if (event.key === 'Enter') {
 			event.preventDefault();
 			const data: IFormInput = { message: event.currentTarget.value };
 			if (event.currentTarget.value) {
@@ -140,10 +145,12 @@ function OpenChatRoom() {
 	};
 
 	useEffect(() => {
-		chatSocket.on('listeningMessage', (response: IMessageResponse) => {
-			setMessageList((prevMessages) => {
-				return [...prevMessages, response.data];
-			});
+		chatSocket.on('listeningMessage', (response: IChannelMessageResponse) => {
+			if (channelInfo.id === response.data.channelId) {
+				setMessageList((prevMessages) => {
+					return [...prevMessages, response.data];
+				});
+			}
 		});
 		chatSocket.on('listeningChannelDeleted', () => {
 			alert('채팅방이 삭제되었습니다.');
@@ -200,7 +207,7 @@ function OpenChatRoom() {
 	return (
 		<div>
 			<ChatLogStyleC ref={messageBoxRef}>
-				{messageList?.map((message: IMessages) => {
+				{messageList?.map((message: IChannelMessage) => {
 					if (!message.author) return <OpenChatNoti key={message.id} content={message.content} />;
 					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
 						return <OpenChatMessage key={message.id} author={message.author} content="BLOCKED" />;
@@ -209,7 +216,7 @@ function OpenChatRoom() {
 			</ChatLogStyleC>
 			<form onSubmit={handleSubmit(onSubmit)}>
 				<SendDivStyleC>
-					<InputStyleC placeholder="메시지를 입력하세요." onKeyDown={onEnterPress} {...register('message')} />
+					<InputStyleC placeholder="메시지를 입력하세요." onKeyPress={onEnterPress} {...register('message')} />
 					<SendButtonStyleC type="submit">SEND</SendButtonStyleC>
 				</SendDivStyleC>
 			</form>
