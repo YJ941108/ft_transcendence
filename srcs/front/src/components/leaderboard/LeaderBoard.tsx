@@ -46,8 +46,8 @@ function LeaderBoard() {
 			</TitleDivStyleC>
 			{usersData?.map((element: IUserData, index: number) => {
 				return (
-					<LeaderBoardUserStyleC>
-						{index}. <LeaderBoardUserInfo key={element.id} user={element} />
+					<LeaderBoardUserStyleC key={element.id}>
+						{index}. <LeaderBoardUserInfo user={element} />
 					</LeaderBoardUserStyleC>
 				);
 			})}
