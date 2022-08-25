@@ -4,11 +4,7 @@ import { emitUserAction } from './Emit';
 import { useChatSocket } from './SocketContext';
 import { IUserInfo } from '../../modules/Interfaces/userInterface';
 import ListStyle from './UserInfoStyle';
-import { Nickname } from './UserStatus';
-
-const UserNickNameStyleC = styled.p`
-	margin: 3px 0;
-`;
+import UserStatus, { Nickname } from './UserStatus';
 
 const UserInteractionStyleC = styled.span`
 	margin: 0 3px 3px 0;
@@ -20,12 +16,7 @@ function RequestUserInfo({ user }: IUserInfo) {
 	return (
 		<ListStyle user={user}>
 			<Nickname nickname={user.nickname} />
-			{/* <UserNickNameStyleC>{user.nickname}</UserNickNameStyleC> */}
-			{user.isOnline ? (
-				<UserNickNameStyleC>ONLINE</UserNickNameStyleC>
-			) : (
-				<UserNickNameStyleC>OFFLINE</UserNickNameStyleC>
-			)}
+			<UserStatus user={user} />
 			<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'accept')}>
 				ACCEPT
 			</UserInteractionStyleC>
