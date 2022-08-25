@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { IPlayer } from '../game/GameInterfaces';
-import { Nickname } from './UserStatus';
 
 const PlayerInfoDivStyleC = styled.div`
 	margin: 5px;
@@ -56,7 +55,9 @@ function PlayerInfo({ leftPlayer, rightPlayer }: IPlayerInfo) {
 					</Link>
 				</PlayerPhotoDivStyleC>
 				<PlayerDataDivStyleC>
-					<Nickname nickname={leftPlayer.user.nickname} />
+					<PlayerDataPStyleC>
+						<Link to={`/main/another/${leftPlayer.user.nickname}`}>{leftPlayer.user.nickname}</Link>
+					</PlayerDataPStyleC>
 					<PlayerDataPStyleC>
 						{leftPlayer.user.wins}W {leftPlayer.user.losses}L {leftPlayer.user.ratio}pts
 					</PlayerDataPStyleC>
@@ -69,7 +70,9 @@ function PlayerInfo({ leftPlayer, rightPlayer }: IPlayerInfo) {
 					</Link>
 				</PlayerPhotoDivStyleC>
 				<PlayerDataDivStyleC>
-					<Nickname nickname={rightPlayer.user.nickname} />
+					<PlayerDataPStyleC>
+						<Link to={`/main/another/${rightPlayer.user.nickname}`}>{rightPlayer.user.nickname}</Link>
+					</PlayerDataPStyleC>
 					<PlayerDataPStyleC>
 						{rightPlayer.user.wins}W {rightPlayer.user.losses}L {rightPlayer.user.ratio}pts
 					</PlayerDataPStyleC>
