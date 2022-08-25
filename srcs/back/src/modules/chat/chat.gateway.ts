@@ -300,10 +300,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log(users);
       console.log(users[i]);
       if (users[i] && users[i].socketId) {
-        if (users[i].socketId) {
+        if (!!users[i].socketId) {
           await this.listeningMe(users[i].socketId, 'announceGame');
         }
-        if (users[i].socketId) {
+        if (!!users[i].socketId) {
           await this.listeningGetUsers(users[i].socketId, 'announceGame', dbUser);
         }
       }

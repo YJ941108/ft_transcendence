@@ -36,7 +36,7 @@ function Game() {
 
 	useEffect(() => {
 		if (isLoading || !userData || error) return () => {};
-		socket = io('http://3.39.20.24:3032/api/games');
+		socket = io('http://localhost:3032/api/games');
 		socket = socket.on('connect', () => {
 			socket.emit('handleUserConnect', userData);
 			socket.emit('getCurrentGames');

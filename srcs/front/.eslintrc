@@ -26,7 +26,7 @@
 	],
 	"parserOptions": {
 		"project": "tsconfig.json",
-    "tsconfigRootDir": "../front",
+    "tsconfigRootDir": "./",
     "sourceType": "module",
 	}
 }
