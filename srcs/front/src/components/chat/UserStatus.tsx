@@ -86,20 +86,6 @@ function UserStatus({ user }: IUserInfo) {
 				}}
 			>
 				PLAYING
-				{/* <button
-					type="button"
-					onClick={() => {
-						gameSocket.emit('spectateRoom', user.roomId, () => {
-							if (url !== 'game') {
-								navigate('/main/game');
-							} else {
-								window.location.reload();
-							}
-						});
-					}}
-				>
-					fuck you
-				</button> */}
 			</UserStatusStyleC>
 		);
 	}

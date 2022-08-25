@@ -10,8 +10,19 @@ interface IGameScreenProps {
 	roomDataProps: any;
 }
 
+const LeaveRoomStyleC = styled.button`
+	/* border: none; */
+	/* border-bottom: 1px solid white; */
+	height: 80px;
+	width: 100%;
+	/* background-color: black; */
+	/* color: white; */
+	&:hover {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+`;
+
 const Canvas = styled.canvas`
-	margin-top: 30px;
 	width: 100%;
 	box-sizing: border-box;
 	border: 3px solid white;
@@ -124,13 +135,11 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 	};
 	return (
 		<div>
-			<Canvas id="pong-canvas" width="1920" height="1080">
-				hello
-			</Canvas>
+			<LeaveRoomStyleC onClick={leaveRoom} type="button">
+				LEAVE ROOM
+			</LeaveRoomStyleC>
+			<Canvas id="pong-canvas" width="1920" height="1080" />
 			<PlayerInfo leftPlayer={room.paddleOne} rightPlayer={room.paddleTwo} />
-			<button onClick={leaveRoom} type="button">
-				leave room
-			</button>
 		</div>
 	);
 }
