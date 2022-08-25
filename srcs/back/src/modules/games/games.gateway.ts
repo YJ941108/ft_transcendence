@@ -122,7 +122,6 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.rooms.forEach((room: Room) => {
       /** 게임 방에 있다면 우선 유저부터 방에서 지워야 한다 */
       if (room.isAPlayer(user)) {
-        this.handleLeaveRoom(client, room.roomId);
         room.removeUser(user);
 
         /**
@@ -611,6 +610,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
     }
 
+    /** 관전중이지 않다면 게임방 관전 리스트에 추가 */
     if (!room.isASpectator(user)) {
       room.addSpectator(user);
     }

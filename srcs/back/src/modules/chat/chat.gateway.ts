@@ -297,9 +297,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     for (let i = 0; i < users.length; i++) {
       const dbUser = await this.usersService.getUserWithFriends(users[i].id);
-      if (users[i].socketId) {
-        await this.listeningMe(users[i].socketId, 'announceGame');
-        await this.listeningGetUsers(users[i].socketId, 'announceGame', dbUser);
+      console.log(users);
+      console.log(users[i]);
+      if (users[i] && users[i].socketId) {
+        if (users[i].socketId) {
+          await this.listeningMe(users[i].socketId, 'announceGame');
+        }
+        if (users[i].socketId) {
+          await this.listeningGetUsers(users[i].socketId, 'announceGame', dbUser);
+        }
       }
     }
   }
@@ -1100,6 +1106,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           content: message.content,
           createdAt: message.createdAt,
           author: dbUser,
+          channelId: dbchannel.id,
         },
       });
 
@@ -1164,6 +1171,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           content: message.content,
           createdAt: message.createdAt,
           author: owner,
+          channelId: channelId,
         },
       });
       this.logger.log(`User [${owner.nickname}] is now admin in Channel [${dbChannel.name}]`);
@@ -1224,6 +1232,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           content: message.content,
           createdAt: message.createdAt,
           author: owner,
+          channelId: channelId,
         },
       });
     } catch (e) {
@@ -1289,6 +1298,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           content: message.content,
           createdAt: message.createdAt,
           author: admin,
+          channelId: channelId,
         },
       });
 
@@ -1372,6 +1382,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           content: message.content,
           createdAt: message.createdAt,
           author: admin,
+          channelId: channelId,
         },
       });
     } catch (e) {
