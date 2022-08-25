@@ -117,6 +117,8 @@ export class UsersService {
         throw new ConflictException('중복된 닉네임입니다');
       } else if (!nickname.match(regex)) {
         throw new ConflictException('올바르지 않은 닉네임입니다');
+      } else if (nickname.length > 10) {
+        throw new ConflictException('길이를 10자 이내로 하세요');
       }
       user.nickname = nickname;
     }
