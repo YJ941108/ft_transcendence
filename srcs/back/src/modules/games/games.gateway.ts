@@ -28,7 +28,7 @@ import { ChatGateway } from '../chat/chat.gateway';
  */
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'http://www.junghwki.com',
     methods: ['GET', 'POST'],
   },
   namespace: 'api/games',

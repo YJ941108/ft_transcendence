@@ -37,7 +37,7 @@ import { ChatUsers } from './class/chat-users.class';
  */
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'http://www.junghwki.com',
     methods: ['GET', 'POST'],
   },
   namespace: 'api/chat',
