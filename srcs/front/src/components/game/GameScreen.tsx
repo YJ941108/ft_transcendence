@@ -13,7 +13,7 @@ interface IGameScreenProps {
 const LeaveRoomStyleC = styled.button`
 	/* border: none; */
 	/* border-bottom: 1px solid white; */
-	height: 80px;
+	height: 70px;
 	width: 100%;
 	/* background-color: black; */
 	/* color: white; */
