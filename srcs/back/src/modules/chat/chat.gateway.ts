@@ -1106,6 +1106,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           content: message.content,
           createdAt: message.createdAt,
           author: dbUser,
+          channelId: dbchannel.id,
         },
       });
 

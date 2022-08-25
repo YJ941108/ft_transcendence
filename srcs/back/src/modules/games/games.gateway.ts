@@ -610,6 +610,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
     }
 
+    /** 관전중이지 않다면 게임방 관전 리스트에 추가 */
     if (!room.isASpectator(user)) {
       room.addSpectator(user);
     }
