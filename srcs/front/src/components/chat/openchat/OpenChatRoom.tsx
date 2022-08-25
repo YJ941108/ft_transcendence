@@ -209,8 +209,7 @@ function OpenChatRoom() {
 			<ChatLogStyleC ref={messageBoxRef}>
 				{messageList?.map((message: IChannelMessage) => {
 					if (!message.author) return <OpenChatNoti key={message.id} content={message.content} />;
-					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
-						return <OpenChatMessage key={message.id} author={message.author} content="BLOCKED" />;
+					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1) return null;
 					return <OpenChatMessage key={message.id} author={message.author} content={message.content} />;
 				})}
 			</ChatLogStyleC>

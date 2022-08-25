@@ -550,6 +550,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       message.roomId = data.roomId;
     }
 
+    if (data.message.length > 640) {
+      this.logger.log('sendDMMessage: 640이상입니다.');
+      // throw new Error('길이가 640 이상입니다.');
+    }
+
     try {
       const sendMessage = await this.chatService.addMessageToDm(message);
       const emitData: { id: number; content: string; createdAt: Date; author: Users; type: string; roomId: string } = {
@@ -1166,7 +1171,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       /** 어드민 추가 메시지 보내기 */
       const message = await this.chatService.addMessageToChannel({
-        content: `${owner.nickname}은 admin입니다`,
+        content: `${admin.nickname}은 admin입니다`,
         channel: dbChannel,
       });
 
