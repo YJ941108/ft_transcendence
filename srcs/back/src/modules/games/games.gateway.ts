@@ -122,6 +122,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.rooms.forEach((room: Room) => {
       /** 게임 방에 있다면 우선 유저부터 방에서 지워야 한다 */
       if (room.isAPlayer(user)) {
+        this.handleLeaveRoom(client, room.roomId);
         room.removeUser(user);
 
         /**
