@@ -329,6 +329,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       this.server.to(client.id).emit('leavedRoom');
       return this.returnMessage('leaveRoom', 400, 'room이 없습니다.', roomId);
     } else if (room.isASpectator(memoryUser)) {
+      this.server.to(client.id).emit('leavedRoom');
       room.removeSpectator(memoryUser);
       return this.returnMessage('leaveRoom', 200, '관전에서 나왔습니다.', roomId);
     }
@@ -341,6 +342,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     /** 방에 아무도 없다면 */
     if (room.players.length === 0) {
       this.logger.log('No user left in the room deleting it...');
+      this.saveGame(room, Date.now() - room.timestampStart);
       this.rooms.delete(room.roomId);
 
       const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
