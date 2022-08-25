@@ -192,7 +192,6 @@ function OpenChatRoom() {
 	useEffect(() => {
 		if (!isLoading && !error && basicChannelInfo) {
 			const newMessages = basicChannelInfo?.data.messages;
-			console.log(newMessages, 'message');
 			setMessageList((prevMessageList) => {
 				return [...prevMessageList, ...newMessages];
 			});
