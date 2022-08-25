@@ -5,24 +5,25 @@ import { IUserInfo } from '../../modules/Interfaces/userInterface';
 import { emitUserAction } from './Emit';
 import { useChatSocket } from './SocketContext';
 
-const UserStatusStyleC = styled.div`
+const UserStatusStyleC = styled.li`
+	/* font-size: 0.8rem; */
 	margin: 0 3px 3px 0;
 	cursor: pointer;
-	&:hover {
-		/* color: gray; */
-	}
 `;
 
 const UserInteractionStyleC = styled.span`
 	margin: 0 3px 3px 0;
+	/* font-size: 0.8rem; */
 	cursor: pointer;
-`;
-
-const NickNameStyleC = styled.div`
-	margin: 0 3px 3px 0;
 	&:hover {
 		color: gray;
 	}
+`;
+
+const NickNameStyleC = styled.li`
+	/* font-size: 0.8rem; */
+	/* width: 100%; */
+	margin: 0 3px 3px 0;
 `;
 
 export function BlockedStatus({ user }: IUserInfo) {
@@ -68,9 +69,9 @@ interface INickName {
 
 export function Nickname({ nickname }: INickName) {
 	return (
-		<Link to={`/main/another/${nickname}`}>
-			<NickNameStyleC>{nickname}</NickNameStyleC>
-		</Link>
+		<NickNameStyleC>
+			<Link to={`/main/another/${nickname}`}>{nickname} </Link>
+		</NickNameStyleC>
 	);
 }
 
@@ -81,7 +82,6 @@ function UserStatus({ user }: IUserInfo) {
 		return (
 			<UserStatusStyleC
 				onClick={() => {
-					console.log(user.roomId);
 					chatSocket.emit('spectateRoom', user.roomId);
 				}}
 			>

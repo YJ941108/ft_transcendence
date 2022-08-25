@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useEffect, useState, useRef, KeyboardEvent } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
 import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
@@ -9,6 +9,42 @@ import { getChannelInfo } from '../../../modules/api';
 import { useChatSocket } from '../SocketContext';
 import OpenChatMessage from './OpenChatMessage';
 import OpenChatNoti from './OpenChatNoti';
+
+const SendDivStyleC = styled.div`
+	width: 100%;
+	height: 80px;
+	display: flex;
+	border: none;
+	margin: 0;
+`;
+
+const InputStyleC = styled.textarea`
+	width: 80%;
+	height: 100%;
+	resize: none;
+	background-color: black;
+	color: white;
+	border: none;
+	&:hover {
+		border: 1px solid rgba(0, 0, 0, 0.3);
+	}
+	&:focus {
+		outline: none;
+		/* outline: 1px solid rgba(0, 0, 0, 0.5); */
+		border: 1px solid rgba(0, 0, 0, 0.3);
+	}
+`;
+
+const SendButtonStyleC = styled.button`
+	background-color: black;
+	color: white;
+	/* height: 100%; */
+	width: 20%;
+	font-size: 0.8rem;
+	border: 1px solid white;
+	margin: 10px;
+	/* border: none; */
+`;
 
 const ChatLogStyleC = styled.ul`
 	min-height: 800px;
@@ -36,6 +72,7 @@ function OpenChatRoom() {
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 	const [channelInfo, setChannelInfo] = useRecoilState<IChannel>(channelInfoData);
 	const [isOwner, setIsOwner] = useState(false);
+	const messageBoxRef = useRef<HTMLUListElement>(null);
 	const {
 		isLoading,
 		data: basicChannelInfo,
@@ -43,16 +80,21 @@ function OpenChatRoom() {
 	} = useQuery(['channel', channelInfo.id], () => getChannelInfo(channelInfo.id));
 	const setChatContent = useSetRecoilState<string>(chatContent);
 
-	const onSubmit = (data: IFormInput) => {
+	const onSubmit: SubmitHandler<IFormInput> = (data: IFormInput) => {
 		const message: ISendMessage = {
 			message: data.message,
 			channelId: channelInfo.id,
 			userId: myInfo.id,
 		};
+
 		chatSocket.emit('sendMessage', message);
-		reset({
-			message: '',
-		});
+
+		const timer = setTimeout(() => {
+			reset({
+				message: '',
+			});
+			clearTimeout(timer);
+		}, 0);
 	};
 
 	const joinChat = () => {
@@ -65,6 +107,28 @@ function OpenChatRoom() {
 
 	const userList = () => {
 		setChatContent('OpenChatUsers');
+	};
+
+	const scrollToBottom = (e: Event) => {
+		e.stopPropagation();
+		e.preventDefault();
+		const target = e.currentTarget as HTMLUListElement;
+
+		target.scroll({
+			top: target.scrollHeight,
+			// behavior: 'smooth',
+		});
+	};
+
+	const onEnterPress = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+		if (event.key === 'Enter' && event.shiftKey === false) {
+			event.preventDefault();
+			const data: IFormInput = { message: event.currentTarget.value };
+			if (event.currentTarget.value) {
+				return handleSubmit(onSubmit(data));
+			}
+		}
+		return null;
 	};
 
 	const leaveChannel = () => {
@@ -107,6 +171,18 @@ function OpenChatRoom() {
 	}, []);
 
 	useEffect(() => {
+		if (messageBoxRef.current) {
+			messageBoxRef.current.addEventListener('DOMNodeInserted', scrollToBottom);
+		}
+
+		return () => {
+			if (messageBoxRef.current) {
+				messageBoxRef.current.removeEventListener('DOMNodeInserted', scrollToBottom);
+			}
+		};
+	}, [messageList]);
+
+	useEffect(() => {
 		if (!isLoading && !error && basicChannelInfo) {
 			const newMessages = basicChannelInfo?.data.messages;
 			setMessageList((prevMessageList) => {
@@ -141,7 +217,7 @@ function OpenChatRoom() {
 					leaveRoom
 				</button>
 			) : null}
-			<ChatLogStyleC>
+			<ChatLogStyleC ref={messageBoxRef}>
 				{messageList?.map((message: IMessages) => {
 					if (!message.author) return <OpenChatNoti key={message.id} content={message.content} />;
 					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
@@ -150,8 +226,10 @@ function OpenChatRoom() {
 				})}
 			</ChatLogStyleC>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<input {...register('message')}/>
-				<button type="submit" >send</button>
+				<SendDivStyleC>
+					<InputStyleC placeholder="메시지를 입력하세요." onKeyDown={onEnterPress} {...register('message')} />
+					<SendButtonStyleC type="submit">SEND</SendButtonStyleC>
+				</SendDivStyleC>
 			</form>
 		</div>
 	);

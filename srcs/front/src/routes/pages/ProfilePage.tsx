@@ -23,7 +23,7 @@ const ProfileDiv = styled.div`
 
 function ProfilePage() {
 	const { isLoading, data } = useQuery<IUser>('me', getUserData);
-	if (!isAdmin()) return <Navigate to="/login" />;
+	if (!isAdmin()) return <Navigate to="/" />;
 	if (isLoading) return null;
 
 	return (

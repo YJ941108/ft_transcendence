@@ -24,9 +24,11 @@ function UserInfo({ user }: IUserInfo) {
 			<Nickname nickname={user.nickname} />
 			{/* <UserNickNameStyleC>{user.nickname}</UserNickNameStyleC> */}
 			<UserStatus user={user} />
-			<FriendsStatus user={user} />
-			<BlockedStatus user={user} />
-			<PlayButton user={user} />
+			<li>
+				<FriendsStatus user={user} />
+				<BlockedStatus user={user} />
+				<PlayButton user={user} />
+			</li>
 		</ListStyle>
 	);
 }

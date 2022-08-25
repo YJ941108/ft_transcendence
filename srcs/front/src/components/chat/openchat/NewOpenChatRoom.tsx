@@ -26,7 +26,11 @@ const NewOpenChatRoomC = styled.div`
 function NewOpenChatRoom() {
 	const chatSocket = useChatSocket();
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
-	const { register, handleSubmit } = useForm<IFormInput>();
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<IFormInput>();
 	const [isPassword, setIsPassword] = useState(false);
 	const setContent = useSetRecoilState(chatContent);
 	const setChannelInfo = useSetRecoilState(channelInfoData);
@@ -55,7 +59,8 @@ function NewOpenChatRoom() {
 				exit
 			</button>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<input {...register('openChatName', { required: true, maxLength: 10 })} />
+				<input type="text" placeholder="name..." maxLength={10} {...register('openChatName', { required: true })} />
+				{errors.openChatName && errors.openChatName.type === 'required' && <span>This is required</span>}
 				<select {...register('openChatVisibility')} onChange={openChatVisibilityChange}>
 					<option value="private">private</option>
 					<option value="public">public</option>
@@ -64,7 +69,13 @@ function NewOpenChatRoom() {
 				{isPassword ? (
 					<div>
 						<h2>Password</h2>
-						<input {...register('password')} />
+						<input
+							type="text"
+							placeholder="password..."
+							maxLength={20}
+							{...(register('password'), { required: true })}
+						/>
+						{errors.password && errors.password.type === 'required' && <span>This is required</span>}
 					</div>
 				) : null}
 				<button type="submit">Create OpenChat</button>

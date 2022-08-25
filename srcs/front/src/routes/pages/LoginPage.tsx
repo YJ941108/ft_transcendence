@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import EmailSignUp from '../../components/login/EmailSignUp';
-import EmailSignIn from '../../components/login/EmailSignIn';
+import { useForm, SubmitHandler } from 'react-hook-form';
 
 const LoginC = styled.div`
 	display: flex;
@@ -19,18 +18,38 @@ const LoginButton = styled.div`
 	margin-bottom: 1rem;
 `;
 
+interface IFormInput {
+	email: string;
+}
+
 function LoginPage() {
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<IFormInput>();
+	const onSubmit: SubmitHandler<IFormInput> = (data) => {
+		console.log(data);
+	};
 	return (
 		<LoginC>
-			<h2>로그인</h2>
 			<LoginButton>
 				<a href={process.env.REACT_APP_FORTYTWO_LOGIN_API}>42Login</a>
 			</LoginButton>
 			<LoginButton>KakaoLogin</LoginButton>
 			<LoginButton>GoogleLogin</LoginButton>
-			<EmailSignIn />
-			<h2>회원가입</h2>
-			<EmailSignUp />
+			<form onSubmit={handleSubmit(onSubmit)}>
+				<input
+					{...register('email', {
+						pattern: {
+							value: /^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$/i,
+							message: '정확한 이메일 표기가 아닙니다. 다시 입력해주세요. ex)abc@gmail.com',
+						},
+					})}
+				/>
+				<span>{errors.email?.message}</span>
+				<input type="submit" />
+			</form>
 		</LoginC>
 	);
 }

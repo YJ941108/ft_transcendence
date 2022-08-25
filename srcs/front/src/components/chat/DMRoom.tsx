@@ -57,9 +57,15 @@ const DMSendButtonStyleC = styled.button`
 	/* border: none; */
 `;
 
-const AcceptButtonStyleC = styled.button`
-	width: 50px;
-	height: 1rem;
+const AcceptButtonStyleC = styled.span`
+	/* width: 50px; */
+	cursor: pointer;
+	/* font-size: 0.8rem; */
+	/* margin: 5px; */
+	color: darkgray;
+	&:hover {
+		color: red;
+	}
 `;
 
 const ChatMessageStyleC = styled.li`
@@ -169,7 +175,9 @@ function DMRoom() {
 									onClick={() => {
 										emitAcceptPongInvite(msg.roomId, msg.id);
 									}}
-								/>
+								>
+									(PLAY)
+								</AcceptButtonStyleC>
 							</ChatMessageStyleC>
 						);
 					}
@@ -183,6 +191,7 @@ function DMRoom() {
 			<DMDivStyleC>
 				<DMInputStyleC
 					onKeyPress={(event) => handleKeyPress(event)}
+					placeholder="메시지를 입력하세요."
 					value={message}
 					onChange={(event) => {
 						setMessage(event.target.value);
