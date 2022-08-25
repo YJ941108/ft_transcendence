@@ -39,8 +39,6 @@ function DirectMessageInfo({ DMRoom }: IDMRoomList) {
 	return (
 		<ListStyle user={DMRoom.another}>
 			<Nickname nickname={DMRoom.another.nickname} />
-			{/* <UserNickNameStyleC>{DMRoom.another.nickname}</UserNickNameStyleC> */}
-			{/* <UserStatus user={DMRoom.another} /> */}
 			<LastMessageDivStyleC
 				onClick={() => {
 					emitCreateDMRoom(chatSocket, DMRoom.another.id);

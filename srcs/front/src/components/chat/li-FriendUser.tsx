@@ -4,18 +4,13 @@ import { emitUserAction } from './Emit';
 import { IUserInfo } from '../../modules/Interfaces/userInterface';
 import { useChatSocket } from './SocketContext';
 import ListStyle from './UserInfoStyle';
-// import PlayButton from './PlayButton';
-import UserStatus, { Nickname } from './UserStatus';
+import UserStatus, { DMButton, Nickname } from './UserStatus';
 import PlayButton from './PlayButton';
 
 const UserInfoDivStyleC = styled.div`
 	max-width: 70%;
 	margin: 5px;
 `;
-
-// const UserNickNameStyleC = styled.p`
-// 	margin: 3px 0;
-// `;
 
 const UserInteractionStyleC = styled.span`
 	margin: 0 3px 3px 0;
@@ -29,11 +24,11 @@ function FriendUserInfo({ user }: IUserInfo) {
 		<ListStyle user={user}>
 			<UserInfoDivStyleC>
 				<Nickname nickname={user.nickname} />
-				{/* <UserNickNameStyleC>{user.nickname}</UserNickNameStyleC> */}
 				<UserStatus user={user} />
 				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'delete')}>
 					DEL
 				</UserInteractionStyleC>
+				<DMButton id={user.id} />
 				<PlayButton user={user} />
 			</UserInfoDivStyleC>
 		</ListStyle>
