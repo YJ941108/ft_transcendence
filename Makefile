@@ -6,10 +6,10 @@ DOCKER-COMPOSE = docker-compose
 all: $(NAME)
 
 $(NAME):
-	mkdir -p $(DATA_PATH)
-	mkdir -p $(DATA_PATH)/dist
-	mkdir -p $(DATA_PATH)/postgres
 	$(DOCKER-COMPOSE) up --build
+	#mkdir -p $(DATA_PATH)
+	#mkdir -p $(DATA_PATH)/dist
+	#mkdir -p $(DATA_PATH)/postgres
 
 dev:
 	$(DOCKER-COMPOSE) up --build -d
