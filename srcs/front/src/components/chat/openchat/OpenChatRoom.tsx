@@ -121,7 +121,8 @@ function OpenChatRoom() {
 	};
 
 	const onEnterPress = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-		if (event.key === 'Enter') {
+		if (event.key === 'Enter' && event.shiftKey === false) {
+			event.preventDefault();
 			const data: IFormInput = { message: event.currentTarget.value };
 			if (event.currentTarget.value) {
 				return handleSubmit(onSubmit(data));
