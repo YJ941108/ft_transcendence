@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Socket, io } from 'socket.io-client';
 import { useQuery } from 'react-query';
+import styled from 'styled-components';
 import { GameState, IRoom } from './GameInterfaces';
 import GameScreen from './GameScreen';
 import GameRooms from './GameRooms';
@@ -8,6 +9,10 @@ import { IMyData } from '../../modules/Interfaces/chatInterface';
 import { getUserData } from '../../modules/api';
 
 let socket: Socket;
+
+const QueueButtonStyleC = styled.button`
+	width: 100%;
+`;
 
 function Game() {
 	const [isDisplayGame, setIsDisplayGame] = useState(false);
@@ -81,17 +86,17 @@ function Game() {
 			) : (
 				<>
 					{queue ? (
-						<button type="button" onClick={leaveQueue}>
-							leaveQueue
-						</button>
+						<QueueButtonStyleC type="button" onClick={leaveQueue}>
+							LEAVE QUEUE
+						</QueueButtonStyleC>
 					) : (
 						<div>
-							<button type="button" onClick={joinQueue} value="DEFAULT">
-								DEFAULT
-							</button>
-							<button type="button" onClick={joinQueue} value="BIG">
-								ACTIVE
-							</button>
+							<QueueButtonStyleC type="button" onClick={joinQueue} value="DEFAULT">
+								DEFAULT MODE
+							</QueueButtonStyleC>
+							<QueueButtonStyleC type="button" onClick={joinQueue} value="BIG">
+								ACTIVE MODE
+							</QueueButtonStyleC>
 						</div>
 					)}
 					<GameRooms gameRooms={gameRooms} socket={socket} />

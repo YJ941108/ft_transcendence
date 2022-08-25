@@ -1,8 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { IPlayer } from '../game/GameInterfaces';
+import { Nickname } from './UserStatus';
 
 const PlayerInfoDivStyleC = styled.div`
+	margin: 5px;
 	display: flex;
 	justify-content: space-between;
 `;
@@ -27,8 +30,7 @@ const PlayerPhotoStyleC = styled.img`
 `;
 
 const PlayerDataDivStyleC = styled.div`
-	width: 200px;
-	margin: auto;
+	text-align: center;
 `;
 
 const PlayerDataPStyleC = styled.p`
@@ -36,7 +38,7 @@ const PlayerDataPStyleC = styled.p`
 	text-align: center;
 	text-overflow: ellipsis;
 	overflow: hidden;
-	margin: 5px;
+	margin-top: 10px;
 `;
 
 interface IPlayerInfo {
@@ -49,10 +51,12 @@ function PlayerInfo({ leftPlayer, rightPlayer }: IPlayerInfo) {
 		<PlayerInfoDivStyleC>
 			<PlayerInfoStyleC>
 				<PlayerPhotoDivStyleC>
-					<PlayerPhotoStyleC src={leftPlayer.user.photo} alt={leftPlayer.user.nickname} />
+					<Link to={`/main/another/${leftPlayer.user.nickname}`}>
+						<PlayerPhotoStyleC src={leftPlayer.user.photo} alt={leftPlayer.user.nickname} />
+					</Link>
 				</PlayerPhotoDivStyleC>
 				<PlayerDataDivStyleC>
-					<PlayerDataPStyleC>{leftPlayer.user.nickname}</PlayerDataPStyleC>
+					<Nickname nickname={leftPlayer.user.nickname} />
 					<PlayerDataPStyleC>
 						{leftPlayer.user.wins}W {leftPlayer.user.losses}L {leftPlayer.user.ratio}pts
 					</PlayerDataPStyleC>
@@ -60,10 +64,12 @@ function PlayerInfo({ leftPlayer, rightPlayer }: IPlayerInfo) {
 			</PlayerInfoStyleC>
 			<PlayerInfoStyleC>
 				<PlayerPhotoDivStyleC>
-					<PlayerPhotoStyleC src={rightPlayer.user.photo} alt={rightPlayer.user.nickname} />
+					<Link to={`/main/another/${rightPlayer.user.nickname}`}>
+						<PlayerPhotoStyleC src={rightPlayer.user.photo} alt={rightPlayer.user.nickname} />
+					</Link>
 				</PlayerPhotoDivStyleC>
 				<PlayerDataDivStyleC>
-					<PlayerDataPStyleC>{rightPlayer.user.nickname}</PlayerDataPStyleC>
+					<Nickname nickname={rightPlayer.user.nickname} />
 					<PlayerDataPStyleC>
 						{rightPlayer.user.wins}W {rightPlayer.user.losses}L {rightPlayer.user.ratio}pts
 					</PlayerDataPStyleC>
