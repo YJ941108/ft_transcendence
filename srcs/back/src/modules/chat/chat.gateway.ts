@@ -551,7 +551,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     if (data.message.length > 640) {
-      throw new Error('길이가 640 이상입니다.');
+      this.logger.log('sendDMMessage: 640이상입니다.');
+      // throw new Error('길이가 640 이상입니다.');
     }
 
     try {
