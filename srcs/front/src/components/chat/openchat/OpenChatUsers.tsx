@@ -36,7 +36,6 @@ function OpenChatUsers() {
 
 	useEffect(() => {
 		chatSocket.on('listeningChannelInfo', (response: { data: IChannel }) => {
-			console.log('listeningChannelInfo', response.data);
 			setChannelInfo(response.data);
 		});
 		chatSocket.on('listeningBan', (response: IUserBanned) => {
