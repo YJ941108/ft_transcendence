@@ -28,7 +28,7 @@ import { ChatGateway } from '../chat/chat.gateway';
  */
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],
   },
   namespace: 'api/games',
@@ -122,6 +122,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.rooms.forEach((room: Room) => {
       /** 게임 방에 있다면 우선 유저부터 방에서 지워야 한다 */
       if (room.isAPlayer(user)) {
+        this.handleLeaveRoom(client, room.roomId);
         room.removeUser(user);
 
         /**
@@ -572,7 +573,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowRight') {
         room.paddleOne.right = false;
       }
-      if (data.key === 'Q') {
+      if (data.key === ' ') {
         room.paddleOne.flash = false;
         room.paddleTwo.flash = false;
         room.ball.flash = false;
@@ -590,7 +591,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       if (data.key === 'ArrowRight') {
         room.paddleTwo.right = false;
       }
-      if (data.key === 'Q') {
+      if (data.key === ' ') {
         room.paddleOne.flash = false;
         room.paddleTwo.flash = false;
         room.ball.flash = false;
