@@ -950,6 +950,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         channel,
       });
       this.userJoinRoom(client.id, roomId);
+
+      /** 클라이언트 전송 */
+      this.server.to(`channel_${channel.id}`).emit('listeningMessage', {
+        func: 'sendMessage',
+        code: 200,
+        message: `메시지를 보냈습니다.`,
+        data: {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          channelId: channel.id,
+        },
+      });
+
       /** client.id에게 방 전체 정보 보내기 */
       channel = await this.chatService.getChannelData(channelId);
       if (type === 'protected') {
