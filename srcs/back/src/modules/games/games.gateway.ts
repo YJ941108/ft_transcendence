@@ -342,7 +342,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     /** 방에 아무도 없다면 */
     if (room.players.length === 0) {
       this.logger.log('No user left in the room deleting it...');
-      this.saveGame(room, Date.now() - room.timestampStart);
+      if (room.gameState === GameState.PLAYER_ONE_WIN || room.gameState === GameState.PLAYER_TWO_WIN)
+        this.saveGame(room, Date.now() - room.timestampStart);
       this.rooms.delete(room.roomId);
 
       const roomIndex: number = this.currentGames.findIndex((toRemove) => toRemove.roomId === room.roomId);
