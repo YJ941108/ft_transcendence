@@ -86,7 +86,7 @@ function OpenChatList() {
 				<OpenChatNewButton />
 				{channelList.map((channel: IChannel) => {
 					return (
-						<ListStyle user={channel.owner}>
+						<ListStyle key={channel.id} user={channel.owner}>
 							<OpenChatDataStyleC
 								onClick={() => {
 									ChatJoin(channel);
