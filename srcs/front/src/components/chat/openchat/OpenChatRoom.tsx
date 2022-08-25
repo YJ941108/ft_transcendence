@@ -215,20 +215,20 @@ function OpenChatRoom() {
 			</form>
 			{isOwner ? (
 				<button type="button" onClick={joinChat}>
-					joinChat
+					INVITE
 				</button>
 			) : null}
 			{isOwner ? (
 				<button type="button" onClick={editChat}>
-					editChat
+					EDIT
 				</button>
 			) : null}
 			<button type="button" onClick={userList}>
-				users
+				USERS
 			</button>
 			{!isOwner ? (
 				<button type="button" onClick={leaveChannel}>
-					leaveRoom
+					LEAVE
 				</button>
 			) : null}
 		</div>
