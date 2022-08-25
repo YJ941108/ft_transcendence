@@ -23,7 +23,12 @@ const UserInteractionStyleC = styled.span`
 const NickNameStyleC = styled.li`
 	/* font-size: 0.8rem; */
 	/* width: 100%; */
+	list-style: none;
 	margin: 0 3px 3px 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
 `;
 
 export function BlockedStatus({ user }: IUserInfo) {
