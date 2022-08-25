@@ -6,6 +6,7 @@ import { useChatSocket } from './SocketContext';
 import ListStyle from './UserInfoStyle';
 // import PlayButton from './PlayButton';
 import UserStatus, { Nickname } from './UserStatus';
+import PlayButton from './PlayButton';
 
 const UserInfoDivStyleC = styled.div`
 	max-width: 70%;
@@ -33,7 +34,7 @@ function FriendUserInfo({ user }: IUserInfo) {
 				<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'delete')}>
 					DEL
 				</UserInteractionStyleC>
-				{/* <PlayButton user={user} /> */}
+				<PlayButton user={user} />
 			</UserInfoDivStyleC>
 		</ListStyle>
 	);

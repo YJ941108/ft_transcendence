@@ -47,8 +47,8 @@ const SendButtonStyleC = styled.button`
 `;
 
 const ChatLogStyleC = styled.ul`
-	min-height: 800px;
-	max-height: 800px;
+	min-height: 720px;
+	max-height: 720px;
 	border-bottom: solid white 2px;
 	height: 100%;
 	overflow-wrap: break-word;
@@ -199,6 +199,20 @@ function OpenChatRoom() {
 	if (error) return <h1>Error</h1>;
 	return (
 		<div>
+			<ChatLogStyleC ref={messageBoxRef}>
+				{messageList?.map((message: IMessages) => {
+					if (!message.author) return <OpenChatNoti key={message.id} content={message.content} />;
+					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
+						return <OpenChatMessage key={message.id} author={message.author} content="BLOCKED" />;
+					return <OpenChatMessage key={message.id} author={message.author} content={message.content} />;
+				})}
+			</ChatLogStyleC>
+			<form onSubmit={handleSubmit(onSubmit)}>
+				<SendDivStyleC>
+					<InputStyleC placeholder="메시지를 입력하세요." onKeyDown={onEnterPress} {...register('message')} />
+					<SendButtonStyleC type="submit">SEND</SendButtonStyleC>
+				</SendDivStyleC>
+			</form>
 			{isOwner ? (
 				<button type="button" onClick={joinChat}>
 					joinChat
@@ -217,20 +231,6 @@ function OpenChatRoom() {
 					leaveRoom
 				</button>
 			) : null}
-			<ChatLogStyleC ref={messageBoxRef}>
-				{messageList?.map((message: IMessages) => {
-					if (!message.author) return <OpenChatNoti key={message.id} content={message.content} />;
-					if (myInfo?.blockedUsers.findIndex((e) => e.id === message.author?.id) !== -1)
-						return <OpenChatMessage key={message.id} author={message.author} content="BLOCKED" />;
-					return <OpenChatMessage key={message.id} author={message.author} content={message.content} />;
-				})}
-			</ChatLogStyleC>
-			<form onSubmit={handleSubmit(onSubmit)}>
-				<SendDivStyleC>
-					<InputStyleC placeholder="메시지를 입력하세요." onKeyDown={onEnterPress} {...register('message')} />
-					<SendButtonStyleC type="submit">SEND</SendButtonStyleC>
-				</SendDivStyleC>
-			</form>
 		</div>
 	);
 }

@@ -18,6 +18,7 @@ const OpenChatListStyleC = styled.ul`
 
 const OpenChatDataStyleC = styled.div`
 	margin: 5px 0;
+	cursor: pointer;
 `;
 
 const OpenChatDataPStyleC = styled.p`

@@ -12,8 +12,18 @@ const UserInfoStlyeC = styled.div`
 `;
 
 const UserNameStyleC = styled.span`
-	max-width: 100px;
-	background-color: red;
+	width: 200px;
+	word-wrap: nowrap;
+	overflow: hidden;
+	text-align: left;
+	text-overflow: ellipsis;
+`;
+
+const UserGameInfoStyleC = styled.span`
+	text-align: right;
+	margin-left: 20px;
+	width: 200px;
+	word-wrap: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 `;
@@ -24,9 +34,9 @@ function LeaderBoardUserInfo({ user }: IUserInfo) {
 			<Link to={`/main/another/${user.nickname}`}>
 				<UserNameStyleC>{user.nickname}</UserNameStyleC>
 			</Link>
-			<UserNameStyleC>
+			<UserGameInfoStyleC>
 				{user.wins}W {user.losses}L {user.ratio}pts
-			</UserNameStyleC>
+			</UserGameInfoStyleC>
 		</UserInfoStlyeC>
 	);
 }

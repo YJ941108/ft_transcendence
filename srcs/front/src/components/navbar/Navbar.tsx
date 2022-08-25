@@ -27,13 +27,13 @@ function Navbar() {
 	return (
 		<NavbarC>
 			<NavbarListC current={url === 'game'}>
-				<Link to="/main/game">play</Link>
+				<Link to="/main/game">PLAY</Link>
 			</NavbarListC>
 			<NavbarListC current={url === 'profile'}>
-				<Link to="/main/profile">profile</Link>
+				<Link to="/main/profile">PROFILE</Link>
 			</NavbarListC>
 			<NavbarListC current={url === 'leaderboard'}>
-				<Link to="/main/leaderboard">leaderboard</Link>
+				<Link to="/main/leaderboard">LEADERBOARD</Link>
 			</NavbarListC>
 		</NavbarC>
 	);
