@@ -60,8 +60,8 @@ function EditOpenChatRoom() {
 				<input type="text" placeholder="name..." maxLength={10} {...register('openChatName', { required: true })} />
 				{errors.openChatName && errors.openChatName.type === 'required' && <span>This is required</span>}
 				<select {...register('openChatVisibility')} onChange={openChatVisibilityChange}>
-					<option value="private">private</option>
 					<option value="public">public</option>
+					<option value="private">private</option>
 					<option value="protected">protected-password</option>
 				</select>
 				{isPassword ? (
