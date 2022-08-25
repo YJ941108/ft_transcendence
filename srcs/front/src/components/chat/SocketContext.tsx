@@ -8,7 +8,7 @@ export function useChatSocket() {
 }
 
 function SocketContextProvider({ children }: { children: React.ReactNode }) {
-	const chatSocket = io('http://3.39.20.24:3032/api/chat');
+	const chatSocket = io('http://localhost:3032/api/chat');
 	chatSocket.on('connect', () => {
 		console.log('연결 성공');
 	});

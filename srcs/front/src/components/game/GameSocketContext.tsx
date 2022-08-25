@@ -8,7 +8,7 @@ export function useGameSocket() {
 }
 
 function GameSocketContextProvider({ children }: { children: React.ReactNode }) {
-	const gameSocket = io('http://3.39.20.24:3032/api/games');
+	const gameSocket = io('http://localhost:3032/api/games');
 	gameSocket.on('connect', () => {});
 	return <gameSocketContext.Provider value={gameSocket}>{children}</gameSocketContext.Provider>;
 }
