@@ -67,12 +67,7 @@ function EditOpenChatRoom() {
 				{isPassword ? (
 					<div>
 						<h2>Password</h2>
-						<input
-							type="text"
-							placeholder="password..."
-							maxLength={20}
-							{...(register('password'), { required: true })}
-						/>
+						<input type="text" placeholder="password..." maxLength={20} {...register('password', { required: true })} />
 						{errors.password && errors.password.type === 'required' && <span>This is required</span>}
 					</div>
 				) : null}

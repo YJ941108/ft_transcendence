@@ -42,6 +42,7 @@ function NewOpenChatRoom() {
 			password: data.password,
 			userId: myInfo.id,
 		};
+		console.log(data, 'password');
 		chatSocket.emit('createChannel', newChannelData, (response: { data: IChannel }) => {
 			setChannelId(response.data.id);
 			setChannelInfo(response.data);
@@ -69,13 +70,7 @@ function NewOpenChatRoom() {
 				{isPassword ? (
 					<div>
 						<h2>Password</h2>
-						<input
-							type="text"
-							placeholder="password..."
-							maxLength={20}
-							{...(register('password'), { required: true })}
-						/>
-						{errors.password && errors.password.type === 'required' && <span>This is required</span>}
+						<input type="text" placeholder="password..." maxLength={20} {...register('password', { required: true })} />
 					</div>
 				) : null}
 				<button type="submit">Create OpenChat</button>
