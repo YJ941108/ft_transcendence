@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSetRecoilState } from 'recoil';
 import styled from 'styled-components';
+import { chatContent } from '../../modules/atoms';
 import { IUserInfo } from '../../modules/Interfaces/userInterface';
-import { emitUserAction } from './Emit';
+import { emitCreateDMRoom, emitUserAction } from './Emit';
 import { useChatSocket } from './SocketContext';
 
 const UserStatusStyleC = styled.li`
@@ -28,6 +30,21 @@ const NickNameStyleC = styled.li`
 	cursor: pointer;
 `;
 
+export function DMButton({ id }: IUserID) {
+	const chatSocket = useChatSocket();
+	const createDMRoom = useSetRecoilState(chatContent);
+	return (
+		<UserInteractionStyleC
+			onClick={() => {
+				emitCreateDMRoom(chatSocket, id);
+				createDMRoom('DMRoom');
+			}}
+		>
+			DM
+		</UserInteractionStyleC>
+	);
+}
+
 export function BlockedStatus({ user }: IUserInfo) {
 	const chatSocket = useChatSocket();
 
@@ -39,9 +56,12 @@ export function BlockedStatus({ user }: IUserInfo) {
 		);
 	}
 	return (
-		<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'block')}>
-			BLOCK
-		</UserInteractionStyleC>
+		<>
+			<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'block')}>
+				BLOCK
+			</UserInteractionStyleC>
+			<DMButton id={user.id} />
+		</>
 	);
 }
 
@@ -67,6 +87,9 @@ export function FriendsStatus({ user }: IUserInfo) {
 
 interface INickName {
 	nickname: string;
+}
+interface IUserID {
+	id: number;
 }
 
 export function Nickname({ nickname }: INickName) {
