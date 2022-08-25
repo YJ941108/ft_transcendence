@@ -550,6 +550,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       message.roomId = data.roomId;
     }
 
+    if (data.message.length > 640) {
+      throw new Error('길이가 640 이상입니다.');
+    }
+
     try {
       const sendMessage = await this.chatService.addMessageToDm(message);
       const emitData: { id: number; content: string; createdAt: Date; author: Users; type: string; roomId: string } = {
