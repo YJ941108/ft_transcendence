@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import OpenChatNewButton from './OpenChatNewButton';
 import { IChannel, IMyData } from '../../../modules/Interfaces/chatInterface';
 // import OpenChatInfo from './OpenChatInfo';
@@ -45,7 +45,7 @@ interface IJoinPossible {
 
 function OpenChatList() {
 	const chatSocket = useChatSocket();
-	const channelList = useRecoilValue<IChannel[]>(channelListInfo);
+	const [channelList, setChannelList] = useRecoilState<IChannel[]>(channelListInfo);
 	const setChannelInfo = useSetRecoilState<IChannel>(channelInfoData);
 	const setContent = useSetRecoilState<string>(chatContent);
 	const setChannelId = useSetRecoilState<number>(channelIdData);
@@ -67,8 +67,12 @@ function OpenChatList() {
 				}
 			}
 		});
+		chatSocket.on('listeningChannelList', (response: { data: IChannel[] }) => {
+			setChannelList(response.data);
+		});
 		return () => {
 			chatSocket.off('listeningJoinPossible');
+			chatSocket.off('listeningChannelList');
 		};
 	}, [chatSocket]);
 

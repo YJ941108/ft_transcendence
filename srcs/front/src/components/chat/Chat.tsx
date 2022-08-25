@@ -109,6 +109,7 @@ function Chat() {
 		return () => {
 			socket.off('connect');
 			socket.off('listeningMe');
+			socket.off('listeningChannelList');
 			// socket.off('listeningGetUsers');
 			// socket.off('listeningDMRoomList');
 			// socket.off('listeningChannelList');
