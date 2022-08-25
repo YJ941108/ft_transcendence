@@ -52,7 +52,6 @@ function FriendsList() {
 			})}
 			<ListSection title="FRIENDS" />
 			{friendUsers?.map((element: IUserData) => {
-				console.log(friendUsers.length, '길이');
 				return <FriendUserInfo key={element.id} user={element} />;
 			})}
 			<ListSection title="BLOCK" />
