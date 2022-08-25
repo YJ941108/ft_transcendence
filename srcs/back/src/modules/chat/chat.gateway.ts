@@ -298,8 +298,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     for (let i = 0; i < users.length; i++) {
       const dbUser = await this.usersService.getUserWithFriends(users[i].id);
       if (users[i].socketId !== undefined && users[i].socketId) {
-        await this.listeningMe(users[i].socketId, 'announceGame');
-        await this.listeningGetUsers(users[i].socketId, 'announceGame', dbUser);
+        if (users[i].socketId) {
+          await this.listeningMe(users[i].socketId, 'announceGame');
+        }
+        if (users[i].socketId) {
+          await this.listeningGetUsers(users[i].socketId, 'announceGame', dbUser);
+        }
       }
     }
   }
