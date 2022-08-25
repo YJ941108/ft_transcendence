@@ -91,11 +91,11 @@ function Game() {
 						</QueueButtonStyleC>
 					) : (
 						<div>
-							<QueueButtonStyleC type="button" onClick={joinQueue} value="DEFAULT">
-								DEFAULT MODE
-							</QueueButtonStyleC>
 							<QueueButtonStyleC type="button" onClick={joinQueue} value="BIG">
 								ACTIVE MODE
+							</QueueButtonStyleC>
+							<QueueButtonStyleC type="button" onClick={joinQueue} value="DEFAULT">
+								DEFAULT MODE
 							</QueueButtonStyleC>
 						</div>
 					)}

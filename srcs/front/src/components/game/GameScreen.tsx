@@ -13,12 +13,13 @@ interface IGameScreenProps {
 const LeaveRoomStyleC = styled.button`
 	/* border: none; */
 	/* border-bottom: 1px solid white; */
-	height: 70px;
+	height: 50px;
 	width: 100%;
 	/* background-color: black; */
 	/* color: white; */
 	&:hover {
 		background-color: rgba(255, 255, 255, 0.1);
+		color: white;
 	}
 `;
 
