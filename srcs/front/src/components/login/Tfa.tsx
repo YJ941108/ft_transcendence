@@ -48,6 +48,8 @@ function Tfa() {
 		setInput('');
 	};
 
+	if (localStorage.getItem('isTfaSucceed') === 'true' && localStorage.getItem('isTfa') === 'true')
+		return <Navigate to="/main/profile" />;
 	if (isLoading) return <h1>loading</h1>;
 	if (error) return <h1>error</h1>;
 	if (!isTfa || isTfaSucceed) return <Navigate to="/main/profile" />;
