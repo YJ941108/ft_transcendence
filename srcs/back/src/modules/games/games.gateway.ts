@@ -333,6 +333,8 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       this.server.to(client.id).emit('leavedRoom');
       room.removeSpectator(memoryUser);
       this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_HUB);
+      client.leave(roomId);
+
       return this.returnMessage('leaveRoom', 200, '관전에서 나왔습니다.', roomId);
     }
 
