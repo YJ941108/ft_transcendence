@@ -763,6 +763,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       /** client.id에게 방 전체 정보 보내기 */
       this.listeningChannelInfo(channel, roomId);
+      this.listeningChannelList(client.id, dbUser.id);
 
       /* 방이 비공개가 아니면 모두에게 알려야 함 */
       if (channel.privacy !== 'private') {
