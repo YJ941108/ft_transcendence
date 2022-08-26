@@ -671,12 +671,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     return newUser;
   }
 
-  roomAlreadyExists(senderId: number, receiverId: number) {
+  roomAlreadyExists(senderId: number, receiverId: number): boolean {
     const sender = this.connectedUsers.getUserById(senderId);
     const receiver = this.connectedUsers.getUserById(receiverId);
 
     if (!sender || !receiver) {
-      return;
+      return true;
     }
 
     this.rooms.forEach((room: Room) => {
@@ -694,6 +694,10 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     const firstPlayer: User = await this.createInvitedUser(sender.id, sender.nickname);
     const receiverData = await this.usersService.getUserWithoutFriends(receiverId);
     const secondPlayer: User = await this.createInvitedUser(receiverData.id, receiverData.nickname);
+
+    if (this.roomAlreadyExists(sender.id, receiverId)) {
+      throw new Error('이미 게임이 있습니다');
+    }
 
     /** 게임방 만들기 */
     const roomId: string = `${firstPlayer.nickname}&${secondPlayer.nickname}`;
