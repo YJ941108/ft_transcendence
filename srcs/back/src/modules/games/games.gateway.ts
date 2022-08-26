@@ -647,9 +647,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     }
 
     const memoryUser = this.connectedUsers.getUserById(id);
-    if (memoryUser.status === UserStatus.PLAYING) {
-      return false;
-    }
+
+    this.rooms.forEach((room: Room) => {
+      if (room.isAPlayer(memoryUser)) {
+        return false;
+      }
+    });
 
     const user = await this.createSpectateUser(id);
 

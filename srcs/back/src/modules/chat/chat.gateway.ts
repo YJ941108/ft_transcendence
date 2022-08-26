@@ -1475,8 +1475,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     } else {
       this.server.to(client.id).emit('listeningSpectateRoom', {
         func: 'listeningChannelInfo',
-        code: 400,
-        message: `게임중에는 관전이 불가능합니다.`,
+        code: 200,
+        message: `관전 성공`,
       });
     }
     return this.returnMessage('spectateRoom', 200, '게임 관전 성공했습니다.');
