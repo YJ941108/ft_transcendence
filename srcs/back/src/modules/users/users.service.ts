@@ -109,6 +109,15 @@ export class UsersService {
       const serverOrigin = this.configService.get<string>('server.origin');
       const fileLocation = serverOrigin + join('/api/profile', file.filename);
       user.photo = fileLocation;
+
+      if (!nickname) {
+        await this.usersRepository.save(user);
+        return {
+          statusCode: 200,
+          message: '성공',
+          data: user,
+        };
+      }
     }
     if (nickname) {
       const isUser = await this.usersRepository.findOne({ nickname });
