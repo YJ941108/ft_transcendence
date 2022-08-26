@@ -53,6 +53,12 @@ function OpenChatList() {
 	const myInfo = useRecoilValue<IMyData>(MyInfo);
 
 	useEffect(() => {
+		if (chatSocket) {
+			chatSocket.emit('requestChannelList');
+		}
+	}, []);
+
+	useEffect(() => {
 		chatSocket.on('listeningJoinPossible', (response: IJoinPossible) => {
 			const channelInfo = response.data;
 			if (response.code === 200) {

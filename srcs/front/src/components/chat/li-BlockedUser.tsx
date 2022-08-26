@@ -4,7 +4,7 @@ import { emitUserAction } from './Emit';
 import { IUserInfo } from '../../modules/Interfaces/userInterface';
 import { useChatSocket } from './SocketContext';
 import ListStyle from './UserInfoStyle';
-import UserStatus, { Nickname } from './UserStatus';
+import { Nickname } from './UserStatus';
 
 const UserInteractionStyleC = styled.span`
 	margin: 0 3px 3px 0;
@@ -16,7 +16,6 @@ function BlockedUserInfo({ user }: IUserInfo) {
 	return (
 		<ListStyle user={user}>
 			<Nickname nickname={user.nickname} />
-			<UserStatus user={user} />
 			<UserInteractionStyleC onClick={() => emitUserAction(chatSocket, user.nickname, 'release')}>
 				UNBLOCK
 			</UserInteractionStyleC>
