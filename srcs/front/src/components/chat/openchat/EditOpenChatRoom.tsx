@@ -23,15 +23,20 @@ const EditOpenChatRoomC = styled.div`
 `;
 
 function EditOpenChatRoom() {
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<IFormInput>();
 	const chatSocket = useChatSocket();
 	const [isPassword, setIsPassword] = useState(false);
 	const setContent = useSetRecoilState(chatContent);
 	const [channelData, setChannelData] = useRecoilState<IChannel>(channelInfoData);
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<IFormInput>({
+		defaultValues: {
+			openChatName: channelData.name,
+			openChatVisibility: 'public',
+		},
+	});
 	const onSubmit = (data: IFormInput) => {
 		const editRoomData = {
 			channelId: channelData.id,
