@@ -70,7 +70,7 @@ function Toggle({ tfa, show }: Props) {
 
 	return (
 		<ToggleBox show={show}>
-			<label htmlFor="ToggleBtn">2AF 인증 {toggle ? 'On' : 'Off'}</label>
+			<label htmlFor="ToggleBtn">2FA 인증 {toggle ? 'On' : 'Off'}</label>
 			<ToggleBtn onClick={clickedToggle} tfa={toggle}>
 				<Circle tfa={toggle} />
 			</ToggleBtn>

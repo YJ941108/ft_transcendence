@@ -6,6 +6,10 @@ import { chatContent, channelInfoData } from '../../../modules/atoms';
 import { useChatSocket } from '../SocketContext';
 import { IChannel } from '../../../modules/Interfaces/chatInterface';
 
+const RoomTypeSelectStyleC = styled.select`
+	width: 100%;
+`;
+
 interface IFormInput {
 	channelId: number;
 	openChatName: string;
@@ -19,15 +23,20 @@ const EditOpenChatRoomC = styled.div`
 `;
 
 function EditOpenChatRoom() {
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<IFormInput>();
 	const chatSocket = useChatSocket();
 	const [isPassword, setIsPassword] = useState(false);
 	const setContent = useSetRecoilState(chatContent);
 	const [channelData, setChannelData] = useRecoilState<IChannel>(channelInfoData);
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<IFormInput>({
+		defaultValues: {
+			openChatName: channelData.name,
+			openChatVisibility: 'public',
+		},
+	});
 	const onSubmit = (data: IFormInput) => {
 		const editRoomData = {
 			channelId: channelData.id,
@@ -57,17 +66,17 @@ function EditOpenChatRoom() {
 				exit
 			</button>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<input type="text" placeholder="name..." maxLength={10} {...register('openChatName', { required: true })} />
+				<input type="text" placeholder="ROOM TITLE" maxLength={10} {...register('openChatName', { required: true })} />
 				{errors.openChatName && errors.openChatName.type === 'required' && <span>This is required</span>}
-				<select {...register('openChatVisibility')} onChange={openChatVisibilityChange}>
-					<option value="public">public</option>
-					<option value="private">private</option>
-					<option value="protected">protected-password</option>
-				</select>
+				<RoomTypeSelectStyleC {...register('openChatVisibility')} onChange={openChatVisibilityChange}>
+					<option value="public">PUBLIC</option>
+					<option value="private">PRIVATE</option>
+					<option value="protected">PASSWORD</option>
+				</RoomTypeSelectStyleC>
 				{isPassword ? (
 					<div>
 						<h2>Password</h2>
-						<input type="text" placeholder="password..." maxLength={20} {...register('password', { required: true })} />
+						<input type="text" placeholder="PASSWORD" maxLength={20} {...register('password', { required: true })} />
 						{errors.password && errors.password.type === 'required' && <span>This is required</span>}
 					</div>
 				) : null}

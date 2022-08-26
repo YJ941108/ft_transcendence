@@ -29,6 +29,15 @@ export interface IDM {
 	};
 }
 
+export interface IChannelDeletedResponse {
+	func: string;
+	code: number;
+	message: string;
+	data: {
+		deleteChannelId: number;
+	};
+}
+
 export interface IMessages {
 	id: number;
 	content: string;

@@ -95,7 +95,7 @@ function Game() {
 								ACTIVE MODE
 							</QueueButtonStyleC>
 							<QueueButtonStyleC type="button" onClick={joinQueue} value="DEFAULT">
-								DEFAULT MODE
+								BASIC MODE
 							</QueueButtonStyleC>
 						</div>
 					)}

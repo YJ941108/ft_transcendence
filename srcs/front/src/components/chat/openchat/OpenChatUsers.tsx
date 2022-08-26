@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import { channelInfoData, chatContent, MyInfo } from '../../../modules/atoms';
-import { IChannel, IMyData, IUserBanned } from '../../../modules/Interfaces/chatInterface';
+import { IChannel, IMyData, IUserBanned, IChannelDeletedResponse } from '../../../modules/Interfaces/chatInterface';
 import { getChannelInfo } from '../../../modules/api';
 import IUserData from '../../../modules/Interfaces/userInterface';
 import OpenChatUser from './OpenChatUser';
@@ -40,6 +40,12 @@ function OpenChatUsers() {
 		});
 		chatSocket.on('listeningBan', (response: IUserBanned) => {
 			if (myInfo.id === response.data.id) setContent('OpenChatList');
+		});
+		chatSocket.on('listeningChannelDeleted', (response: IChannelDeletedResponse) => {
+			if (channelInfo.id === response.data.deleteChannelId) {
+				alert('채팅방이 삭제되었습니다.');
+				setContent('OpenChatList');
+			}
 		});
 		return () => {
 			chatSocket.off('listeningChannelInfo');
