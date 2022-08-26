@@ -110,11 +110,11 @@ export class ChannelService {
   }
 
   async create(createChannelDto: CreateChannelDto) {
-    /** 채널이 존재하는지 확인 */
-    const existingChannel = await this.nameIsAvailable(createChannelDto.name);
-    if (existingChannel) {
-      throw new Error(`Group '${createChannelDto.name}' already exists. Choose another name.`);
-    }
+    // /** 채널이 존재하는지 확인 */
+    // const existingChannel = await this.nameIsAvailable(createChannelDto.name);
+    // if (existingChannel) {
+    //   throw new Error(`Group '${createChannelDto.name}' already exists. Choose another name.`);
+    // }
 
     /** 비밀번호가 있다면 해쉬적용 */
     if (createChannelDto.password) {
@@ -130,13 +130,13 @@ export class ChannelService {
   }
 
   async update(id: number, updateChannelDto: UpdateChannelDto) {
-    if (updateChannelDto.name) {
-      const existingChannel = await this.nameIsAvailable(updateChannelDto.name);
+    // if (updateChannelDto.name) {
+    //   const existingChannel = await this.nameIsAvailable(updateChannelDto.name);
 
-      if (existingChannel && existingChannel.id !== id) {
-        throw new Error(`Group '${updateChannelDto.name}' already exists. Choose another name.`);
-      }
-    }
+    //   if (existingChannel && existingChannel.id !== id) {
+    //     throw new Error(`Group '${updateChannelDto.name}' already exists. Choose another name.`);
+    //   }
+    // }
 
     if (updateChannelDto.password) {
       updateChannelDto.password = await hashPassword(updateChannelDto.password, 10);
