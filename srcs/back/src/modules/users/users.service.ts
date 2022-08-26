@@ -113,7 +113,7 @@ export class UsersService {
     if (nickname) {
       const isUser = await this.usersRepository.findOne({ nickname });
       const regex = /^[0-9a-zA-Z]+$/;
-      if (isUser) {
+      if (isUser.nickname !== nickname && isUser) {
         throw new ConflictException('중복된 닉네임입니다');
       } else if (!nickname.match(regex)) {
         throw new ConflictException('올바르지 않은 닉네임입니다');
