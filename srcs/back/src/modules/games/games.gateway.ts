@@ -301,6 +301,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       }
       await this.usersService.setIsPlaying(user.id, true);
       await this.usersService.setRoomId(user.id, roomId);
+      this.connectedUsers.changeUserStatus(client.id, UserStatus.PLAYING);
 
       await this.chatGateway.announceGame();
 
@@ -612,6 +613,11 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
     }
 
+    const memoryUser = this.connectedUsers.getUserBySocketId(client.id);
+    if (memoryUser.status === UserStatus.PLAYING) {
+      throw new Error('게임 중에는 관전할 수 없습니다');
+    }
+
     /** 관전중이지 않다면 게임방 관전 리스트에 추가 */
     if (!room.isASpectator(user)) {
       room.addSpectator(user);
@@ -700,6 +706,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     }
     if (secondPlayer && secondPlayer.status === UserStatus.SPECTATING) {
       throw new Error('상대방이 관전중입니다.');
+    }
+    if (firstPlayer && firstPlayer.status === UserStatus.SPECTATING) {
+      throw new Error('관전중에는 초대할 수 없습니다. LeaveRoom을 눌러주세요');
     }
 
     /** 게임방 만들기 */
