@@ -103,9 +103,9 @@ function Chat() {
 		socket.on('listeningChannelList', (response: { data: IChannel[] }) => {
 			setChannelList(response.data);
 		});
-		// socket.on('chatError', (message: string) => {
-		// 	alert(message);
-		// });
+		socket.on('chatError', (message: string) => {
+			alert(message);
+		});
 		return () => {
 			socket.off('connect');
 			socket.off('listeningMe');
@@ -114,7 +114,7 @@ function Chat() {
 			// socket.off('listeningDMRoomList');
 			// socket.off('listeningChannelList');
 			socket.off('listeningChannelInfo');
-			// socket.off('chatError');
+			socket.off('chatError');
 		};
 	}, [isLoading, error, userData]);
 
