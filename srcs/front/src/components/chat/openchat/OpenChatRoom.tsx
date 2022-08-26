@@ -10,6 +10,7 @@ import {
 	IChannelMessageResponse,
 	IChannelMessage,
 	IUserBanned,
+	IChannelDeletedResponse,
 } from '../../../modules/Interfaces/chatInterface';
 import { getChannelInfo } from '../../../modules/api';
 import { useChatSocket } from '../SocketContext';
@@ -152,9 +153,11 @@ function OpenChatRoom() {
 				});
 			}
 		});
-		chatSocket.on('listeningChannelDeleted', () => {
-			alert('채팅방이 삭제되었습니다.');
-			setChatContent('OpenChatList');
+		chatSocket.on('listeningChannelDeleted', (response: IChannelDeletedResponse) => {
+			if (channelInfo.id === response.data.deleteChannelId) {
+				alert('채팅방이 삭제되었습니다.');
+				setChatContent('OpenChatList');
+			}
 		});
 		chatSocket.on('listeningChannelInfo', (response: { data: IChannel }) => {
 			if (response.data.id === channelInfo.id) setChannelInfo(response.data);
