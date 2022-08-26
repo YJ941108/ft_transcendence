@@ -40,7 +40,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		const keyData: IKey = {
 			roomId: room.roomId,
 			key: event.key,
-			nickname: userData.nickname,
+			id: userData.id,
 		};
 		socket.emit('keyUp', keyData);
 	};
@@ -49,7 +49,7 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 		const keyData: IKey = {
 			roomId: room.roomId,
 			key: event.key,
-			nickname: userData.nickname,
+			id: userData.id,
 		};
 		socket.emit('keyDown', keyData);
 	};
