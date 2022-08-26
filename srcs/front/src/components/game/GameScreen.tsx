@@ -30,7 +30,6 @@ const Canvas = styled.canvas`
 `;
 
 function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
-	const countDown = ['3', '2', '1', 'start'];
 	const socket: Socket = socketProps;
 	const userData: IUser = JSON.parse(localStorage.getItem('user') || '{}');
 	let room: IRoom = roomDataProps;
@@ -108,13 +107,11 @@ function GameScreen({ socketProps, roomDataProps }: IGameScreenProps) {
 			if (room.gameState === GameState.WAITING) {
 				gameData.drawWaiting();
 			} else if (room.gameState === GameState.STARTING) {
-				const count: number = Math.floor((Date.now() - room.timestampStart) / 1000);
-				gameData.drawStartCountDown(countDown[count]);
+				gameData.drawStartCountDown('READY');
 			} else if (room.gameState === GameState.PAUSED) {
 				gameData.drawPausedState();
 			} else if (room.gameState === GameState.RESUMED) {
-				const count: number = (Date.now() - room.pauseTime[room.pauseTime.length - 1].resume) / 1000;
-				gameData.drawStartCountDown(countDown[Math.floor(count)]);
+				gameData.drawStartCountDown('READY');
 			} else if (room.gameState === GameState.PLAYER_ONE_WIN || room.gameState === GameState.PLAYER_TWO_WIN) {
 				gameEnd(room.roomId, room.paddleOne.user.nickname, room.paddleTwo.user.nickname, room.gameState, gameData);
 			}

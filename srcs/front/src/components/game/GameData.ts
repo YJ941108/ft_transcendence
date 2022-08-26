@@ -121,14 +121,14 @@ export default class GameData {
 	}
 
 	drawStartCountDown(countDown: string) {
-		this.drawCenteredTexture(`${countDown}`, this.screenWidth / 2, this.screenHeight / 2, 45, 'white');
+		this.drawCenteredTexture(`${countDown}`, this.screenWidth / 2, this.screenHeight / 2, 90, 'white');
 	}
 
 	drawWaiting() {
-		this.drawCenteredTexture(`Waiting...`, this.screenWidth / 2, this.screenHeight / 2, 45, 'white');
+		this.drawCenteredTexture(`WAITING`, this.screenWidth / 2, this.screenHeight / 2, 90, 'white');
 	}
 
 	drawPausedState() {
-		this.drawCenteredTexture(`Paused...`, this.screenWidth / 2, this.screenHeight / 2, 45, 'white');
+		this.drawCenteredTexture(`PAUSED`, this.screenWidth / 2, this.screenHeight / 2, 90, 'white');
 	}
 }
