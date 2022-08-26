@@ -280,6 +280,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     await this.listeningMe(client.id, 'requestMyData');
   }
 
+  @SubscribeMessage('requestChannelList')
+  async handleChannelList(@ConnectedSocket() client: Socket) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
+      return this.returnMessage('createDMRoom', 400, '채팅 소켓에 유저가 없습니다');
+    }
+
+    await this.listeningChannelList(client.id, memoryUser.id);
+  }
+
   @SubscribeMessage('requestGetUsers')
   async handleGetUserList(@ConnectedSocket() client: Socket) {
     let memoryUser = this.chatUsers.getUserBySocketId(client.id);
