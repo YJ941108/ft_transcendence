@@ -19,7 +19,7 @@ function OpenChatNewButton() {
 	const setContent = useSetRecoilState(chatContent);
 	return (
 		<NewChatButtonStyleC type="button" onClick={() => setContent('NewOpenChatRoom')}>
-			+ New Chat
+			+ NEW CHAT
 		</NewChatButtonStyleC>
 	);
 }
