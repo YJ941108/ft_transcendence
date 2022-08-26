@@ -21,7 +21,7 @@ export class Channel {
   /**
    * 방 이름
    */
-  @Column({ unique: true })
+  @Column({ unique: false })
   name: string;
 
   /**
