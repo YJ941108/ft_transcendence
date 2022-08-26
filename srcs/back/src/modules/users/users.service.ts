@@ -111,7 +111,7 @@ export class UsersService {
       user.photo = fileLocation;
     }
     if (nickname) {
-      const isUser = await this.usersRepository.findOne({ nickname });
+      const isUser = await this.usersRepository.findOne({ id });
       const regex = /^[0-9a-zA-Z]+$/;
       if (isUser.nickname !== nickname && isUser) {
         throw new ConflictException('중복된 닉네임입니다');
