@@ -280,6 +280,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     await this.listeningMe(client.id, 'requestMyData');
   }
 
+  @SubscribeMessage('requestChannelList')
+  async handleChannelList(@ConnectedSocket() client: Socket) {
+    let memoryUser = this.chatUsers.getUserBySocketId(client.id);
+    if (!memoryUser) {
+      return this.returnMessage('createDMRoom', 400, '채팅 소켓에 유저가 없습니다');
+    }
+
+    await this.listeningChannelList(client.id, memoryUser.id);
+  }
+
   @SubscribeMessage('requestGetUsers')
   async handleGetUserList(@ConnectedSocket() client: Socket) {
     let memoryUser = this.chatUsers.getUserBySocketId(client.id);
@@ -763,6 +773,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
       /** client.id에게 방 전체 정보 보내기 */
       this.listeningChannelInfo(channel, roomId);
+      this.listeningChannelList(client.id, dbUser.id);
 
       /* 방이 비공개가 아니면 모두에게 알려야 함 */
       if (channel.privacy !== 'private') {
@@ -1455,8 +1466,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('spectateRoom')
   async handlespectateRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     const memoryUser = this.chatUsers.getUser(client.id);
-    this.pongGateway.pushSpectatorToRoom(memoryUser.id, roomId);
-    this.server.to(client.id).emit('listeningSpectateRoom', 'success');
+    if ((await this.pongGateway.pushSpectatorToRoom(memoryUser.id, roomId)) === false) {
+      this.server.to(client.id).emit('listeningSpectateRoom', {
+        func: 'listeningChannelInfo',
+        code: 400,
+        message: `게임중에는 관전이 불가능합니다.`,
+      });
+    } else {
+      this.server.to(client.id).emit('listeningSpectateRoom', {
+        func: 'listeningChannelInfo',
+        code: 200,
+        message: `관전 성공`,
+      });
+    }
     return this.returnMessage('spectateRoom', 200, '게임 관전 성공했습니다.');
   }
 

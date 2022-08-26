@@ -301,6 +301,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       }
       await this.usersService.setIsPlaying(user.id, true);
       await this.usersService.setRoomId(user.id, roomId);
+      this.connectedUsers.changeUserStatus(client.id, UserStatus.PLAYING);
 
       await this.chatGateway.announceGame();
 
@@ -331,8 +332,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     } else if (room.isASpectator(memoryUser)) {
       this.server.to(client.id).emit('leavedRoom');
       room.removeSpectator(memoryUser);
+      this.connectedUsers.changeUserStatus(client.id, UserStatus.IN_HUB);
+      client.leave(roomId);
+
       return this.returnMessage('leaveRoom', 200, '관전에서 나왔습니다.', roomId);
     }
+
     await this.usersService.setIsPlaying(memoryUser.id, false);
     await this.usersService.setRoomId(memoryUser.id, '');
     await this.chatGateway.announceGame();
@@ -612,6 +617,11 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('spectateRoom', 400, '유저가 접속해있지 않습니다.');
     }
 
+    const memoryUser = this.connectedUsers.getUserBySocketId(client.id);
+    if (memoryUser.status === UserStatus.PLAYING) {
+      throw new Error('게임 중에는 관전할 수 없습니다');
+    }
+
     /** 관전중이지 않다면 게임방 관전 리스트에 추가 */
     if (!room.isASpectator(user)) {
       room.addSpectator(user);
@@ -639,7 +649,14 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (!room) {
       return this.returnMessage('spectateRoom', 400, '방이 없습니다.');
     }
+
     const user = await this.createSpectateUser(id);
+
+    this.rooms.forEach((room: Room) => {
+      if (room.isAPlayer(user)) {
+        return;
+      }
+    });
 
     if (!room.isASpectator(user)) {
       room.addSpectator(user);
@@ -671,12 +688,12 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     return newUser;
   }
 
-  roomAlreadyExists(senderId: number, receiverId: number) {
+  roomAlreadyExists(senderId: number, receiverId: number): boolean {
     const sender = this.connectedUsers.getUserById(senderId);
     const receiver = this.connectedUsers.getUserById(receiverId);
 
     if (!sender || !receiver) {
-      return;
+      return true;
     }
 
     this.rooms.forEach((room: Room) => {
@@ -694,6 +711,16 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     const firstPlayer: User = await this.createInvitedUser(sender.id, sender.nickname);
     const receiverData = await this.usersService.getUserWithoutFriends(receiverId);
     const secondPlayer: User = await this.createInvitedUser(receiverData.id, receiverData.nickname);
+
+    if (this.roomAlreadyExists(sender.id, receiverId)) {
+      throw new Error('이미 게임이 있습니다');
+    }
+    if (secondPlayer && secondPlayer.status === UserStatus.SPECTATING) {
+      throw new Error('상대방이 관전중입니다.');
+    }
+    if (firstPlayer && firstPlayer.status === UserStatus.SPECTATING) {
+      throw new Error('관전중에는 초대할 수 없습니다. LeaveRoom을 눌러주세요');
+    }
 
     /** 게임방 만들기 */
     const roomId: string = `${firstPlayer.nickname}&${secondPlayer.nickname}`;

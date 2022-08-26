@@ -1,10 +1,10 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 import styled from 'styled-components';
 import { chatContent } from '../../modules/atoms';
 import { IUserInfo } from '../../modules/Interfaces/userInterface';
-import { emitCreateDMRoom, emitUserAction } from './Emit';
+import { emitCreateDMRoom, emitUserAction, IDebug } from './Emit';
 import { useChatSocket } from './SocketContext';
 
 const UserStatusStyleC = styled.li`
@@ -102,6 +102,24 @@ export function Nickname({ nickname }: INickName) {
 
 function UserStatus({ user }: IUserInfo) {
 	const chatSocket = useChatSocket();
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (chatSocket) {
+			chatSocket.on('listeningSpectateRoom', (response: IDebug) => {
+				const url = window.location.href.split('/').pop();
+				if (url !== 'game') {
+					navigate('/main/game');
+				} else if (response.code === 200) {
+					window.location.reload();
+				}
+			});
+			return () => {
+				chatSocket.off('listeningSpectateRoom');
+			};
+		}
+		return () => {};
+	}, [chatSocket]);
 
 	if (user.isPlaying) {
 		return (
