@@ -510,11 +510,11 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('keyDown')
   async handleKeyDown(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { roomId: string; key: string; nickname: string },
+    @MessageBody() data: { roomId: string; key: string; id: number },
   ) {
     const room: Room = this.rooms.get(data.roomId);
 
-    if (room && room.paddleOne.user.nickname === data.nickname) {
+    if (room && room.paddleOne.user.id === data.id) {
       if (data.key === 'ArrowUp') {
         room.paddleOne.up = true;
       }
@@ -532,7 +532,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         room.paddleTwo.flash = true;
         room.ball.flash = true;
       }
-    } else if (room && room.paddleTwo.user.nickname === data.nickname) {
+    } else if (room && room.paddleTwo.user.id === data.id) {
       if (data.key === 'ArrowUp') {
         room.paddleTwo.up = true;
       }
@@ -562,11 +562,11 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('keyUp')
   async handleKeyUp(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { roomId: string; key: string; nickname: string },
+    @MessageBody() data: { roomId: string; key: string; id: number },
   ) {
     const room: Room = this.rooms.get(data.roomId);
 
-    if (room && room.paddleOne.user.nickname === data.nickname) {
+    if (room && room.paddleOne.user.id === data.id) {
       if (data.key === 'ArrowUp') {
         room.paddleOne.up = false;
       }
@@ -584,7 +584,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         room.paddleTwo.flash = false;
         room.ball.flash = false;
       }
-    } else if (room && room.paddleTwo.user.nickname === data.nickname) {
+    } else if (room && room.paddleTwo.user.id === data.id) {
       if (data.key === 'ArrowUp') {
         room.paddleTwo.up = false;
       }
