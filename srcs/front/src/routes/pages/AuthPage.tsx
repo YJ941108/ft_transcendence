@@ -15,6 +15,7 @@ function AuthPage() {
 		};
 		if (localStorage.getItem('token'))
 			return () => {
+				localStorage.clear();
 				navigate('/');
 			};
 		setLogin();
