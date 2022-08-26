@@ -1466,8 +1466,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('spectateRoom')
   async handlespectateRoom(@ConnectedSocket() client: Socket, @MessageBody() roomId: string) {
     const memoryUser = this.chatUsers.getUser(client.id);
-    this.pongGateway.pushSpectatorToRoom(memoryUser.id, roomId);
-    this.server.to(client.id).emit('listeningSpectateRoom', 'success');
+    if ((await this.pongGateway.pushSpectatorToRoom(memoryUser.id, roomId)) === false) {
+      this.server.to(client.id).emit('listeningSpectateRoom', {
+        func: 'listeningChannelInfo',
+        code: 400,
+        message: `게임중에는 관전이 불가능합니다.`,
+      });
+    } else {
+      this.server.to(client.id).emit('listeningSpectateRoom', {
+        func: 'listeningChannelInfo',
+        code: 400,
+        message: `게임중에는 관전이 불가능합니다.`,
+      });
+    }
     return this.returnMessage('spectateRoom', 200, '게임 관전 성공했습니다.');
   }
 

@@ -648,7 +648,7 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     const memoryUser = this.connectedUsers.getUserById(id);
     if (memoryUser.status === UserStatus.PLAYING) {
-      throw new Error('게임 중에는 관전할 수 없습니다');
+      return false;
     }
 
     const user = await this.createSpectateUser(id);
