@@ -1,8 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useResetRecoilState } from 'recoil';
 import styled from 'styled-components';
-import { MyInfo } from '../../modules/atoms';
 import { deleteToken } from '../../modules/login/login';
 import { useChatSocket } from './SocketContext';
 import { IMyData } from '../../modules/Interfaces/chatInterface';
@@ -65,7 +63,6 @@ function MyUserInfo({ user }: IMyInfo) {
 		deleteToken();
 		socket.disconnect();
 		navigate('/');
-		useResetRecoilState(MyInfo);
 	};
 	return (
 		<RequestUserStyleC>

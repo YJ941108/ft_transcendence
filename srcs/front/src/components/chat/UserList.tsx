@@ -8,6 +8,7 @@ import IUserData from '../../modules/Interfaces/userInterface';
 import { useChatSocket } from './SocketContext';
 import MyUserInfo from './li-MyInfo';
 import ListSection from './ListSection';
+import { IDebug } from './Emit';
 
 const UserListStyleC = styled.ul`
 	min-height: 800px;
@@ -27,11 +28,11 @@ function UserList() {
 			chatSocket.on('listeningGetUsers', (response: { data: IUserData[] }) => {
 				setUsers(response.data);
 			});
-			chatSocket.on('listeningSpectateRoom', () => {
+			chatSocket.on('listeningSpectateRoom', (response: IDebug) => {
 				const url = window.location.href.split('/').pop();
 				if (url !== 'game') {
 					navigate('/main/game');
-				} else {
+				} else if (response.code === 200) {
 					window.location.reload();
 				}
 			});

@@ -19,17 +19,19 @@ function PlayButton({ user }: IUserInfo) {
 	const navigate = useNavigate();
 	const url = window.location.href.split('/').pop();
 	const emitSendPongInvite = (anotherId: number) => {
-		chatSocket.emit('sendPongInvite', { anotherId }, (response: IDebug) => {
-			if (response.code === 200) {
-				if (url !== 'game') {
-					navigate('/main/game');
-				} else {
-					window.location.reload();
+		if (user.isOnline) {
+			chatSocket.emit('sendPongInvite', { anotherId }, (response: IDebug) => {
+				if (response.code === 200) {
+					if (url !== 'game') {
+						navigate('/main/game');
+					} else {
+						window.location.reload();
+					}
+				} else if (response.code === 400) {
+					console.log('sendPongInvite FAIL', response);
 				}
-			} else if (response.code === 400) {
-				console.log('sendPongInvite FAIL', response);
-			}
-		});
+			});
+		}
 	};
 
 	return <UserInteractionStyleC onClick={() => emitSendPongInvite(user.id)}>PLAY</UserInteractionStyleC>;
