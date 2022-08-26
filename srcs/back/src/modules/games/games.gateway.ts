@@ -698,6 +698,9 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     if (this.roomAlreadyExists(sender.id, receiverId)) {
       throw new Error('이미 게임이 있습니다');
     }
+    if (secondPlayer && secondPlayer.status === UserStatus.SPECTATING) {
+      throw new Error('상대방이 관전중입니다.');
+    }
 
     /** 게임방 만들기 */
     const roomId: string = `${firstPlayer.nickname}&${secondPlayer.nickname}`;
