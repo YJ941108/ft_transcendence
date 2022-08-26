@@ -646,15 +646,13 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       return this.returnMessage('spectateRoom', 400, '방이 없습니다.');
     }
 
-    const memoryUser = this.connectedUsers.getUserById(id);
+    const user = await this.createSpectateUser(id);
 
     this.rooms.forEach((room: Room) => {
-      if (room.isAPlayer(memoryUser)) {
-        return false;
+      if (room.isAPlayer(user)) {
+        return;
       }
     });
-
-    const user = await this.createSpectateUser(id);
 
     if (!room.isASpectator(user)) {
       room.addSpectator(user);
