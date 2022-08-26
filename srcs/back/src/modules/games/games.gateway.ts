@@ -334,6 +334,13 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       room.removeSpectator(memoryUser);
       return this.returnMessage('leaveRoom', 200, '관전에서 나왔습니다.', roomId);
     }
+
+    if (room.isASpectator(memoryUser)) {
+      this.server.to(client.id).emit('leavedRoom');
+      room.removeSpectator(memoryUser);
+      return this.returnMessage('leaveRoom', 200, '관전에서 나왔습니다.', roomId);
+    }
+
     await this.usersService.setIsPlaying(memoryUser.id, false);
     await this.usersService.setRoomId(memoryUser.id, '');
     await this.chatGateway.announceGame();
