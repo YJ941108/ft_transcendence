@@ -5,7 +5,6 @@ import { refreshToken } from './modules/login/login';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './components/styles/Modal.css';
 import SocketContextProvider from './components/chat/SocketContext';
-import GameSocketContextProvider from './components/game/GameSocketContext';
 
 function App() {
 	useEffect(() => {
@@ -15,9 +14,7 @@ function App() {
 		<>
 			<GlobalStyle />
 			<SocketContextProvider>
-				<GameSocketContextProvider>
-					<Router />
-				</GameSocketContextProvider>
+				<Router />
 			</SocketContextProvider>
 		</>
 	);
