@@ -9,7 +9,7 @@ services:
     container_name: react 
     image: react
     ports:
-      - 3000:3000
+      - 80:80
 
   nest:
     build:
